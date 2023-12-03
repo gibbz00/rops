@@ -1,11 +1,2 @@
-pub fn x() {}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn gets_x() {
-        x()
-    }
-}
+mod data_key;
+pub use data_key::DataKey;
