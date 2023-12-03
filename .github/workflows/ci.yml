@@ -56,6 +56,16 @@ jobs:
         uses: ./.github/actions/build_setup
       - name: Run cargo-udeps
         uses: aig787/cargo-udeps-action@v1
+  links:
+    name: Links
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v4
+      - name: Run lychee
+        uses: lycheeverse/lychee-action@v1.8.0
+        with:
+          fail: true
   coverage:
     name: Coverage
     runs-on: ubuntu-latest
