@@ -1,0 +1,75 @@
+name: CI
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+env:
+  CARGO_TERM_COLOR: always
+  RUST_BACKTRACE: full
+jobs:
+  format:
+    name: Format
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v4
+      - name: Build Setup
+        uses: ./.github/actions/build_setup
+      - name: cargo fmt
+        run: cargo fmt --all -- --check
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v4
+      - name: Build Setup
+        uses: ./.github/actions/build_setup
+      - name: Run tests
+        run: cargo test --all-features -- --include-ignored --nocapture
+  clippy:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v4
+      - name: Build Setup
+        uses: ./.github/actions/build_setup
+      - name: Run clippy
+        run: cargo clippy --all-features --tests -- -D warnings
+  audit:
+    name: Audit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: taiki-e/install-action@cargo-deny
+      - name: Vulnerability scanning
+        run: cargo deny check advisories
+  unused:
+    name: Unused
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v4
+      - name: Build Setup
+        uses: ./.github/actions/build_setup
+      - name: Run cargo-udeps
+        uses: aig787/cargo-udeps-action@v1
+  coverage:
+    name: Coverage
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v4
+      - name: Build Setup
+        uses: ./.github/actions/build_setup
+      - name: Install cargo-llvm-cov
+        uses: taiki-e/install-action@cargo-llvm-cov
+      - name: Generate code coverage
+        run: cargo llvm-cov --all-features --workspace --lcov --output-path lcov.info
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          files: lcov.info
+          fail_ci_if_error: true
