@@ -3,4 +3,8 @@ resolver = "2"
 members = [ "crates/*" ]
 
 [workspace.dependencies]
+age = "0.9"
+indoc = "2"
+rand = "0.8"
+thiserror = "1"
 

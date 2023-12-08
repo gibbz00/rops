@@ -3,5 +3,18 @@ name = "rops"
 version = "0.1.0"
 edition = "2021"
 
+[features]
+age = ["dep:age"]
+age-test-utils = ["age", "test-utils", "dep:indoc"]
+
+test-utils = []
+
 [dependencies]
-rand = "0.8.5"
+rand.workspace = true
+thiserror.workspace = true
+
+# AGE
+age = { workspace = true, features = ["armor"], optional = true }
+
+# AGE + TEST_UTILS
+indoc = { workspace = true, optional = true }
