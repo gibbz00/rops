@@ -44,6 +44,7 @@
   - [ ] Message authentication code (MAC) for encrypted parts only.
     - Flag: `--mac-only-encrypted`.
     - `.rops.yaml`: `partial_encryption.mac_only_encrypted: true`.
+- [ ] Last modified metadata
 
 ### Integrations:
 

@@ -1,7 +1,5 @@
 use thiserror::Error;
 
-use crate::*;
-
 pub type RopsResult<T> = Result<T, RopsError>;
 
 #[derive(Debug, Error)]
@@ -23,6 +21,7 @@ pub enum RopsError {
 #[cfg(feature = "age")]
 impl From<age::EncryptError> for RopsError {
     fn from(encrypt_error: age::EncryptError) -> Self {
+        use crate::*;
         Self::Encryption(AgeIntegration::NAME, encrypt_error.to_string())
     }
 }
@@ -30,6 +29,7 @@ impl From<age::EncryptError> for RopsError {
 #[cfg(feature = "age")]
 impl From<age::DecryptError> for RopsError {
     fn from(decrypt_error: age::DecryptError) -> Self {
+        use crate::*;
         Self::Decryption(AgeIntegration::NAME, decrypt_error.to_string())
     }
 }

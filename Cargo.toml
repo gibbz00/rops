@@ -6,5 +6,12 @@ members = [ "crates/*" ]
 age = "0.9"
 indoc = "2"
 rand = "0.8"
+serde = { version = "1", features = ["derive"] }
+serde_with = "3"
+serde_yaml = "0.9"
+textwrap = "0.16"
 thiserror = "1"
 
+[patch.crates-io]
+# TEMP: https://github.com/str4d/rage/pull/420
+age = { git = "https://github.com/gibbz00/rage", branch = "public_key_partial_eq" }

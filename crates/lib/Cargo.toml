@@ -4,17 +4,26 @@ version = "0.1.0"
 edition = "2021"
 
 [features]
+# Integrations:
 age = ["dep:age"]
-age-test-utils = ["age", "test-utils", "dep:indoc"]
+age-test-utils = ["age", "test-utils", "dep:indoc", "dep:textwrap"]
+# File formats:
+yaml = ["dep:serde_yaml"]
 
 test-utils = []
 
 [dependencies]
 rand.workspace = true
+serde.workspace = true
+serde_with.workspace = true
 thiserror.workspace = true
 
 # AGE
 age = { workspace = true, features = ["armor"], optional = true }
 
-# AGE + TEST_UTILS
+# AGE && TEST_UTILS
+textwrap = { workspace = true, optional = true }
 indoc = { workspace = true, optional = true }
+
+# YAML
+serde_yaml = { workspace = true, optional = true }

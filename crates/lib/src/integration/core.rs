@@ -1,8 +1,10 @@
+use std::fmt::Display;
+
 use crate::*;
 
 pub trait Integration {
     const NAME: &'static str;
-    type PublicKey;
+    type PublicKey: Display;
     type PrivateKey;
 
     fn parse_public_key(public_key_str: &str) -> RopsResult<Self::PublicKey>;
