@@ -10,8 +10,7 @@ use crate::*;
 pub struct AgeIntegration;
 
 impl AgeIntegration {
-    // Set by experiment.
-    const ARMORED_DATA_KEY_LENGTH: usize = 385;
+    const APPROX_MAX_ARMORED_DATA_KEY_LENGTH: usize = 400;
 }
 
 impl Integration for AgeIntegration {
@@ -44,7 +43,7 @@ impl Integration for AgeIntegration {
             unarmored_encypted_buffer
         };
 
-        let mut armored_buffer = Vec::with_capacity(Self::ARMORED_DATA_KEY_LENGTH);
+        let mut armored_buffer = Vec::with_capacity(Self::APPROX_MAX_ARMORED_DATA_KEY_LENGTH);
         let mut armored_writer = ArmoredWriter::wrap_output(&mut armored_buffer, Format::AsciiArmor)?;
         armored_writer.write_all(&unarmored_buffer)?;
         armored_writer.finish()?;
@@ -53,7 +52,7 @@ impl Integration for AgeIntegration {
     }
 
     fn decrypt_data_key(private_key: &Self::PrivateKey, encrypted_data_key: &str) -> RopsResult<DataKey> {
-        let mut unarmored_encrypted_buffer = Vec::with_capacity(Self::ARMORED_DATA_KEY_LENGTH);
+        let mut unarmored_encrypted_buffer = Vec::with_capacity(Self::APPROX_MAX_ARMORED_DATA_KEY_LENGTH);
 
         ArmoredReader::new(encrypted_data_key.as_bytes()).read_to_end(&mut unarmored_encrypted_buffer)?;
 
@@ -119,13 +118,5 @@ mod tests {
     #[test]
     fn decryptst_data_key() {
         <AgeIntegration as IntegrationTestUtils>::assert_decrypts_data_key()
-    }
-
-    #[test]
-    fn correct_armored_key_length() {
-        assert_eq!(
-            AgeIntegration::ARMORED_DATA_KEY_LENGTH,
-            <AgeIntegration as IntegrationTestUtils>::mock_encrypted_data_key_str().len()
-        )
     }
 }
