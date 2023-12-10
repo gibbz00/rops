@@ -56,6 +56,8 @@ jobs:
         uses: ./.github/actions/build_setup
       - name: Run cargo-udeps
         uses: aig787/cargo-udeps-action@v1
+        with:
+          args: --all-features
   links:
     name: Links
     runs-on: ubuntu-latest
