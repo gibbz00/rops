@@ -1,28 +1,122 @@
-// GOAL: serialize age into
-// ENC[AES256_GCM,data:EjRPNlhx,iv:XmS4b2ZqB39Qjpl/IQRm36KLclV8wXuBjuZsw4yekcU=,tag:
-// SWK3XZBBUA49muEyeqld4g==,type:str]
-
 use std::fmt::{Display, Formatter};
 
 use crate::*;
 
 #[derive(Debug, PartialEq)]
-pub struct EncryptedValue {
+pub struct EncryptedValue<C: Cipher> {
     data: EncryptedValueData,
-    metadata: EncryptedValueMetaData,
+    metadata: EncryptedValueMetaData<C>,
 }
 
-impl Display for EncryptedValue {
+impl<C: Cipher> Display for EncryptedValue<C> {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         write!(
             f,
             "ENC[{},data:{},iv:{},tag:{},type:{}]",
-            self.metadata.cipher_variant.as_ref(),
-            self.data.except_tag(self.metadata.cipher_variant.cipher()).encode_base64(),
+            C::NAME,
+            self.data.encode_base64(),
             self.metadata.initial_value.encode_base64(),
-            self.data.tag(self.metadata.cipher_variant.cipher()).encode_base64(),
+            self.metadata.authorization_tag.encode_base64(),
             self.metadata.value_type.as_ref(),
         )
+    }
+}
+
+pub use parser::EncryptedValueFromStrError;
+mod parser {
+    use std::str::FromStr;
+
+    use super::*;
+
+    #[derive(Debug, thiserror::Error)]
+    pub enum EncryptedValueFromStrError {
+        #[error("missing {0}")]
+        Missing(&'static str),
+        #[error("invalid cipher: {0}, expected: {1}")]
+        InvalidCipher(String, &'static str),
+        #[error("unable to parse value type: {0}")]
+        ValueTypeFromStr(String),
+        #[error("unable to base64 decode {0}, reason: {1}")]
+        Base64Decode(String, base64::DecodeError),
+    }
+
+    impl<C: Cipher> FromStr for EncryptedValue<C> {
+        type Err = EncryptedValueFromStrError;
+
+        fn from_str(input: &str) -> Result<Self, Self::Err> {
+            use EncryptedValueFromStrError::*;
+
+            let mut encrypted_value_components = input
+                .strip_prefix("ENC")
+                .ok_or(Missing("ENC prefix"))?
+                .strip_prefix('[')
+                .ok_or(Missing("opening ('[') bracket"))?
+                .strip_suffix(']')
+                .ok_or(Missing("closing (']') bracket"))?
+                .split(',');
+
+            let cipher_variant_str = encrypted_value_components.next().ok_or(Missing("cipher"))?;
+
+            if cipher_variant_str != C::NAME {
+                return Err(InvalidCipher(cipher_variant_str.to_string(), C::NAME));
+            }
+
+            let data = encrypted_value_components
+                .next()
+                .and_then(|next_component| next_component.strip_prefix("data:"))
+                .ok_or(Missing("'data' key-value pair"))
+                .and_then(|encrypted_data_base64_str| {
+                    let mut buffer = Vec::with_capacity(::base64::decoded_len_estimate(encrypted_data_base64_str.len()));
+                    buffer
+                        .decode_base64(encrypted_data_base64_str)
+                        .map(|_| buffer.into())
+                        .map_err(|reason| Base64Decode(encrypted_data_base64_str.to_string(), reason))
+                })?;
+
+            let initial_value = encrypted_value_components
+                .next()
+                .and_then(|next_component| next_component.strip_prefix("iv:"))
+                .ok_or(Missing("'iv' (initial value) key-value pair"))
+                .and_then(|initial_value_base64_str| {
+                    let mut initial_value = InitialValue::empty();
+                    initial_value
+                        .as_mut()
+                        .decode_base64(initial_value_base64_str)
+                        .map_err(|err| Base64Decode(initial_value_base64_str.to_string(), err))
+                        .map(|_| initial_value)
+                })?;
+
+            let authorization_tag = encrypted_value_components
+                .next()
+                .and_then(|next_component| next_component.strip_prefix("tag:"))
+                .ok_or(Missing("'tag' (authorization tag) key-value pair"))
+                .and_then(|authorization_tag_base64_str| {
+                    let mut buffer = AuthorizationTag::empty();
+                    AsMut::<[u8]>::as_mut(&mut buffer)
+                        .decode_base64(authorization_tag_base64_str)
+                        .map(|_| buffer)
+                        .map_err(|reason| Base64Decode(authorization_tag_base64_str.to_string(), reason))
+                })?;
+
+            let value_type = encrypted_value_components
+                .next()
+                .and_then(|value_type_component| value_type_component.strip_prefix("type:"))
+                .ok_or(Missing("'type' (value type) key-value pair"))
+                .and_then(|value_type_str| {
+                    value_type_str
+                        .parse::<ValueType>()
+                        .map_err(|_| ValueTypeFromStr(value_type_str.to_string()))
+                })?;
+
+            Ok(Self {
+                data,
+                metadata: EncryptedValueMetaData {
+                    authorization_tag,
+                    initial_value,
+                    value_type,
+                },
+            })
+        }
     }
 }
 
@@ -30,7 +124,10 @@ impl Display for EncryptedValue {
 mod mock {
     use super::*;
 
-    impl MockTestUtil for EncryptedValue {
+    impl<C: Cipher> MockTestUtil for EncryptedValue<C>
+    where
+        EncryptedValueMetaData<C>: MockTestUtil,
+    {
         fn mock() -> Self {
             Self {
                 data: MockTestUtil::mock(),
@@ -39,12 +136,17 @@ mod mock {
         }
     }
 
-    impl MockStringTestUtil for EncryptedValue {
-        fn mock_string() -> String {
+    impl<C: Cipher> MockDisplayTestUtil for EncryptedValue<C>
+    where
+        AuthorizationTag<C>: MockDisplayTestUtil,
+    {
+        fn mock_display() -> String {
             format!(
-                "ENC[AES256_GCM,data:{},iv:kwtVOk4u/wLHMovHYG2ngLv+uM8U9UJrIxjS6zCKmVY=,tag:{},type:str]",
-                EncryptedValueDataExceptTag::mock_string(),
-                EncryptedValueDataAuthorizationTag::mock_string()
+                "ENC[{},data:{},iv:{},tag:{},type:str]",
+                C::NAME,
+                EncryptedValueData::mock_display(),
+                InitialValue::mock_display(),
+                AuthorizationTag::mock_display()
             )
         }
     }
@@ -52,13 +154,18 @@ mod mock {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    #[cfg(feature = "aes-gcm")]
+    mod aes {
+        use crate::*;
 
-    #[test]
-    fn displays_value_encryption_content() {
-        DisplayTestUtils::assert_display::<EncryptedValue>()
+        #[test]
+        fn displays_value_encryption_content() {
+            DisplayTestUtils::assert_display::<EncryptedValue<AES256GCM>>()
+        }
+
+        #[test]
+        fn parses_value_encryption_content() {
+            FromStrTestUtils::assert_parse::<EncryptedValue<AES256GCM>>()
+        }
     }
-
-    #[test]
-    fn parses_value_encryption_content() {}
 }

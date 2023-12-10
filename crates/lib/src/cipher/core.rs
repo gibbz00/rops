@@ -1,3 +1,8 @@
+use std::fmt::Debug;
+
+use generic_array::ArrayLength;
+
 pub trait Cipher {
-    fn authorization_tag_size(&self) -> usize;
+    type AuthorizationTagSize: ArrayLength + Debug + PartialEq;
+    const NAME: &'static str;
 }

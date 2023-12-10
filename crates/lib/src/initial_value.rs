@@ -11,6 +11,10 @@ impl InitialValue {
         Self(RngKey::new())
     }
 
+    pub fn empty() -> Self {
+        Self(RngKey::empty())
+    }
+
     pub const fn byte_size() -> usize {
         RngKey::<{ INITIAL_VALUE_SIZE }>::byte_size()
     }
@@ -20,6 +24,13 @@ impl InitialValue {
 impl AsRef<[u8]> for InitialValue {
     fn as_ref(&self) -> &[u8] {
         self.0.as_ref()
+    }
+}
+
+// TEMP(WORKAROUND): derive_more::AsMut doesn't seem to work
+impl AsMut<[u8]> for InitialValue {
+    fn as_mut(&mut self) -> &mut [u8] {
+        self.0.as_mut()
     }
 }
 
@@ -36,6 +47,12 @@ mod mock {
                 ]
                 .into(),
             )
+        }
+    }
+
+    impl MockDisplayTestUtil for InitialValue {
+        fn mock_display() -> String {
+            "kwtVOk4u/wLHMovHYG2ngLv+uM8U9UJrIxjS6zCKmVY=".to_string()
         }
     }
 }

@@ -17,6 +17,7 @@ test-utils = []
 [dependencies]
 base64.workspace = true
 derive_more.workspace = true
+generic-array.workspace = true
 rand.workspace = true
 serde.workspace = true
 serde_with.workspace = true

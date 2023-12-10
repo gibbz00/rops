@@ -1,3 +1,6 @@
+mod authorization_tag;
+pub use authorization_tag::AuthorizationTag;
+
 mod error_handling;
 pub use error_handling::{RopsError, RopsResult};
 
@@ -19,37 +22,16 @@ pub use data_key::DataKey;
 mod initial_value;
 pub use initial_value::InitialValue;
 
-mod value;
-pub use value::ValueType;
+mod value_type;
+pub use value_type::ValueType;
 
 mod cipher;
 pub use cipher::*;
 
-mod base64_utils;
-pub use base64_utils::Base64Utils;
+mod base64utils;
+pub use base64utils::*;
 
 #[cfg(feature = "test-utils")]
-mod mock;
+mod test_utils;
 #[cfg(feature = "test-utils")]
-pub use mock::MockTestUtil;
-
-#[cfg(feature = "test-utils")]
-pub use display_test_utils::{DisplayTestUtils, MockStringTestUtil};
-#[cfg(feature = "test-utils")]
-mod display_test_utils {
-    use std::fmt::Display;
-
-    use crate::*;
-
-    pub trait MockStringTestUtil {
-        fn mock_string() -> String;
-    }
-
-    pub struct DisplayTestUtils;
-
-    impl DisplayTestUtils {
-        pub fn assert_display<T: MockTestUtil + Display + MockStringTestUtil + PartialEq>() {
-            assert_eq!(T::mock_string(), T::mock().to_string())
-        }
-    }
-}
+pub use test_utils::*;

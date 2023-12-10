@@ -1,8 +1,8 @@
 use crate::*;
 
 #[derive(Debug, PartialEq)]
-pub struct EncryptedValueMetaData {
-    pub cipher_variant: CipherVariant,
+pub struct EncryptedValueMetaData<C: Cipher> {
+    pub authorization_tag: AuthorizationTag<C>,
     pub initial_value: InitialValue,
     pub value_type: ValueType,
 }
@@ -11,10 +11,13 @@ pub struct EncryptedValueMetaData {
 mod mock {
     use super::*;
 
-    impl MockTestUtil for EncryptedValueMetaData {
+    impl<C: Cipher> MockTestUtil for EncryptedValueMetaData<C>
+    where
+        AuthorizationTag<C>: MockTestUtil,
+    {
         fn mock() -> Self {
             Self {
-                cipher_variant: CipherVariant::AES256GCM,
+                authorization_tag: MockTestUtil::mock(),
                 initial_value: MockTestUtil::mock(),
                 value_type: ValueType::String,
             }
