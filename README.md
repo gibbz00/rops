@@ -45,6 +45,7 @@
     - Flag: `--mac-only-encrypted`.
     - `.rops.yaml`: `partial_encryption.mac_only_encrypted: true`.
 - [ ] Last modified metadata
+- [ ] File comment encryption
 
 ### Integrations:
 

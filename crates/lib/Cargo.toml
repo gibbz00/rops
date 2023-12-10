@@ -9,13 +9,18 @@ age = ["dep:age"]
 age-test-utils = ["age", "test-utils", "dep:indoc", "dep:textwrap"]
 # File formats:
 yaml = ["dep:serde_yaml"]
+# Ciphers
+aes-gcm = ["dep:aes-gcm"]
 
 test-utils = []
 
 [dependencies]
+base64.workspace = true
+derive_more.workspace = true
 rand.workspace = true
 serde.workspace = true
 serde_with.workspace = true
+strum.workspace = true
 thiserror.workspace = true
 
 # AGE
@@ -27,3 +32,6 @@ indoc = { workspace = true, optional = true }
 
 # YAML
 serde_yaml = { workspace = true, optional = true }
+
+# AES_GCM
+aes-gcm = { workspace = true, optional = true }

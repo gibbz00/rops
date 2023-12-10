@@ -37,7 +37,7 @@ impl Integration for AgeIntegration {
             let encryptor =
                 age::Encryptor::with_recipients(vec![Box::new(public_key.clone())]).expect("provided recipients should be non-empty");
 
-            let mut unarmored_encypted_buffer = Vec::with_capacity(DATA_KEY_BYTE_SIZE);
+            let mut unarmored_encypted_buffer = Vec::with_capacity(DataKey::byte_size());
             let mut encryption_writer = encryptor.wrap_output(&mut unarmored_encypted_buffer)?;
             encryption_writer.write_all(data_key.as_ref())?;
             encryption_writer.finish()?;
@@ -71,7 +71,7 @@ impl Integration for AgeIntegration {
 }
 
 #[cfg(feature = "test-utils")]
-mod test_utils {
+mod mock {
     use super::*;
 
     impl IntegrationTestUtils for AgeIntegration {
@@ -86,11 +86,11 @@ mod test_utils {
         fn mock_encrypted_data_key_str() -> &'static str {
             indoc::indoc! {"
                 -----BEGIN AGE ENCRYPTED FILE-----
-                YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBuTkhudTlUaFRKdWlwZFRs
-                cG1KQW1rQk51Z2tpYy85NDZOZDV6eUJlM0hJCkMwdGFZaWFCNjFFelhzMDg1U1dE
-                SU1WTU5aUVBUUGFYdjJtalpRNkFNejgKLS0tIFFkOXUwaWNHY1pWUTQxZGhtMWpR
-                UG93akdhZm43WHZ6U3ZEc3dsVUlGWTgK5ViwbodEIX9YdSiQbbofnPvGVsTVVwp5
-                +6TH7xovNbthvqDyOBVYv8g0Q+EUNjdQ3J6K3uJAdLDOCFzPincGPA==
+                YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBKeE9VRHJpNmc4Z1NFeDd6
+                L3cybjRHblYvaFUxbk9JZDZ4RFdENGpiNmhZCnZCRXRNSlRZeno0SDlJWXdhT0xl
+                Y1BlMzcyYUdVWFJ6WEVMTlRRaDRGbFUKLS0tIGc0V3gzU043MzBUd01BVTVKTEwr
+                azRyUldHUXo0cTV2YlZWa2pwcWFweGcKQdFW597WOM0bYfycoA2A0JxjKlrka+lc
+                MLuTri7QMM+g8yXcjneEGxjobGIqnvARlzDwcnFMxBoZ5/KRjMipXA==
                 -----END AGE ENCRYPTED FILE-----
             "}
         }

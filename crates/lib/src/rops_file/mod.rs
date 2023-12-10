@@ -1,28 +1,35 @@
-mod file_format {}
+pub use file_format::*;
+mod file_format {
 
-#[cfg(feature = "test-utils")]
-pub use test_utils::*;
-#[cfg(feature = "test-utils")]
-mod test_utils {
     #[cfg(feature = "yaml")]
-    pub use yaml::YamlTestUtils;
+    pub use yaml::*;
     #[cfg(feature = "yaml")]
     mod yaml {
-        use std::fmt::Debug;
 
-        use serde::{de::DeserializeOwned, Serialize};
+        #[cfg(feature = "test-utils")]
+        pub use test_utils::{MockYamlTestUtil, YamlTestUtils};
+        #[cfg(feature = "test-utils")]
+        mod test_utils {
+            use std::fmt::Debug;
 
-        use crate::*;
+            use serde::{de::DeserializeOwned, Serialize};
 
-        pub struct YamlTestUtils;
+            use crate::*;
 
-        impl YamlTestUtils {
-            pub fn assert_serialization<T: MockTestUtil + MockYamlTestUtil + Serialize>() {
-                assert_eq!(T::mock_yaml(), serde_yaml::to_string(&T::mock()).unwrap())
+            pub trait MockYamlTestUtil {
+                fn mock_yaml() -> String;
             }
 
-            pub fn assert_deserialization<T: MockTestUtil + MockYamlTestUtil + DeserializeOwned + Debug + PartialEq>() {
-                assert_eq!(T::mock(), serde_yaml::from_str(&T::mock_yaml()).unwrap())
+            pub struct YamlTestUtils;
+
+            impl YamlTestUtils {
+                pub fn assert_serialization<T: MockTestUtil + MockYamlTestUtil + Serialize>() {
+                    assert_eq!(T::mock_yaml(), serde_yaml::to_string(&T::mock()).unwrap())
+                }
+
+                pub fn assert_deserialization<T: MockTestUtil + MockYamlTestUtil + DeserializeOwned + Debug + PartialEq>() {
+                    assert_eq!(T::mock(), serde_yaml::from_str(&T::mock_yaml()).unwrap())
+                }
             }
         }
     }
@@ -63,7 +70,7 @@ mod metadata {
         }
 
         #[cfg(feature = "test-utils")]
-        mod test_utils {
+        mod mock {
             use super::*;
 
             impl MockTestUtil for SopsFileAgeMetadata {

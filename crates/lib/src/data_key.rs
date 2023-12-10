@@ -1,53 +1,43 @@
-use rand::RngCore;
+use derive_more::{AsMut, AsRef};
 
-pub const DATA_KEY_BYTE_SIZE: usize = 32;
+use crate::*;
+
+const DATA_KEY_SIZE: usize = 32;
 
 // FIXME: zeroize upon drop?
-#[derive(Debug, PartialEq)]
-pub struct DataKey([u8; DATA_KEY_BYTE_SIZE]);
+#[derive(Debug, PartialEq, AsRef, AsMut)]
+#[as_ref(forward)]
+#[as_mut(forward)]
+pub struct DataKey(RngKey<DATA_KEY_SIZE>);
 
 impl DataKey {
     #[allow(clippy::new_without_default)]
     pub fn new() -> Self {
-        // Assumed to be cryptographically secure. Uses ChaCha12 as
-        // the PRNG with OS provided RNG (e.g getrandom) for the
-        // initial seed.
-        //
-        // https://docs.rs/rand/latest/rand/rngs/struct.ThreadRng.html
-        let mut rand = rand::thread_rng();
-
-        let mut inner = [0u8; DATA_KEY_BYTE_SIZE];
-        rand.fill_bytes(&mut inner);
-        Self(inner)
+        Self(RngKey::new())
     }
 
-    pub fn empty() -> Self {
-        Self([0; DATA_KEY_BYTE_SIZE])
+    pub const fn empty() -> Self {
+        Self(RngKey::empty())
     }
-}
 
-impl AsRef<[u8]> for DataKey {
-    fn as_ref(&self) -> &[u8] {
-        self.0.as_slice()
-    }
-}
-
-impl AsMut<[u8]> for DataKey {
-    fn as_mut(&mut self) -> &mut [u8] {
-        self.0.as_mut_slice()
+    pub const fn byte_size() -> usize {
+        RngKey::<{ DATA_KEY_SIZE }>::byte_size()
     }
 }
 
 #[cfg(feature = "test-utils")]
-mod test_utils {
+mod mock {
     use crate::*;
 
     impl MockTestUtil for DataKey {
         fn mock() -> Self {
-            Self([
-                67, 11, 25, 39, 242, 246, 79, 131, 60, 80, 226, 83, 115, 116, 50, 131, 39, 148, 220, 226, 136, 158, 165, 19, 155, 218, 16,
-                53, 47, 24, 192, 26,
-            ])
+            Self(
+                [
+                    254, 79, 93, 103, 195, 165, 169, 238, 35, 187, 236, 95, 222, 243, 40, 26, 130, 128, 59, 176, 15, 195, 55, 93, 129, 212,
+                    57, 80, 15, 181, 72, 114,
+                ]
+                .into(),
+            )
         }
     }
 }
@@ -58,16 +48,6 @@ mod tests {
 
     #[test]
     fn data_key_is_256_bits() {
-        assert_eq!(256, DATA_KEY_BYTE_SIZE * 8)
-    }
-
-    #[test]
-    fn new_data_key_not_zeroed() {
-        assert_ne!([0; DATA_KEY_BYTE_SIZE], DataKey::new().as_ref())
-    }
-
-    #[test]
-    fn seemingly_random() {
-        assert_ne!(DataKey::new(), DataKey::new())
+        assert_eq!(256, DATA_KEY_SIZE * 8)
     }
 }
