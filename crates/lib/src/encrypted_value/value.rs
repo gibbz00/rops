@@ -3,12 +3,12 @@ use std::fmt::{Display, Formatter};
 use crate::*;
 
 #[derive(Debug, PartialEq)]
-pub struct EncryptedValue<C: Cipher> {
-    data: EncryptedValueData,
-    metadata: EncryptedValueMetaData<C>,
+pub struct EncryptedValue<C: AeadCipher> {
+    pub data: EncryptedValueData,
+    pub metadata: EncryptedValueMetaData<C>,
 }
 
-impl<C: Cipher> Display for EncryptedValue<C> {
+impl<C: AeadCipher> Display for EncryptedValue<C> {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         write!(
             f,
@@ -17,7 +17,7 @@ impl<C: Cipher> Display for EncryptedValue<C> {
             self.data.encode_base64(),
             self.metadata.initial_value.encode_base64(),
             self.metadata.authorization_tag.encode_base64(),
-            self.metadata.value_type.as_ref(),
+            self.metadata.value_variant.as_ref(),
         )
     }
 }
@@ -40,7 +40,7 @@ mod parser {
         Base64Decode(String, base64::DecodeError),
     }
 
-    impl<C: Cipher> FromStr for EncryptedValue<C> {
+    impl<C: AeadCipher> FromStr for EncryptedValue<C> {
         type Err = EncryptedValueFromStrError;
 
         fn from_str(input: &str) -> Result<Self, Self::Err> {
@@ -78,7 +78,7 @@ mod parser {
                 .and_then(|next_component| next_component.strip_prefix("iv:"))
                 .ok_or(Missing("'iv' (initial value) key-value pair"))
                 .and_then(|initial_value_base64_str| {
-                    let mut initial_value = InitialValue::empty();
+                    let mut initial_value = InitialValue::default();
                     initial_value
                         .as_mut()
                         .decode_base64(initial_value_base64_str)
@@ -98,14 +98,14 @@ mod parser {
                         .map_err(|reason| Base64Decode(authorization_tag_base64_str.to_string(), reason))
                 })?;
 
-            let value_type = encrypted_value_components
+            let value_variant = encrypted_value_components
                 .next()
                 .and_then(|value_type_component| value_type_component.strip_prefix("type:"))
                 .ok_or(Missing("'type' (value type) key-value pair"))
-                .and_then(|value_type_str| {
-                    value_type_str
-                        .parse::<ValueVariant>()
-                        .map_err(|_| ValueTypeFromStr(value_type_str.to_string()))
+                .and_then(|variant_str| {
+                    variant_str
+                        .parse::<RopsValueVariant>()
+                        .map_err(|_| ValueTypeFromStr(variant_str.to_string()))
                 })?;
 
             Ok(Self {
@@ -113,7 +113,7 @@ mod parser {
                 metadata: EncryptedValueMetaData {
                     authorization_tag,
                     initial_value,
-                    value_type,
+                    value_variant,
                 },
             })
         }
@@ -124,7 +124,7 @@ mod parser {
 mod mock {
     use super::*;
 
-    impl<C: Cipher> MockTestUtil for EncryptedValue<C>
+    impl<C: AeadCipher> MockTestUtil for EncryptedValue<C>
     where
         EncryptedValueMetaData<C>: MockTestUtil,
     {
@@ -136,7 +136,7 @@ mod mock {
         }
     }
 
-    impl<C: Cipher> MockDisplayTestUtil for EncryptedValue<C>
+    impl<C: AeadCipher> MockDisplayTestUtil for EncryptedValue<C>
     where
         AuthorizationTag<C>: MockDisplayTestUtil,
     {

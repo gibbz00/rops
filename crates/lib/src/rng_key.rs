@@ -1,10 +1,13 @@
 use derive_more::{AsMut, AsRef};
+use generic_array::{ArrayLength, GenericArray};
 use rand::RngCore;
 
-#[derive(Debug, PartialEq, AsRef, AsMut)]
-pub struct RngKey<const BYTE_SIZE: usize>([u8; BYTE_SIZE]);
+// IMPROVEMENT: replace with generic array
+#[derive(Debug, PartialEq, AsRef, AsMut, Default)]
+#[as_ref(forward)]
+pub struct RngKey<T: ArrayLength<u8>>(GenericArray<u8, T>);
 
-impl<const BYTE_SIZE: usize> RngKey<BYTE_SIZE> {
+impl<T: ArrayLength<u8>> RngKey<T> {
     #[allow(clippy::new_without_default)]
     pub fn new() -> Self {
         // Assumed to be cryptographically secure. Uses ChaCha12 as
@@ -14,17 +17,9 @@ impl<const BYTE_SIZE: usize> RngKey<BYTE_SIZE> {
         // https://docs.rs/rand/latest/rand/rngs/struct.ThreadRng.html
         let mut rand = rand::thread_rng();
 
-        let mut inner = [0u8; BYTE_SIZE];
+        let mut inner = GenericArray::default();
         rand.fill_bytes(&mut inner);
         Self(inner)
-    }
-
-    pub const fn byte_size() -> usize {
-        BYTE_SIZE
-    }
-
-    pub const fn empty() -> Self {
-        Self([0; BYTE_SIZE])
     }
 }
 
@@ -32,23 +27,25 @@ impl<const BYTE_SIZE: usize> RngKey<BYTE_SIZE> {
 mod mock {
     use super::*;
 
-    impl<const BYTESIZE: usize> From<[u8; BYTESIZE]> for RngKey<BYTESIZE> {
-        fn from(bytes: [u8; BYTESIZE]) -> Self {
-            Self(bytes)
+    impl<T: ArrayLength<u8>> From<GenericArray<u8, T>> for RngKey<T> {
+        fn from(array: GenericArray<u8, T>) -> Self {
+            Self(array)
         }
     }
 }
 
 #[cfg(test)]
 mod tests {
+    use generic_array::typenum::Unsigned;
+
     use super::*;
 
-    const MOCK_BYTE_SIZE: usize = 32;
-    type MockRngKey = RngKey<{ MOCK_BYTE_SIZE }>;
+    type MockArrayLength = generic_array::typenum::U32;
+    type MockRngKey = RngKey<MockArrayLength>;
 
     #[test]
     fn new_rng_key_not_zeroed() {
-        assert_ne!(&[0; MOCK_BYTE_SIZE], MockRngKey::new().as_ref())
+        assert_ne!(&[0; MockArrayLength::USIZE], MockRngKey::new().0.as_slice())
     }
 
     #[test]

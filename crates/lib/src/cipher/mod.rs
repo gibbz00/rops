@@ -1,5 +1,5 @@
 mod core;
-pub use core::Cipher;
+pub use core::AeadCipher;
 
 #[cfg(feature = "aes-gcm")]
 mod aes256_gcm;

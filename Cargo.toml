@@ -7,7 +7,7 @@ age = "0.9"
 aes-gcm = "0.10"
 base64 = "0.21"
 derive_more = "0.99"
-generic-array = "1.0.0"
+generic-array = "0.14"
 indoc = "2"
 rand = "0.8"
 serde = { version = "1", features = ["derive"] }

@@ -1,17 +1,17 @@
 use crate::*;
 
 #[derive(Debug, PartialEq)]
-pub struct EncryptedValueMetaData<C: Cipher> {
+pub struct EncryptedValueMetaData<C: AeadCipher> {
     pub authorization_tag: AuthorizationTag<C>,
-    pub initial_value: InitialValue,
-    pub value_type: ValueVariant,
+    pub initial_value: InitialValue<C::InitialValueSize>,
+    pub value_variant: RopsValueVariant,
 }
 
 #[cfg(feature = "test-utils")]
 mod mock {
     use super::*;
 
-    impl<C: Cipher> MockTestUtil for EncryptedValueMetaData<C>
+    impl<C: AeadCipher> MockTestUtil for EncryptedValueMetaData<C>
     where
         AuthorizationTag<C>: MockTestUtil,
     {
@@ -19,7 +19,7 @@ mod mock {
             Self {
                 authorization_tag: MockTestUtil::mock(),
                 initial_value: MockTestUtil::mock(),
-                value_type: ValueVariant::String,
+                value_variant: RopsValueVariant::String,
             }
         }
     }

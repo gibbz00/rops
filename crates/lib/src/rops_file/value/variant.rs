@@ -1,9 +1,10 @@
 use strum::{AsRefStr, EnumString};
 
 #[derive(Debug, PartialEq, AsRefStr, EnumString)]
-pub enum ValueVariant {
+pub enum RopsValueVariant {
     #[strum(serialize = "str")]
     String,
+    Boolean,
     // .. etc
 }
 
@@ -13,11 +14,11 @@ mod tests {
 
     #[test]
     fn displays_string_type() {
-        assert_eq!("str", ValueVariant::String.as_ref())
+        assert_eq!("str", RopsValueVariant::String.as_ref())
     }
 
     #[test]
     fn parses_string_type() {
-        assert_eq!(ValueVariant::String, "str".parse::<ValueVariant>().unwrap())
+        assert_eq!(RopsValueVariant::String, "str".parse::<RopsValueVariant>().unwrap())
     }
 }
