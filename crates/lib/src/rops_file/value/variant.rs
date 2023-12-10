@@ -1,7 +1,7 @@
 use strum::{AsRefStr, EnumString};
 
 #[derive(Debug, PartialEq, AsRefStr, EnumString)]
-pub enum ValueType {
+pub enum ValueVariant {
     #[strum(serialize = "str")]
     String,
     // .. etc
@@ -13,11 +13,11 @@ mod tests {
 
     #[test]
     fn displays_string_type() {
-        assert_eq!("str", ValueType::String.as_ref())
+        assert_eq!("str", ValueVariant::String.as_ref())
     }
 
     #[test]
     fn parses_string_type() {
-        assert_eq!(ValueType::String, "str".parse::<ValueType>().unwrap())
+        assert_eq!(ValueVariant::String, "str".parse::<ValueVariant>().unwrap())
     }
 }

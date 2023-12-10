@@ -4,7 +4,7 @@ use crate::*;
 pub struct EncryptedValueMetaData<C: Cipher> {
     pub authorization_tag: AuthorizationTag<C>,
     pub initial_value: InitialValue,
-    pub value_type: ValueType,
+    pub value_type: ValueVariant,
 }
 
 #[cfg(feature = "test-utils")]
@@ -19,7 +19,7 @@ mod mock {
             Self {
                 authorization_tag: MockTestUtil::mock(),
                 initial_value: MockTestUtil::mock(),
-                value_type: ValueType::String,
+                value_type: ValueVariant::String,
             }
         }
     }

@@ -104,7 +104,7 @@ mod parser {
                 .ok_or(Missing("'type' (value type) key-value pair"))
                 .and_then(|value_type_str| {
                     value_type_str
-                        .parse::<ValueType>()
+                        .parse::<ValueVariant>()
                         .map_err(|_| ValueTypeFromStr(value_type_str.to_string()))
                 })?;
 
