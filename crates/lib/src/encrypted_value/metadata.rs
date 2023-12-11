@@ -14,6 +14,7 @@ mod mock {
     impl<C: AeadCipher> MockTestUtil for EncryptedValueMetaData<C>
     where
         AuthorizationTag<C>: MockTestUtil,
+        InitialValue<C::InitialValueSize>: MockTestUtil,
     {
         fn mock() -> Self {
             Self {

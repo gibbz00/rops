@@ -1,15 +1,11 @@
-use generic_array::ArrayLength;
+use generic_array::{typenum::U32, ArrayLength};
 
 use crate::*;
 
-// IMPROVEMENT: replace with generic array
-const INITIAL_VALUE_SIZE: usize = 32;
-
 #[derive(Debug, PartialEq, Default)]
-pub struct InitialValue<T: ArrayLength<u8>>(RngKey<T>);
+pub struct InitialValue<T: ArrayLength<u8> = U32>(RngKey<T>);
 
 impl<T: ArrayLength<u8>> InitialValue<T> {
-    #[allow(clippy::new_without_default)]
     pub fn new() -> Self {
         Self(RngKey::new())
     }
@@ -31,25 +27,25 @@ impl<T: ArrayLength<u8>> AsMut<[u8]> for InitialValue<T> {
 
 #[cfg(feature = "test-utils")]
 mod mock {
-    use generic_array::{typenum::U32, GenericArray};
+    use generic_array::GenericArray;
 
     use super::*;
 
-    impl MockTestUtil for InitialValue<U32> {
+    impl MockTestUtil for InitialValue {
         fn mock() -> Self {
             Self(
                 GenericArray::from([
-                    147, 11, 85, 58, 78, 46, 255, 2, 199, 50, 139, 199, 96, 109, 167, 128, 187, 254, 184, 207, 20, 245, 66, 107, 35, 24,
-                    210, 235, 48, 138, 153, 86,
+                    89, 68, 40, 65, 58, 209, 95, 15, 237, 82, 12, 41, 153, 33, 186, 247, 21, 173, 119, 151, 85, 49, 247, 188, 169, 73, 114,
+                    213, 80, 124, 185, 195,
                 ])
                 .into(),
             )
         }
     }
 
-    impl MockDisplayTestUtil for InitialValue<U32> {
+    impl MockDisplayTestUtil for InitialValue {
         fn mock_display() -> String {
-            "kwtVOk4u/wLHMovHYG2ngLv+uM8U9UJrIxjS6zCKmVY=".to_string()
+            "WUQoQTrRXw/tUgwpmSG69xWtd5dVMfe8qUly1VB8ucM=".to_string()
         }
     }
 }
@@ -59,7 +55,9 @@ mod tests {
     use super::*;
 
     #[test]
-    fn initial_value_is_256_bits() {
-        assert_eq!(256, INITIAL_VALUE_SIZE * 8)
+    fn mock_values_match() {
+        let mut initial_value = InitialValue::default();
+        initial_value.as_mut().decode_base64(&InitialValue::mock_display()).unwrap();
+        assert_eq!(InitialValue::mock(), initial_value)
     }
 }

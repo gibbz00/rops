@@ -18,14 +18,12 @@ impl AeadCipher for AES256GCM {
     fn encrypt(
         initial_value: &InitialValue<Self::InitialValueSize>,
         data_key: &DataKey,
+        in_place_buffer: &mut [u8],
         associated_data: &[u8],
-        output_buffer: &mut [u8],
     ) -> Result<AuthorizationTag<Self>, Self::DecryptionError> {
-        // U32 must be added to allowed tag sizes upstream
-        let cipher =
-            AesGcm::<Aes256, Self::AuthorizationTagSize, Self::InitialValueSize>::new(Key::<Aes256Gcm>::from_slice(data_key.as_ref()));
+        let cipher = AesGcm::<Aes256, Self::InitialValueSize>::new(Key::<Aes256Gcm>::from_slice(data_key.as_ref()));
         cipher
-            .encrypt_in_place_detached(initial_value.as_ref().into(), associated_data, output_buffer)
+            .encrypt_in_place_detached(initial_value.as_ref().into(), associated_data, in_place_buffer)
             .map(Into::into)
     }
 }

@@ -30,31 +30,20 @@ impl RopsValue {
         &self,
         initial_value: InitialValue<C::InitialValueSize>,
         data_key: &DataKey,
+        key_path: &str,
     ) -> Result<EncryptedValue<C>, C::DecryptionError> {
-        let input_bytes = self.as_bytes();
-        let mut output_buffer = Vec::with_capacity(input_bytes.len());
+        let mut in_place_buffer = self.as_bytes().to_vec();
 
-        let authorization_tag = C::encrypt(&initial_value, data_key, input_bytes, &mut output_buffer)?;
+        let authorization_tag = C::encrypt(&initial_value, data_key, &mut in_place_buffer, key_path.as_bytes())?;
 
         Ok(EncryptedValue {
-            data: output_buffer.into(),
+            data: in_place_buffer.into(),
             metadata: EncryptedValueMetaData {
                 authorization_tag,
                 initial_value,
                 value_variant: self.into(),
             },
         })
-    }
-}
-
-#[cfg(feature = "test-utils")]
-mod mock {
-    use super::*;
-
-    impl MockTestUtil for RopsValue {
-        fn mock() -> Self {
-            Self::String("world!".to_string())
-        }
     }
 }
 
@@ -68,7 +57,9 @@ mod tests {
         fn encrypts_string_value() {
             assert_eq!(
                 EncryptedValue::mock(),
-                RopsValue::mock().encrypt(MockTestUtil::mock(), &MockTestUtil::mock()).unwrap()
+                RopsValue::String("world!".to_string())
+                    .encrypt(MockTestUtil::mock(), &MockTestUtil::mock(), "hello:")
+                    .unwrap()
             );
         }
     }

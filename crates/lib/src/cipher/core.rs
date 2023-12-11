@@ -16,7 +16,7 @@ pub trait AeadCipher: Sized {
     fn encrypt(
         initial_value: &InitialValue<Self::InitialValueSize>,
         data_key: &DataKey,
+        in_place_buffer: &mut [u8],
         associated_data: &[u8],
-        output_buffer: &mut [u8],
     ) -> Result<AuthorizationTag<Self>, Self::DecryptionError>;
 }
