@@ -6,9 +6,9 @@ use crate::*;
 
 #[derive(Debug, PartialEq, AsRef, From)]
 #[as_ref(forward)]
-pub struct EncryptedValueData(Vec<u8>);
+pub struct EncryptedData(Vec<u8>);
 
-impl FromStr for EncryptedValueData {
+impl FromStr for EncryptedData {
     type Err = Base64DecodeError;
 
     fn from_str(base64_str: &str) -> Result<Self, Self::Err> {
@@ -21,13 +21,13 @@ impl FromStr for EncryptedValueData {
 mod mock {
     use super::*;
 
-    impl MockTestUtil for EncryptedValueData {
+    impl MockTestUtil for EncryptedData {
         fn mock() -> Self {
             Self(vec![221, 45, 68, 245, 169, 191])
         }
     }
 
-    impl MockDisplayTestUtil for EncryptedValueData {
+    impl MockDisplayTestUtil for EncryptedData {
         fn mock_display() -> String {
             "3S1E9am/".to_string()
         }
@@ -40,6 +40,6 @@ mod tests {
 
     #[test]
     fn parses_base64_str() {
-        FromStrTestUtils::assert_parse::<EncryptedValueData>()
+        FromStrTestUtils::assert_parse::<EncryptedData>()
     }
 }

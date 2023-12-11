@@ -4,7 +4,7 @@ use crate::*;
 
 #[derive(Debug, PartialEq)]
 pub struct EncryptedValue<C: AeadCipher> {
-    pub data: EncryptedValueData,
+    pub data: EncryptedData,
     pub authorization_tag: AuthorizationTag<C>,
     pub initial_value: InitialValue<C::InitialValueSize>,
     pub value_variant: RopsValueVariant,
@@ -124,7 +124,7 @@ mod mock {
             format!(
                 "ENC[{},data:{},iv:{},tag:{},type:str]",
                 C::NAME,
-                EncryptedValueData::mock_display(),
+                EncryptedData::mock_display(),
                 InitialValue::mock_display(),
                 AuthorizationTag::mock_display()
             )
