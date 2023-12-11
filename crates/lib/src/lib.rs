@@ -21,9 +21,6 @@ pub use cipher::*;
 mod rops_file;
 pub use rops_file::*;
 
-mod encrypted_value;
-pub use encrypted_value::*;
-
 // Misc
 mod error_handling;
 pub use error_handling::{RopsError, RopsResult};

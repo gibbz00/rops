@@ -3,14 +3,14 @@ use std::fmt::{Display, Formatter};
 use crate::*;
 
 #[derive(Debug, PartialEq)]
-pub struct EncryptedValue<C: AeadCipher> {
+pub struct EncryptedRopsValue<C: AeadCipher> {
     pub data: EncryptedData,
     pub authorization_tag: AuthorizationTag<C>,
     pub initial_value: InitialValue<C::InitialValueSize>,
     pub value_variant: RopsValueVariant,
 }
 
-impl<C: AeadCipher> Display for EncryptedValue<C> {
+impl<C: AeadCipher> Display for EncryptedRopsValue<C> {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         write!(
             f,
@@ -24,14 +24,14 @@ impl<C: AeadCipher> Display for EncryptedValue<C> {
     }
 }
 
-pub use parser::EncryptedValueFromStrError;
+pub use parser::EncryptedRopsValueError;
 mod parser {
     use std::str::FromStr;
 
     use super::*;
 
     #[derive(Debug, thiserror::Error)]
-    pub enum EncryptedValueFromStrError {
+    pub enum EncryptedRopsValueError {
         #[error("missing {0}")]
         Missing(&'static str),
         #[error("invalid cipher: {0}, expected: {1}")]
@@ -42,11 +42,11 @@ mod parser {
         Base64Decode(#[from] Base64DecodeError),
     }
 
-    impl<C: AeadCipher> FromStr for EncryptedValue<C> {
-        type Err = EncryptedValueFromStrError;
+    impl<C: AeadCipher> FromStr for EncryptedRopsValue<C> {
+        type Err = EncryptedRopsValueError;
 
         fn from_str(input: &str) -> Result<Self, Self::Err> {
-            use EncryptedValueFromStrError::*;
+            use EncryptedRopsValueError::*;
 
             let mut encrypted_value_components = input
                 .strip_prefix("ENC")
@@ -101,7 +101,7 @@ mod parser {
 mod mock {
     use super::*;
 
-    impl<C: AeadCipher> MockTestUtil for EncryptedValue<C>
+    impl<C: AeadCipher> MockTestUtil for EncryptedRopsValue<C>
     where
         AuthorizationTag<C>: MockTestUtil,
         InitialValue<C::InitialValueSize>: MockTestUtil,
@@ -116,7 +116,7 @@ mod mock {
         }
     }
 
-    impl<C: AeadCipher> MockDisplayTestUtil for EncryptedValue<C>
+    impl<C: AeadCipher> MockDisplayTestUtil for EncryptedRopsValue<C>
     where
         AuthorizationTag<C>: MockDisplayTestUtil,
     {
@@ -139,13 +139,13 @@ mod tests {
         use crate::*;
 
         #[test]
-        fn displays_value_encryption_content() {
-            DisplayTestUtils::assert_display::<EncryptedValue<AES256GCM>>()
+        fn displays_encrypted_rops_value() {
+            DisplayTestUtils::assert_display::<EncryptedRopsValue<AES256GCM>>()
         }
 
         #[test]
-        fn parses_value_encryption_content() {
-            FromStrTestUtils::assert_parse::<EncryptedValue<AES256GCM>>()
+        fn parses_encrypted_rops_value() {
+            FromStrTestUtils::assert_parse::<EncryptedRopsValue<AES256GCM>>()
         }
     }
 }

@@ -31,12 +31,12 @@ impl RopsValue {
         initial_value: InitialValue<C::InitialValueSize>,
         data_key: &DataKey,
         key_path: &str,
-    ) -> Result<EncryptedValue<C>, C::DecryptionError> {
+    ) -> Result<EncryptedRopsValue<C>, C::DecryptionError> {
         let mut in_place_buffer = self.as_bytes().to_vec();
 
         let authorization_tag = C::encrypt(&initial_value, data_key, &mut in_place_buffer, key_path.as_bytes())?;
 
-        Ok(EncryptedValue {
+        Ok(EncryptedRopsValue {
             data: in_place_buffer.into(),
             authorization_tag,
             initial_value,
@@ -65,7 +65,7 @@ mod tests {
         #[test]
         fn encrypts_string_value() {
             assert_eq!(
-                EncryptedValue::mock(),
+                EncryptedRopsValue::mock(),
                 RopsValue::mock()
                     .encrypt(MockTestUtil::mock(), &MockTestUtil::mock(), "hello:")
                     .unwrap()
@@ -76,7 +76,7 @@ mod tests {
         fn encrypts_boolean_true_value() {
             assert_eq!(
                 "ENC[AES256_GCM,data:0wTZfQ==,iv:BpeJcPsLzvRLyGOAyA/mM3nGhg3zIFEcpyfB5jJbul8=,tag:+OGu7RruuYSwMWZa1yWrqA==,type:bool]"
-                    .parse::<EncryptedValue<AES256GCM>>()
+                    .parse::<EncryptedRopsValue<AES256GCM>>()
                     .unwrap(),
                 RopsValue::Boolean(true)
                     .encrypt(
@@ -92,7 +92,7 @@ mod tests {
         fn encrypts_boolean_false_value() {
             assert_eq!(
                 "ENC[AES256_GCM,data:4EgnUYs=,iv:g0r5WzzWt/Ln25wlEescMgrTg88JTJhlOdI0g/xVahk=,tag:zhv8xxJULpXIWdzm5+C0FA==,type:bool]"
-                    .parse::<EncryptedValue<AES256GCM>>()
+                    .parse::<EncryptedRopsValue<AES256GCM>>()
                     .unwrap(),
                 RopsValue::Boolean(false)
                     .encrypt(
