@@ -2,6 +2,7 @@ use std::borrow::Cow;
 
 use crate::*;
 
+#[derive(Debug, PartialEq)]
 pub enum RopsValue {
     String(String),
     Boolean(bool),

@@ -8,12 +8,13 @@ aes-gcm = "0.10"
 base64 = "0.21"
 derive_more = "0.99"
 generic-array = "0.14"
+indexmap = "2"
 indoc = "2"
 rand = "0.8"
 serde = { version = "1", features = ["derive"] }
 serde_with = "3"
 serde_yaml = "0.9"
-strum = { version = "0.25.0", features = ["derive"] }
+strum = { version = "0.25", features = ["derive"] }
 textwrap = "0.16"
 thiserror = "1"
 

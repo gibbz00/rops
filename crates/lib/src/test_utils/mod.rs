@@ -9,6 +9,5 @@ pub use from_str::FromStrTestUtils;
 
 #[cfg(feature = "yaml")]
 mod yaml;
-
 #[cfg(feature = "yaml")]
 pub use yaml::{MockYamlTestUtil, YamlTestUtils};
