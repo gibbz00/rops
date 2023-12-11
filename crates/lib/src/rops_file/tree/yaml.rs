@@ -58,29 +58,28 @@ impl TryFrom<YamlMap> for RopsTree {
 mod mock {
     use super::*;
 
-    impl MockYamlTestUtil for YamlMap {
-        fn mock_yaml() -> String {
-            "
-                # Example comment
+    impl MockFileFormatUtil<YamlFileFormat> for YamlMap {
+        fn mock_format_display() -> String {
+            indoc::indoc! {"
                 hello: world!
                 nested_map:
-                    null_key: null
-                    array:
-                    - string
-                    - nested_map_in_array:
-                        integer: 1234
-                    - float: 1234.56789
+                  null_key: null
+                  array:
+                  - string
+                  - nested_map_in_array:
+                      integer: 1234
+                  - float: 1234.56789
                 booleans:
                 - true
-                - false
-            "
+                - false"
+            }
             .to_string()
         }
     }
 
     impl MockTestUtil for YamlMap {
         fn mock() -> Self {
-            serde_yaml::from_str(&YamlMap::mock_yaml()).expect("mock yaml string not serializable")
+            serde_yaml::from_str(&YamlMap::mock_format_display()).expect("mock yaml string not serializable")
         }
     }
 }

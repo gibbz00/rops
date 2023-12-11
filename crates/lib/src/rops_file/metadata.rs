@@ -44,14 +44,15 @@ mod age {
         }
 
         #[cfg(feature = "yaml")]
-        impl MockYamlTestUtil for RopsFileAgeMetadata {
-            fn mock_yaml() -> String {
+        impl MockFileFormatUtil<YamlFileFormat> for RopsFileAgeMetadata {
+            fn mock_format_display() -> String {
                 indoc::formatdoc! {"
                         recipient: {}
                         enc: |
                         {}",
                     AgeIntegration::mock_public_key_str(),
                     textwrap::indent(AgeIntegration::mock_encrypted_data_key_str(),"  ")
+                    // textwrap::indent(AgeIntegration::mock_encrypted_data_key_str(),"  ")
                 }
             }
         }
@@ -64,13 +65,13 @@ mod age {
             use crate::*;
 
             #[test]
-            fn serializes_yaml_age_sops_file_metadata() {
-                YamlTestUtils::assert_serialization::<RopsFileAgeMetadata>()
+            fn serializes_rops_file_age_metadata() {
+                FileFormatTestUtils::assert_serialization::<YamlFileFormat, RopsFileAgeMetadata>()
             }
 
             #[test]
-            fn deserializes_yaml_age_sops_file_metadata() {
-                YamlTestUtils::assert_deserialization::<RopsFileAgeMetadata>()
+            fn deserializes_rops_file_age_metadata() {
+                FileFormatTestUtils::assert_deserialization::<YamlFileFormat, RopsFileAgeMetadata>()
             }
         }
     }
