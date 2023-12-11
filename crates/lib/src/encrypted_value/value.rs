@@ -5,7 +5,9 @@ use crate::*;
 #[derive(Debug, PartialEq)]
 pub struct EncryptedValue<C: AeadCipher> {
     pub data: EncryptedValueData,
-    pub metadata: EncryptedValueMetaData<C>,
+    pub authorization_tag: AuthorizationTag<C>,
+    pub initial_value: InitialValue<C::InitialValueSize>,
+    pub value_variant: RopsValueVariant,
 }
 
 impl<C: AeadCipher> Display for EncryptedValue<C> {
@@ -15,9 +17,9 @@ impl<C: AeadCipher> Display for EncryptedValue<C> {
             "ENC[{},data:{},iv:{},tag:{},type:{}]",
             C::NAME,
             self.data.encode_base64(),
-            self.metadata.initial_value.encode_base64(),
-            self.metadata.authorization_tag.encode_base64(),
-            self.metadata.value_variant.as_ref(),
+            self.initial_value.encode_base64(),
+            self.authorization_tag.encode_base64(),
+            self.value_variant.as_ref(),
         )
     }
 }
@@ -87,11 +89,9 @@ mod parser {
 
             Ok(Self {
                 data,
-                metadata: EncryptedValueMetaData {
-                    authorization_tag,
-                    initial_value,
-                    value_variant,
-                },
+                authorization_tag,
+                initial_value,
+                value_variant,
             })
         }
     }
@@ -103,12 +103,15 @@ mod mock {
 
     impl<C: AeadCipher> MockTestUtil for EncryptedValue<C>
     where
-        EncryptedValueMetaData<C>: MockTestUtil,
+        AuthorizationTag<C>: MockTestUtil,
+        InitialValue<C::InitialValueSize>: MockTestUtil,
     {
         fn mock() -> Self {
             Self {
                 data: MockTestUtil::mock(),
-                metadata: MockTestUtil::mock(),
+                authorization_tag: MockTestUtil::mock(),
+                initial_value: MockTestUtil::mock(),
+                value_variant: RopsValueVariant::String,
             }
         }
     }

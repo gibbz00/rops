@@ -38,11 +38,9 @@ impl RopsValue {
 
         Ok(EncryptedValue {
             data: in_place_buffer.into(),
-            metadata: EncryptedValueMetaData {
-                authorization_tag,
-                initial_value,
-                value_variant: self.into(),
-            },
+            authorization_tag,
+            initial_value,
+            value_variant: self.into(),
         })
     }
 }
