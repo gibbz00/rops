@@ -3,7 +3,7 @@ use generic_array::{ArrayLength, GenericArray};
 use rand::RngCore;
 
 // IMPROVEMENT: replace with generic array
-#[derive(Debug, PartialEq, AsRef, AsMut, Default)]
+#[derive(Debug, PartialEq, AsRef, AsMut)]
 #[as_ref(forward)]
 pub struct RngKey<T: ArrayLength<u8>>(GenericArray<u8, T>);
 
@@ -20,6 +20,10 @@ impl<T: ArrayLength<u8>> RngKey<T> {
         let mut inner = GenericArray::default();
         rand.fill_bytes(&mut inner);
         Self(inner)
+    }
+
+    pub fn empty() -> Self {
+        Self(GenericArray::default())
     }
 }
 

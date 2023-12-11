@@ -61,7 +61,7 @@ impl Integration for AgeIntegration {
             Decryptor::Passphrase(_) => panic!("encryption should have used recipients, not passphrases"),
         };
 
-        let mut decrypted_data_key_buffer = DataKey::default();
+        let mut decrypted_data_key_buffer = DataKey::empty();
         let mut reader = decryptor.decrypt(std::iter::once(private_key as &dyn age::Identity)).unwrap();
         reader.read_exact(decrypted_data_key_buffer.as_mut()).unwrap();
 

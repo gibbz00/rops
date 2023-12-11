@@ -6,7 +6,7 @@ use crate::*;
 type DataKeySize = U32;
 
 // FIXME: zeroize upon drop?
-#[derive(Debug, PartialEq, AsRef, AsMut, Default)]
+#[derive(Debug, PartialEq, AsRef, AsMut)]
 #[as_ref(forward)]
 #[as_mut(forward)]
 pub struct DataKey(RngKey<DataKeySize>);
@@ -14,6 +14,10 @@ pub struct DataKey(RngKey<DataKeySize>);
 impl DataKey {
     pub const fn byte_size() -> usize {
         DataKeySize::USIZE
+    }
+
+    pub fn empty() -> Self {
+        Self(RngKey::empty())
     }
 }
 

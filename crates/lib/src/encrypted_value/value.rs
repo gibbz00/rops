@@ -36,8 +36,8 @@ mod parser {
         InvalidCipher(String, &'static str),
         #[error("unable to parse value type: {0}")]
         ValueVariantFromStr(String),
-        #[error("unable to base64 decode {0}, reason: {1}")]
-        Base64Decode(String, base64::DecodeError),
+        #[error(transparent)]
+        Base64Decode(#[from] Base64DecodeError),
     }
 
     impl<C: AeadCipher> FromStr for EncryptedValue<C> {
@@ -65,48 +65,25 @@ mod parser {
                 .next()
                 .and_then(|next_component| next_component.strip_prefix("data:"))
                 .ok_or(Missing("'data' key-value pair"))
-                .and_then(|encrypted_data_base64_str| {
-                    let mut buffer = Vec::with_capacity(::base64::decoded_len_estimate(encrypted_data_base64_str.len()));
-                    buffer
-                        .decode_base64(encrypted_data_base64_str)
-                        .map(|_| buffer.into())
-                        .map_err(|reason| Base64Decode(encrypted_data_base64_str.to_string(), reason))
-                })?;
+                .and_then(|base64_str| base64_str.parse().map_err(Into::into))?;
 
             let initial_value = encrypted_value_components
                 .next()
                 .and_then(|next_component| next_component.strip_prefix("iv:"))
                 .ok_or(Missing("'iv' (initial value) key-value pair"))
-                .and_then(|initial_value_base64_str| {
-                    let mut initial_value = InitialValue::default();
-                    initial_value
-                        .as_mut()
-                        .decode_base64(initial_value_base64_str)
-                        .map_err(|err| Base64Decode(initial_value_base64_str.to_string(), err))
-                        .map(|_| initial_value)
-                })?;
+                .and_then(|base64_str| base64_str.parse().map_err(Into::into))?;
 
             let authorization_tag = encrypted_value_components
                 .next()
                 .and_then(|next_component| next_component.strip_prefix("tag:"))
                 .ok_or(Missing("'tag' (authorization tag) key-value pair"))
-                .and_then(|authorization_tag_base64_str| {
-                    let mut buffer = AuthorizationTag::empty();
-                    AsMut::<[u8]>::as_mut(&mut buffer)
-                        .decode_base64(authorization_tag_base64_str)
-                        .map(|_| buffer)
-                        .map_err(|reason| Base64Decode(authorization_tag_base64_str.to_string(), reason))
-                })?;
+                .and_then(|base64_str| base64_str.parse().map_err(Into::into))?;
 
             let value_variant = encrypted_value_components
                 .next()
                 .and_then(|value_type_component| value_type_component.strip_prefix("type:"))
                 .ok_or(Missing("'type' (value type) key-value pair"))
-                .and_then(|variant_str| {
-                    variant_str
-                        .parse::<RopsValueVariant>()
-                        .map_err(|_| ValueVariantFromStr(variant_str.to_string()))
-                })?;
+                .and_then(|variant_str| variant_str.parse().map_err(|_| ValueVariantFromStr(variant_str.to_string())))?;
 
             Ok(Self {
                 data,
