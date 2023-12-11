@@ -6,7 +6,10 @@ pub enum RopsValueVariant {
     String,
     #[strum(serialize = "bool")]
     Boolean,
-    // .. etc
+    #[strum(serialize = "int")]
+    Integer,
+    #[strum(serialize = "float")]
+    Float,
 }
 
 #[cfg(test)]

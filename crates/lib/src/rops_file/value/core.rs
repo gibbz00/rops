@@ -1,8 +1,12 @@
+use std::borrow::Cow;
+
 use crate::*;
 
 pub enum RopsValue {
     String(String),
     Boolean(bool),
+    Integer(i32),
+    Float(f64),
 }
 
 impl From<&RopsValue> for RopsValueVariant {
@@ -10,19 +14,22 @@ impl From<&RopsValue> for RopsValueVariant {
         match value {
             RopsValue::String(_) => RopsValueVariant::String,
             RopsValue::Boolean(_) => RopsValueVariant::Boolean,
+            RopsValue::Integer(_) => RopsValueVariant::Integer,
+            RopsValue::Float(_) => RopsValueVariant::Float,
         }
     }
 }
 
 impl RopsValue {
-    pub fn as_bytes(&self) -> &[u8] {
+    pub fn as_bytes(&self) -> Cow<'_, [u8]> {
         match self {
-            RopsValue::String(string) => string.as_bytes(),
-            RopsValue::Boolean(boolean) => match boolean {
+            RopsValue::String(string) => Cow::Borrowed(string.as_bytes()),
+            RopsValue::Boolean(boolean) => Cow::Borrowed(match boolean {
                 true => b"True",
                 false => b"False",
-            },
-            // ...etc
+            }),
+            RopsValue::Integer(integer) => Cow::Owned(integer.to_string().into_bytes()),
+            RopsValue::Float(float) => Cow::Owned(float.to_string().into_bytes()),
         }
     }
 
@@ -99,6 +106,37 @@ mod tests {
                         "g0r5WzzWt/Ln25wlEescMgrTg88JTJhlOdI0g/xVahk=".parse().unwrap(),
                         &MockTestUtil::mock(),
                         "example_booleans:"
+                    )
+                    .unwrap()
+            );
+        }
+
+        #[test]
+        fn encrypts_integer_value() {
+            assert_eq!(
+                "ENC[AES256_GCM,data:lDJCrw==,iv:P8EXxNCPeYp5VBL0mCAxjQjGtvywbBFoQKWye2IK1Gc=,tag:56HP04AzkYfj+pmYIbijSA==,type:int]"
+                    .parse::<EncryptedRopsValue<AES256GCM>>()
+                    .unwrap(),
+                RopsValue::Integer(1234)
+                    .encrypt(
+                        "P8EXxNCPeYp5VBL0mCAxjQjGtvywbBFoQKWye2IK1Gc=".parse().unwrap(),
+                        &MockTestUtil::mock(),
+                        "example_integer:"
+                    )
+                    .unwrap()
+            );
+        }
+        #[test]
+        fn encrypts_float_value() {
+            assert_eq!(
+                "ENC[AES256_GCM,data:fglPlT+e9ACWrA==,iv:pefOFnMThS6qICGrLuai+rSBtrmliGWdqJrXzcl2qAo=,tag:tHVQiwreFZurqiroPCIXHw==,type:float]"
+                    .parse::<EncryptedRopsValue<AES256GCM>>()
+                    .unwrap(),
+                RopsValue::Float(1234.56789)
+                    .encrypt(
+                        "pefOFnMThS6qICGrLuai+rSBtrmliGWdqJrXzcl2qAo=".parse().unwrap(),
+                        &MockTestUtil::mock(),
+                        "example_float:"
                     )
                     .unwrap()
             );
