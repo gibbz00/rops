@@ -35,7 +35,7 @@ mod parser {
         #[error("invalid cipher: {0}, expected: {1}")]
         InvalidCipher(String, &'static str),
         #[error("unable to parse value type: {0}")]
-        ValueTypeFromStr(String),
+        ValueVariantFromStr(String),
         #[error("unable to base64 decode {0}, reason: {1}")]
         Base64Decode(String, base64::DecodeError),
     }
@@ -105,7 +105,7 @@ mod parser {
                 .and_then(|variant_str| {
                     variant_str
                         .parse::<RopsValueVariant>()
-                        .map_err(|_| ValueTypeFromStr(variant_str.to_string()))
+                        .map_err(|_| ValueVariantFromStr(variant_str.to_string()))
                 })?;
 
             Ok(Self {

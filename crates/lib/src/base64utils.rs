@@ -24,7 +24,7 @@ mod decoding {
 
     impl Base64DecodingUtils for Vec<u8> {
         fn decode_base64(&mut self, base64_str: &str) -> Result<(), DecodeError> {
-            general_purpose::STANDARD_NO_PAD.decode_vec(base64_str, self)
+            general_purpose::STANDARD_NO_PAD.decode_vec(base64_str.trim_end_matches('='), self)
         }
     }
 

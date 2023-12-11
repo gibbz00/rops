@@ -47,6 +47,17 @@ impl RopsValue {
     }
 }
 
+#[cfg(feature = "test-utils")]
+mod mock {
+    use super::*;
+
+    impl MockTestUtil for RopsValue {
+        fn mock() -> Self {
+            Self::String("world!".to_string())
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     #[cfg(feature = "aes-gcm")]
@@ -57,8 +68,44 @@ mod tests {
         fn encrypts_string_value() {
             assert_eq!(
                 EncryptedValue::mock(),
-                RopsValue::String("world!".to_string())
+                RopsValue::mock()
                     .encrypt(MockTestUtil::mock(), &MockTestUtil::mock(), "hello:")
+                    .unwrap()
+            );
+        }
+
+        #[test]
+        fn encrypts_boolean_true_value() {
+            let mut initial_value = InitialValue::default();
+            initial_value
+                .as_mut()
+                .decode_base64("BpeJcPsLzvRLyGOAyA/mM3nGhg3zIFEcpyfB5jJbul8=")
+                .unwrap();
+
+            assert_eq!(
+                "ENC[AES256_GCM,data:0wTZfQ==,iv:BpeJcPsLzvRLyGOAyA/mM3nGhg3zIFEcpyfB5jJbul8=,tag:+OGu7RruuYSwMWZa1yWrqA==,type:bool]"
+                    .parse::<EncryptedValue<AES256GCM>>()
+                    .unwrap(),
+                RopsValue::Boolean(true)
+                    .encrypt(initial_value, &MockTestUtil::mock(), "example_booleans:")
+                    .unwrap()
+            );
+        }
+
+        #[test]
+        fn encrypts_boolean_false_value() {
+            let mut initial_value = InitialValue::default();
+            initial_value
+                .as_mut()
+                .decode_base64("g0r5WzzWt/Ln25wlEescMgrTg88JTJhlOdI0g/xVahk=")
+                .unwrap();
+
+            assert_eq!(
+                "ENC[AES256_GCM,data:4EgnUYs=,iv:g0r5WzzWt/Ln25wlEescMgrTg88JTJhlOdI0g/xVahk=,tag:zhv8xxJULpXIWdzm5+C0FA==,type:bool]"
+                    .parse::<EncryptedValue<AES256GCM>>()
+                    .unwrap(),
+                RopsValue::Boolean(false)
+                    .encrypt(initial_value, &MockTestUtil::mock(), "example_booleans:")
                     .unwrap()
             );
         }

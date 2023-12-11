@@ -4,6 +4,7 @@ use strum::{AsRefStr, EnumString};
 pub enum RopsValueVariant {
     #[strum(serialize = "str")]
     String,
+    #[strum(serialize = "bool")]
     Boolean,
     // .. etc
 }
