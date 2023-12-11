@@ -5,7 +5,7 @@ use crate::*;
 pub enum RopsValue {
     String(String),
     Boolean(bool),
-    Integer(i32),
+    Integer(i64),
     Float(f64),
 }
 
