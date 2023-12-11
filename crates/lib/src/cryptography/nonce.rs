@@ -5,9 +5,9 @@ use generic_array::{typenum::U32, ArrayLength};
 use crate::*;
 
 #[derive(Debug, PartialEq)]
-pub struct InitialValue<T: ArrayLength<u8> = U32>(RngKey<T>);
+pub struct Nonce<T: ArrayLength<u8> = U32>(RngKey<T>);
 
-impl<T: ArrayLength<u8>> InitialValue<T> {
+impl<T: ArrayLength<u8>> Nonce<T> {
     #[allow(clippy::new_without_default)]
     pub fn new() -> Self {
         Self(RngKey::new())
@@ -15,25 +15,25 @@ impl<T: ArrayLength<u8>> InitialValue<T> {
 }
 
 // TEMP(WORKAROUND): derive_more::AsRef doesn't seem to work
-impl<T: ArrayLength<u8>> AsRef<[u8]> for InitialValue<T> {
+impl<T: ArrayLength<u8>> AsRef<[u8]> for Nonce<T> {
     fn as_ref(&self) -> &[u8] {
         self.0.as_ref()
     }
 }
 
 // TEMP(WORKAROUND): derive_more::AsMut doesn't seem to work
-impl<T: ArrayLength<u8>> AsMut<[u8]> for InitialValue<T> {
+impl<T: ArrayLength<u8>> AsMut<[u8]> for Nonce<T> {
     fn as_mut(&mut self) -> &mut [u8] {
         self.0.as_mut()
     }
 }
 
-impl<T: ArrayLength<u8>> FromStr for InitialValue<T> {
+impl<T: ArrayLength<u8>> FromStr for Nonce<T> {
     type Err = Base64DecodeError;
 
     fn from_str(base64_str: &str) -> Result<Self, Self::Err> {
-        let mut initial_value = Self(RngKey::empty());
-        initial_value.as_mut().decode_base64(base64_str).map(|_| initial_value)
+        let mut nonce = Self(RngKey::empty());
+        nonce.as_mut().decode_base64(base64_str).map(|_| nonce)
     }
 }
 
@@ -43,7 +43,7 @@ mod mock {
 
     use super::*;
 
-    impl MockTestUtil for InitialValue {
+    impl MockTestUtil for Nonce {
         fn mock() -> Self {
             Self(
                 GenericArray::from([
@@ -55,7 +55,7 @@ mod mock {
         }
     }
 
-    impl MockDisplayTestUtil for InitialValue {
+    impl MockDisplayTestUtil for Nonce {
         fn mock_display() -> String {
             "WUQoQTrRXw/tUgwpmSG69xWtd5dVMfe8qUly1VB8ucM=".to_string()
         }
@@ -68,6 +68,6 @@ mod tests {
 
     #[test]
     fn parses_base64_str() {
-        FromStrTestUtils::assert_parse::<InitialValue>();
+        FromStrTestUtils::assert_parse::<Nonce>();
     }
 }

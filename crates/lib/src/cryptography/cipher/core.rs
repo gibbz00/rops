@@ -7,14 +7,14 @@ use crate::*;
 pub trait AeadCipher: Sized {
     const NAME: &'static str;
 
-    type InitialValueSize: ArrayLength<u8> + Debug + PartialEq;
+    type NonceSize: ArrayLength<u8> + Debug + PartialEq;
 
     type AuthorizationTagSize: ArrayLength<u8> + Debug + PartialEq;
 
     type DecryptionError;
 
     fn encrypt(
-        initial_value: &InitialValue<Self::InitialValueSize>,
+        nonce: &Nonce<Self::NonceSize>,
         data_key: &DataKey,
         in_place_buffer: &mut [u8],
         associated_data: &[u8],

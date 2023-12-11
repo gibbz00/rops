@@ -7,8 +7,8 @@ pub use rng_key::RngKey;
 mod data_key;
 pub use data_key::DataKey;
 
-mod initial_value;
-pub use initial_value::InitialValue;
+mod nonce;
+pub use nonce::Nonce;
 
 mod encrypted_data;
 pub use encrypted_data::EncryptedData;

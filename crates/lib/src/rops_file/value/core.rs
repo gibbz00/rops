@@ -28,18 +28,18 @@ impl RopsValue {
 
     pub fn encrypt<C: AeadCipher>(
         &self,
-        initial_value: InitialValue<C::InitialValueSize>,
+        nonce: Nonce<C::NonceSize>,
         data_key: &DataKey,
         key_path: &str,
     ) -> Result<EncryptedRopsValue<C>, C::DecryptionError> {
         let mut in_place_buffer = self.as_bytes().to_vec();
 
-        let authorization_tag = C::encrypt(&initial_value, data_key, &mut in_place_buffer, key_path.as_bytes())?;
+        let authorization_tag = C::encrypt(&nonce, data_key, &mut in_place_buffer, key_path.as_bytes())?;
 
         Ok(EncryptedRopsValue {
             data: in_place_buffer.into(),
             authorization_tag,
-            initial_value,
+            nonce,
             value_variant: self.into(),
         })
     }

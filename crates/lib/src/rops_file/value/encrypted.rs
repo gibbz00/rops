@@ -6,7 +6,7 @@ use crate::*;
 pub struct EncryptedRopsValue<C: AeadCipher> {
     pub data: EncryptedData,
     pub authorization_tag: AuthorizationTag<C>,
-    pub initial_value: InitialValue<C::InitialValueSize>,
+    pub nonce: Nonce<C::NonceSize>,
     pub value_variant: RopsValueVariant,
 }
 
@@ -17,7 +17,7 @@ impl<C: AeadCipher> Display for EncryptedRopsValue<C> {
             "ENC[{},data:{},iv:{},tag:{},type:{}]",
             C::NAME,
             self.data.encode_base64(),
-            self.initial_value.encode_base64(),
+            self.nonce.encode_base64(),
             self.authorization_tag.encode_base64(),
             self.value_variant.as_ref(),
         )
@@ -69,10 +69,10 @@ mod parser {
                 .ok_or(Missing("'data' key-value pair"))
                 .and_then(|base64_str| base64_str.parse().map_err(Into::into))?;
 
-            let initial_value = encrypted_value_components
+            let nonce = encrypted_value_components
                 .next()
                 .and_then(|next_component| next_component.strip_prefix("iv:"))
-                .ok_or(Missing("'iv' (initial value) key-value pair"))
+                .ok_or(Missing("'iv' (initialization vector) key-value pair"))
                 .and_then(|base64_str| base64_str.parse().map_err(Into::into))?;
 
             let authorization_tag = encrypted_value_components
@@ -90,7 +90,7 @@ mod parser {
             Ok(Self {
                 data,
                 authorization_tag,
-                initial_value,
+                nonce,
                 value_variant,
             })
         }
@@ -104,13 +104,13 @@ mod mock {
     impl<C: AeadCipher> MockTestUtil for EncryptedRopsValue<C>
     where
         AuthorizationTag<C>: MockTestUtil,
-        InitialValue<C::InitialValueSize>: MockTestUtil,
+        Nonce<C::NonceSize>: MockTestUtil,
     {
         fn mock() -> Self {
             Self {
                 data: MockTestUtil::mock(),
                 authorization_tag: MockTestUtil::mock(),
-                initial_value: MockTestUtil::mock(),
+                nonce: MockTestUtil::mock(),
                 value_variant: RopsValueVariant::String,
             }
         }
@@ -125,7 +125,7 @@ mod mock {
                 "ENC[{},data:{},iv:{},tag:{},type:str]",
                 C::NAME,
                 EncryptedData::mock_display(),
-                InitialValue::mock_display(),
+                Nonce::mock_display(),
                 AuthorizationTag::mock_display()
             )
         }
