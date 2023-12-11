@@ -4,6 +4,7 @@ use rand::RngCore;
 
 // IMPROVEMENT: replace with generic array
 #[derive(Debug, PartialEq, AsRef, AsMut)]
+#[cfg_attr(test, derive(Clone))]
 #[as_ref(forward)]
 pub struct RngKey<T: ArrayLength<u8>>(GenericArray<u8, T>);
 

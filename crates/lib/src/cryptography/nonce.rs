@@ -5,6 +5,7 @@ use generic_array::{typenum::U32, ArrayLength};
 use crate::*;
 
 #[derive(Debug, PartialEq)]
+#[cfg_attr(test, derive(Clone))]
 pub struct Nonce<T: ArrayLength<u8> = U32>(RngKey<T>);
 
 impl<T: ArrayLength<u8>> Nonce<T> {
