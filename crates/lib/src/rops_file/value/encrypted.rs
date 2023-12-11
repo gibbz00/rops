@@ -139,6 +139,15 @@ mod tests {
         use crate::*;
 
         #[test]
+        fn disallows_cipher_name_mismatch() {
+            let parse_error = EncryptedRopsValue::<AES256GCM>::mock_display()
+                .replace(AES256GCM::NAME, "gibberish")
+                .parse::<EncryptedRopsValue<AES256GCM>>()
+                .unwrap_err();
+            assert!(matches!(parse_error, EncryptedRopsValueError::InvalidCipher(_, _)))
+        }
+
+        #[test]
         fn displays_encrypted_rops_value() {
             DisplayTestUtils::assert_display::<EncryptedRopsValue<AES256GCM>>()
         }
