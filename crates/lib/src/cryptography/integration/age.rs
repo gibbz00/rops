@@ -18,19 +18,19 @@ impl Integration for AgeIntegration {
     type PublicKey = age::x25519::Recipient;
     type PrivateKey = age::x25519::Identity;
 
-    fn parse_public_key(public_key_str: &str) -> RopsResult<Self::PublicKey> {
+    fn parse_public_key(public_key_str: &str) -> IntegrationResult<Self::PublicKey> {
         public_key_str
             .parse()
-            .map_err(|err: &str| RopsError::PublicKeyParsing(err.to_string()))
+            .map_err(|err: &str| IntegrationError::PublicKeyParsing(err.to_string()))
     }
 
-    fn parse_private_key(private_key_str: &str) -> RopsResult<Self::PrivateKey> {
+    fn parse_private_key(private_key_str: &str) -> IntegrationResult<Self::PrivateKey> {
         private_key_str
             .parse()
-            .map_err(|err: &str| RopsError::PrivateKeyParsing(err.to_string()))
+            .map_err(|err: &str| IntegrationError::PrivateKeyParsing(err.to_string()))
     }
 
-    fn encrypt_data_key(public_key: &Self::PublicKey, data_key: &DataKey) -> RopsResult<String> {
+    fn encrypt_data_key(public_key: &Self::PublicKey, data_key: &DataKey) -> IntegrationResult<String> {
         let unarmored_buffer = {
             // IMPROVEMENT: avoid vec box allocation
             let encryptor =
@@ -51,7 +51,7 @@ impl Integration for AgeIntegration {
         Ok(String::from_utf8(armored_buffer)?)
     }
 
-    fn decrypt_data_key(private_key: &Self::PrivateKey, encrypted_data_key: &str) -> RopsResult<DataKey> {
+    fn decrypt_data_key(private_key: &Self::PrivateKey, encrypted_data_key: &str) -> IntegrationResult<DataKey> {
         let mut unarmored_encrypted_buffer = Vec::with_capacity(Self::APPROX_MAX_ARMORED_DATA_KEY_LENGTH);
 
         ArmoredReader::new(encrypted_data_key.as_bytes()).read_to_end(&mut unarmored_encrypted_buffer)?;

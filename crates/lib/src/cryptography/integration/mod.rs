@@ -1,6 +1,9 @@
 mod core;
 pub use core::Integration;
 
+mod error;
+pub use error::{IntegrationError, IntegrationResult};
+
 #[cfg(feature = "age")]
 mod age;
 #[cfg(feature = "age")]
