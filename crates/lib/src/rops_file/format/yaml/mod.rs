@@ -17,9 +17,7 @@ impl FileFormat for YamlFileFormat {
     }
 }
 
-mod encrypted_map_to_tree {}
-
-mod decrypted_map_to_tree;
+mod map_to_tree;
 
 #[cfg(feature = "test-utils")]
 mod mock;

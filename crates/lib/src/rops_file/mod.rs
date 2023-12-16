@@ -1,6 +1,8 @@
 mod core;
 pub use core::RopsFile;
 
+mod decrypt;
+
 mod map;
 pub use map::RopsFileMap;
 
@@ -11,7 +13,7 @@ mod value;
 pub use value::*;
 
 mod tree;
-pub use tree::{DecryptedMapToTreeError, EncryptedMapToTreeError, RopsTree};
+pub use tree::{MapToTreeError, RopsTree};
 
 mod metadata;
 pub use metadata::*;
