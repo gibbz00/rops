@@ -1,5 +1,3 @@
-use std::marker::PhantomData;
-
 use serde::{Deserialize, Serialize};
 
 use crate::*;
@@ -11,8 +9,6 @@ pub struct RopsFile<S: RopsFileState, F: FileFormat> {
     pub map: RopsFileMap<S, F>,
     #[serde(rename = "sops")]
     pub metadata: RopsFileAgeMetadata,
-    #[serde(skip)]
-    state_marker: PhantomData<S>,
 }
 
 #[cfg(feature = "test-utils")]
@@ -27,7 +23,6 @@ mod mock {
             Self {
                 map: MockTestUtil::mock(),
                 metadata: MockTestUtil::mock(),
-                state_marker: PhantomData,
             }
         }
     }
