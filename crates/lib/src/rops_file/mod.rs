@@ -1,3 +1,6 @@
+mod key_path;
+pub use key_path::KeyPath;
+
 mod value;
 pub use value::*;
 

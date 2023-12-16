@@ -15,7 +15,7 @@ impl RopsValue {
         &self,
         nonce: Nonce<C::NonceSize>,
         data_key: &DataKey,
-        key_path: &str,
+        key_path: &KeyPath,
     ) -> Result<EncryptedRopsValue<C>, C::EncryptError> {
         let mut in_place_buffer = self.as_bytes().to_vec();
 
@@ -60,11 +60,12 @@ mod tests {
         use crate::*;
 
         fn assert_encrypts_value(expected_encrypted_value_str: &str, key_path: &str, rops_value: RopsValue) {
+            let key_path = KeyPath::from(key_path.to_string());
             let expected_encrypted_value = expected_encrypted_value_str.parse::<EncryptedRopsValue<AES256GCM>>().unwrap();
             assert_eq!(
                 expected_encrypted_value,
                 rops_value
-                    .encrypt(expected_encrypted_value.nonce.clone(), &MockTestUtil::mock(), key_path)
+                    .encrypt(expected_encrypted_value.nonce.clone(), &MockTestUtil::mock(), &key_path)
                     .unwrap()
             )
         }
