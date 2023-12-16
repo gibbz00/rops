@@ -1,22 +1,24 @@
+use std::marker::PhantomData;
+
 use serde::{Deserialize, Serialize};
 
 use crate::*;
 
-// TODO: either use typestate or newtype for plaintext and encrypted file differentiation.
-
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
-pub struct RopsFile<F: FileFormat> {
+pub struct RopsFile<S: RopsFileState, F: FileFormat> {
     #[serde(flatten)]
     pub map: F::Map,
     #[serde(rename = "sops")]
     pub metadata: RopsFileAgeMetadata,
+    #[serde(skip)]
+    state_marker: PhantomData<S>,
 }
 
 #[cfg(feature = "test-utils")]
 mod mock {
     use super::*;
 
-    impl<F: FileFormat> MockTestUtil for RopsFile<F>
+    impl<F: FileFormat> MockTestUtil for RopsFile<Decrypted, F>
     where
         F::Map: MockTestUtil,
     {
@@ -24,6 +26,7 @@ mod mock {
             Self {
                 map: F::Map::mock(),
                 metadata: MockTestUtil::mock(),
+                state_marker: PhantomData,
             }
         }
     }
@@ -32,7 +35,7 @@ mod mock {
     mod yaml {
         use super::*;
 
-        impl MockFileFormatUtil<YamlFileFormat> for RopsFile<YamlFileFormat> {
+        impl MockFileFormatUtil<YamlFileFormat> for RopsFile<Decrypted, YamlFileFormat> {
             fn mock_format_display() -> String {
                 indoc::formatdoc! {"
                     {}
@@ -53,17 +56,13 @@ mod tests {
         use crate::*;
 
         #[test]
-        fn serializes_rops_file() {
-            // TEMP:
-            println!("{}", RopsFile::<YamlFileFormat>::mock_format_display());
-            println!("{}", serde_yaml::to_string(&RopsFile::<YamlFileFormat>::mock()).unwrap());
-
-            FileFormatTestUtils::assert_serialization::<YamlFileFormat, RopsFile<YamlFileFormat>>()
+        fn serializes_decrypted_rops_file() {
+            FileFormatTestUtils::assert_serialization::<YamlFileFormat, RopsFile<Decrypted, YamlFileFormat>>()
         }
 
         #[test]
-        fn deserializes_rops_file() {
-            FileFormatTestUtils::assert_deserialization::<YamlFileFormat, RopsFile<YamlFileFormat>>()
+        fn deserializes_decrypted_rops_file() {
+            FileFormatTestUtils::assert_deserialization::<YamlFileFormat, RopsFile<Decrypted, YamlFileFormat>>()
         }
     }
 }

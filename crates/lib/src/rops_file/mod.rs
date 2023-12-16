@@ -10,5 +10,8 @@ pub use metadata::*;
 mod core;
 pub use core::RopsFile;
 
+mod state;
+pub use state::{Decrypted, Encrypted, RopsFileState};
+
 mod format;
 pub use format::*;
