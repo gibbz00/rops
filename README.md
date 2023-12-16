@@ -6,7 +6,7 @@
 ## Goals
 
 * Full `sops` encrypted file compatibility. Decrypt any `sops` file using `rops` and vice versa.
-* Also available as a high quality rust library.
+* Available as a high quality rust library.
 
 ## Non-Goals
 
@@ -24,7 +24,7 @@
   - [ ] ENV
   - [ ] BINARY
 - Choice:
-  - [ ] Flag: `--file-format`.
+  - [ ] By flag: `--file-format`.
   - [ ] Infer by extension.
 - [Partial encryption](https://github.com/getsops/sops#48encrypting-only-parts-of-a-file)
   - [ ] Either escape encryption:
@@ -56,17 +56,6 @@
 - [ ] `azure_kv`
 - [ ] `hashicorp_kv`
 
-#### Default key file locations
-
-Integration  | Windows                       | MacOS                                                 | Linux                              | Format                     |
----          | ---                           | ---                                                   | ---                                | ---                        |
-age          | `%AppData%\rops\age\keys.txt` | `$HOME/Library/Application Support/rops/age/keys.txt` | $XDG_CONFIG_HOME/rops/age/keys.txt | Per newline, `# Comments`. |
-pgp          | `X`                           | `X`                                                   | `X`                                | `X`                        |
-aws_kms      | `X`                           | `X`                                                   | `X`                                | `X`                        |
-gcp_kms      | `X`                           | `X`                                                   | `X`                                | `X`                        |
-azure_kv     | `X`                           | `X`                                                   | `X`                                | `X`                        |
-hashicorp_kv | `X`                           | `X`                                                   | `X`                                | `X`                        |
-
 #### Integration sub-features
 
 ##### AWS KMS
@@ -85,7 +74,7 @@ hashicorp_kv | `X`                           | `X`                              
 ### Key management
 
 - Retrieval
-  - [ ] By an enviroment variable.
+  - [ ] By an environment variable.
     - [ ] Multiple keys per variable.
   - [ ] By key file location.
     - [ ] Specify with a `--key-file INTEGRATION PATH` flag.
@@ -106,6 +95,17 @@ hashicorp_kv | `X`                           | `X`                              
     - [ ] `--remove INTEGRATION KEY FILE`
     - [ ] `--show-master-keys/-s FILE`
 - [ ] [Grouping](https://github.com/getsops/sops#214key-groups)
+
+#### Default key file locations
+
+Integration  | Windows                       | MacOS                                                 | Linux                              | Format                     |
+---          | ---                           | ---                                                   | ---                                | ---                        |
+age          | `%AppData%\rops\age\keys.txt` | `$HOME/Library/Application Support/rops/age/keys.txt` | $XDG_CONFIG_HOME/rops/age/keys.txt | Per newline, `# Comments`. |
+pgp          | `X`                           | `X`                                                   | `X`                                | `X`                        |
+aws_kms      | `X`                           | `X`                                                   | `X`                                | `X`                        |
+gcp_kms      | `X`                           | `X`                                                   | `X`                                | `X`                        |
+azure_kv     | `X`                           | `X`                                                   | `X`                                | `X`                        |
+hashicorp_kv | `X`                           | `X`                                                   | `X`                                | `X`                        |
 
 ### `.rops.yaml` configuration
 
