@@ -25,35 +25,4 @@ mod mock {
             }
         }
     }
-
-    #[cfg(feature = "yaml")]
-    impl MockFileFormatUtil<YamlFileFormat> for RopsFileAgeMetadata {
-        fn mock_format_display() -> String {
-            indoc::formatdoc! {"
-                recipient: {}
-                enc: |
-                {}",
-                AgeIntegration::mock_public_key_str(),
-                textwrap::indent(AgeIntegration::mock_encrypted_data_key_str(),"  ")
-            }
-        }
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    #[cfg(feature = "yaml")]
-    mod yaml {
-        use crate::*;
-
-        #[test]
-        fn serializes_rops_file_age_metadata() {
-            FileFormatTestUtils::assert_serialization::<YamlFileFormat, RopsFileAgeMetadata>()
-        }
-
-        #[test]
-        fn deserializes_rops_file_age_metadata() {
-            FileFormatTestUtils::assert_deserialization::<YamlFileFormat, RopsFileAgeMetadata>()
-        }
-    }
 }
