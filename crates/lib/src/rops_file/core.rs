@@ -8,7 +8,7 @@ pub struct RopsFile<S: RopsFileState, F: FileFormat> {
     #[serde(flatten)]
     pub map: RopsFileMap<S, F>,
     #[serde(rename = "sops")]
-    pub metadata: RopsFileAgeMetadata,
+    pub metadata: RopsFileMetadata,
 }
 
 #[cfg(feature = "test-utils")]
@@ -41,7 +41,7 @@ mod mock {
                     sops:
                     {}",
                     RopsFileMap::mock_format_display(),
-                    textwrap::indent(&RopsFileAgeMetadata::mock_format_display(),"  ")
+                    textwrap::indent(&RopsFileMetadata::mock_format_display(),"  ")
                 }
             }
         }

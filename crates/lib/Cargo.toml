@@ -12,7 +12,7 @@ yaml = ["dep:serde_yaml"]
 # Ciphers
 aes-gcm = ["dep:aes-gcm"]
 
-test-utils = []
+test-utils = ["dep:pretty_assertions"]
 
 [dependencies]
 base64.workspace = true
@@ -37,3 +37,6 @@ serde_yaml = { workspace = true, optional = true }
 
 # AES_GCM
 aes-gcm = { workspace = true, optional = true }
+
+# TEST_UTILS
+pretty_assertions = { workspace = true, optional = true }

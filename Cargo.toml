@@ -10,6 +10,7 @@ derive_more = "0.99"
 generic-array = "0.14"
 indexmap = "2"
 indoc = "2"
+pretty_assertions = "1"
 rand = "0.8"
 serde = { version = "1", features = ["derive"] }
 serde_with = "3"
