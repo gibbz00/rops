@@ -10,30 +10,7 @@ pub enum RopsValue {
     Float(f64),
 }
 
-impl From<&RopsValue> for RopsValueVariant {
-    fn from(value: &RopsValue) -> Self {
-        match value {
-            RopsValue::String(_) => RopsValueVariant::String,
-            RopsValue::Boolean(_) => RopsValueVariant::Boolean,
-            RopsValue::Integer(_) => RopsValueVariant::Integer,
-            RopsValue::Float(_) => RopsValueVariant::Float,
-        }
-    }
-}
-
 impl RopsValue {
-    pub fn as_bytes(&self) -> Cow<'_, [u8]> {
-        match self {
-            RopsValue::String(string) => Cow::Borrowed(string.as_bytes()),
-            RopsValue::Boolean(boolean) => Cow::Borrowed(match boolean {
-                true => b"True",
-                false => b"False",
-            }),
-            RopsValue::Integer(integer) => Cow::Owned(integer.to_string().into_bytes()),
-            RopsValue::Float(float) => Cow::Owned(float.to_string().into_bytes()),
-        }
-    }
-
     pub fn encrypt<C: AeadCipher>(
         &self,
         nonce: Nonce<C::NonceSize>,
@@ -50,6 +27,29 @@ impl RopsValue {
             nonce,
             value_variant: self.into(),
         })
+    }
+
+    pub fn as_bytes(&self) -> Cow<'_, [u8]> {
+        match self {
+            RopsValue::String(string) => Cow::Borrowed(string.as_bytes()),
+            RopsValue::Boolean(boolean) => Cow::Borrowed(match boolean {
+                true => b"True",
+                false => b"False",
+            }),
+            RopsValue::Integer(integer) => Cow::Owned(integer.to_string().into_bytes()),
+            RopsValue::Float(float) => Cow::Owned(float.to_string().into_bytes()),
+        }
+    }
+}
+
+impl From<&RopsValue> for RopsValueVariant {
+    fn from(value: &RopsValue) -> Self {
+        match value {
+            RopsValue::String(_) => RopsValueVariant::String,
+            RopsValue::Boolean(_) => RopsValueVariant::Boolean,
+            RopsValue::Integer(_) => RopsValueVariant::Integer,
+            RopsValue::Float(_) => RopsValueVariant::Float,
+        }
     }
 }
 
