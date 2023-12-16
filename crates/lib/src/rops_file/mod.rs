@@ -1,3 +1,9 @@
+mod core;
+pub use core::RopsFile;
+
+mod map;
+pub use map::RopsFileMap;
+
 mod key_path;
 pub use key_path::KeyPath;
 
@@ -9,9 +15,6 @@ pub use tree::{RopsTree, RopsTreeBuildError};
 
 mod metadata;
 pub use metadata::*;
-
-mod core;
-pub use core::RopsFile;
 
 mod state;
 pub use state::{Decrypted, Encrypted, RopsFileState};

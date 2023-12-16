@@ -1,7 +1,9 @@
+use std::fmt::Debug;
+
 use serde::{de::DeserializeOwned, Serialize};
 
 pub trait FileFormat {
-    type Map;
+    type Map: Serialize + DeserializeOwned + PartialEq + Debug;
     type SerializeError: std::error::Error + Send + Sync + 'static;
     type DeserializeError: std::error::Error + Send + Sync + 'static;
 

@@ -3,11 +3,11 @@ use serde_yaml::{Mapping as YamlMap, Value as YamlValue};
 
 use crate::*;
 
-impl TryFrom<YamlMap> for RopsTree<Decrypted> {
+impl TryFrom<RopsFileMap<Decrypted, YamlFileFormat>> for RopsTree<Decrypted> {
     type Error = RopsTreeBuildError;
 
-    fn try_from(yaml_map: YamlMap) -> Result<Self, Self::Error> {
-        return recursive_map_call(yaml_map);
+    fn try_from(rops_file_map: RopsFileMap<Decrypted, YamlFileFormat>) -> Result<Self, Self::Error> {
+        return recursive_map_call(rops_file_map.into_inner_map());
 
         fn recursive_map_call(yaml_map: YamlMap) -> Result<RopsTree<Decrypted>, RopsTreeBuildError> {
             let mut inner_map = IndexMap::default();
@@ -54,59 +54,32 @@ impl TryFrom<YamlMap> for RopsTree<Decrypted> {
     }
 }
 
-#[cfg(feature = "test-utils")]
-mod mock {
-    use super::*;
-
-    impl MockFileFormatUtil<YamlFileFormat> for YamlMap {
-        fn mock_format_display() -> String {
-            indoc::indoc! {"
-                hello: world!
-                nested_map:
-                  null_key: null
-                  array:
-                  - string
-                  - nested_map_in_array:
-                      integer: 1234
-                  - float: 1234.56789
-                booleans:
-                - true
-                - false"
-            }
-            .to_string()
-        }
-    }
-
-    impl MockTestUtil for YamlMap {
-        fn mock() -> Self {
-            serde_yaml::from_str(&YamlMap::mock_format_display()).expect("mock yaml string not serializable")
-        }
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
 
     #[test]
-    fn transforms_yaml_map() {
-        assert_eq!(RopsTree::mock(), YamlMap::mock().try_into().unwrap())
+    fn transforms_decrypted_yaml_map() {
+        assert_eq!(
+            RopsTree::mock(),
+            RopsFileMap::<Decrypted, YamlFileFormat>::mock().try_into().unwrap()
+        )
     }
 
     #[test]
     fn dissallows_non_string_keys() {
-        let yaml_map = serde_yaml::from_str::<YamlMap>("123: 456").unwrap();
+        let file_map = RopsFileMap::from_inner_map(serde_yaml::from_str::<YamlMap>("123: 456").unwrap());
         assert!(matches!(
-            RopsTree::try_from(yaml_map).unwrap_err(),
+            RopsTree::try_from(file_map).unwrap_err(),
             RopsTreeBuildError::NonStringKey(_)
         ))
     }
 
     #[test]
     fn dissallows_out_of_range_integers() {
-        let yaml_map = serde_yaml::from_str::<YamlMap>(&format!("invalid_integer: {}", u64::MAX)).unwrap();
+        let file_map = RopsFileMap::from_inner_map(serde_yaml::from_str::<YamlMap>(&format!("invalid_integer: {}", u64::MAX)).unwrap());
         assert!(matches!(
-            RopsTree::try_from(yaml_map).unwrap_err(),
+            RopsTree::try_from(file_map).unwrap_err(),
             RopsTreeBuildError::IntegerOutOfRange(_)
         ))
     }

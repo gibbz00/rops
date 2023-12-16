@@ -5,9 +5,10 @@ use serde::{Deserialize, Serialize};
 use crate::*;
 
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
+#[serde(bound = "F: FileFormat")]
 pub struct RopsFile<S: RopsFileState, F: FileFormat> {
     #[serde(flatten)]
-    pub map: F::Map,
+    pub map: RopsFileMap<S, F>,
     #[serde(rename = "sops")]
     pub metadata: RopsFileAgeMetadata,
     #[serde(skip)]
@@ -18,13 +19,13 @@ pub struct RopsFile<S: RopsFileState, F: FileFormat> {
 mod mock {
     use super::*;
 
-    impl<F: FileFormat> MockTestUtil for RopsFile<Decrypted, F>
+    impl<S: RopsFileState, F: FileFormat> MockTestUtil for RopsFile<S, F>
     where
-        F::Map: MockTestUtil,
+        RopsFileMap<S, F>: MockTestUtil,
     {
         fn mock() -> Self {
             Self {
-                map: F::Map::mock(),
+                map: MockTestUtil::mock(),
                 metadata: MockTestUtil::mock(),
                 state_marker: PhantomData,
             }
@@ -35,13 +36,16 @@ mod mock {
     mod yaml {
         use super::*;
 
-        impl MockFileFormatUtil<YamlFileFormat> for RopsFile<Decrypted, YamlFileFormat> {
+        impl<S: RopsFileState> MockFileFormatUtil<YamlFileFormat> for RopsFile<S, YamlFileFormat>
+        where
+            RopsFileMap<S, YamlFileFormat>: MockFileFormatUtil<YamlFileFormat>,
+        {
             fn mock_format_display() -> String {
                 indoc::formatdoc! {"
                     {}
                     sops:
                     {}",
-                    <YamlFileFormat as FileFormat>::Map::mock_format_display(),
+                    RopsFileMap::mock_format_display(),
                     textwrap::indent(&RopsFileAgeMetadata::mock_format_display(),"  ")
                 }
             }
