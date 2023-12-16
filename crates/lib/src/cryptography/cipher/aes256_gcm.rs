@@ -13,14 +13,14 @@ impl AeadCipher for AES256GCM {
 
     type AuthorizationTagSize = <Aes256Gcm as AeadCore>::TagSize;
 
-    type DecryptionError = aes_gcm::Error;
+    type EncryptError = aes_gcm::Error;
 
     fn encrypt(
         nonce: &Nonce<Self::NonceSize>,
         data_key: &DataKey,
         in_place_buffer: &mut [u8],
         associated_data: &[u8],
-    ) -> Result<AuthorizationTag<Self>, Self::DecryptionError> {
+    ) -> Result<AuthorizationTag<Self>, Self::EncryptError> {
         let cipher = AesGcm::<Aes256, Self::NonceSize>::new(Key::<Aes256Gcm>::from_slice(data_key.as_ref()));
         cipher
             .encrypt_in_place_detached(nonce.as_ref().into(), associated_data, in_place_buffer)

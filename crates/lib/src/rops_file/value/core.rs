@@ -39,7 +39,7 @@ impl RopsValue {
         nonce: Nonce<C::NonceSize>,
         data_key: &DataKey,
         key_path: &str,
-    ) -> Result<EncryptedRopsValue<C>, C::DecryptionError> {
+    ) -> Result<EncryptedRopsValue<C>, C::EncryptError> {
         let mut in_place_buffer = self.as_bytes().to_vec();
 
         let authorization_tag = C::encrypt(&nonce, data_key, &mut in_place_buffer, key_path.as_bytes())?;

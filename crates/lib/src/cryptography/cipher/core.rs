@@ -11,12 +11,12 @@ pub trait AeadCipher: Sized {
 
     type AuthorizationTagSize: ArrayLength<u8> + Debug + PartialEq;
 
-    type DecryptionError;
+    type EncryptError;
 
     fn encrypt(
         nonce: &Nonce<Self::NonceSize>,
         data_key: &DataKey,
         in_place_buffer: &mut [u8],
         associated_data: &[u8],
-    ) -> Result<AuthorizationTag<Self>, Self::DecryptionError>;
+    ) -> Result<AuthorizationTag<Self>, Self::EncryptError>;
 }
