@@ -1,16 +1,19 @@
-pub trait RopsFileState: sealed::SeleadRopsFileState {}
-impl<S: sealed::SeleadRopsFileState> RopsFileState for S {}
+use std::marker::PhantomData;
+
+use crate::*;
+
+pub trait RopsFileState {
+    type RopsTreeLeaf;
+}
 
 #[derive(Debug, PartialEq)]
-pub struct Encrypted;
+pub struct Encrypted<C: AeadCipher>(PhantomData<C>);
+impl<C: AeadCipher> RopsFileState for Encrypted<C> {
+    type RopsTreeLeaf = EncryptedRopsValue<C>;
+}
+
 #[derive(Debug, PartialEq)]
 pub struct Decrypted;
-
-mod sealed {
-    use super::*;
-
-    pub trait SeleadRopsFileState {}
-
-    impl SeleadRopsFileState for Encrypted {}
-    impl SeleadRopsFileState for Decrypted {}
+impl RopsFileState for Decrypted {
+    type RopsTreeLeaf = RopsValue;
 }

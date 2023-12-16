@@ -1,12 +1,11 @@
 use crate::*;
 
 #[derive(Debug, PartialEq)]
-pub enum RopsTree {
-    Sequence(Vec<RopsTree>),
-    Map(indexmap::IndexMap<String, RopsTree>),
+pub enum RopsTree<S: RopsFileState> {
+    Sequence(Vec<RopsTree<S>>),
+    Map(indexmap::IndexMap<String, RopsTree<S>>),
     Null,
-    // Only variant whose inner content is encrypted
-    Leaf(RopsValue),
+    Leaf(S::RopsTreeLeaf),
 }
 
 #[derive(Debug, thiserror::Error)]
@@ -23,7 +22,7 @@ mod mock {
 
     use super::*;
 
-    impl MockTestUtil for RopsTree {
+    impl MockTestUtil for RopsTree<Decrypted> {
         fn mock() -> Self {
             Self::Map(indexmap! {
                 "hello".to_string() => RopsTree::Leaf(RopsValue::String("world!".to_string())),

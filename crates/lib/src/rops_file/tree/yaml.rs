@@ -3,13 +3,13 @@ use serde_yaml::{Mapping as YamlMap, Value as YamlValue};
 
 use crate::*;
 
-impl TryFrom<YamlMap> for RopsTree {
+impl TryFrom<YamlMap> for RopsTree<Decrypted> {
     type Error = RopsTreeBuildError;
 
     fn try_from(yaml_map: YamlMap) -> Result<Self, Self::Error> {
         return recursive_map_call(yaml_map);
 
-        fn recursive_map_call(yaml_map: YamlMap) -> Result<RopsTree, RopsTreeBuildError> {
+        fn recursive_map_call(yaml_map: YamlMap) -> Result<RopsTree<Decrypted>, RopsTreeBuildError> {
             let mut inner_map = IndexMap::default();
 
             for (yaml_key, value_yaml) in yaml_map {
@@ -28,7 +28,7 @@ impl TryFrom<YamlMap> for RopsTree {
             }
         }
 
-        fn recursive_call(yaml_value: YamlValue) -> Result<RopsTree, RopsTreeBuildError> {
+        fn recursive_call(yaml_value: YamlValue) -> Result<RopsTree<Decrypted>, RopsTreeBuildError> {
             Ok(match yaml_value {
                 // SOPS simply throws away tags, so do we for now.
                 // It can, however, deserialize manually added tags to encrypted documents,
