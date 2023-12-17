@@ -131,6 +131,8 @@ hashicorp_kv | `X`                           | `X`                              
 
 - [Partial modification](https://github.com/getsops/sops#46set-a-sub-part-in-a-document-tree): Use `rops -d FILE | jq map | rops -e --file-format FILE_FORMAT`?
 
+  (Con: will skip initialization vector reuse for unchanged value.)
+
 - [Integrated formatting configuration](https://github.com/getsops/sops#32json-and-json_binary-indentation)
 
 - [Integrated secrets publishing](https://github.com/getsops/sops#219using-the-publish-command)

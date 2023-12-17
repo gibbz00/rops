@@ -2,12 +2,13 @@ use std::borrow::Cow;
 
 use crate::*;
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum RopsValue {
     String(String),
     Boolean(bool),
     Integer(i64),
-    Float(f64),
+    // Stored as String to enable hashing
+    Float(String),
 }
 
 impl RopsValue {
@@ -22,7 +23,7 @@ impl RopsValue {
     ) -> Result<EncryptedRopsValue<C>, C::Error> {
         let mut in_place_buffer = self.as_bytes().to_vec();
 
-        let authorization_tag = C::encrypt(&nonce, data_key, &mut in_place_buffer, key_path.as_bytes())?;
+        let authorization_tag = C::encrypt(&nonce, data_key, &mut in_place_buffer, key_path.as_ref())?;
 
         Ok(EncryptedRopsValue {
             data: in_place_buffer.into(),
@@ -40,7 +41,7 @@ impl RopsValue {
                 false => Self::BOOLEAN_FALSE_BYTES,
             }),
             RopsValue::Integer(integer) => Cow::Owned(integer.to_string().into_bytes()),
-            RopsValue::Float(float) => Cow::Owned(float.to_string().into_bytes()),
+            RopsValue::Float(float_string) => Cow::Borrowed(float_string.as_bytes()),
         }
     }
 
@@ -53,7 +54,7 @@ impl RopsValue {
                 _ => return Err(RopsValueFromBytesError::Boolean(bytes)),
             }),
             RopsValueVariant::Integer => Self::Integer(std::str::from_utf8(&bytes)?.parse()?),
-            RopsValueVariant::Float => Self::Float(std::str::from_utf8(&bytes)?.parse()?),
+            RopsValueVariant::Float => Self::Float(std::str::from_utf8(&bytes)?.parse::<f64>()?.to_string()),
         })
     }
 }
@@ -149,7 +150,7 @@ mod tests {
             assert_encrypts_value(
                 "ENC[AES256_GCM,data:fglPlT+e9ACWrA==,iv:pefOFnMThS6qICGrLuai+rSBtrmliGWdqJrXzcl2qAo=,tag:tHVQiwreFZurqiroPCIXHw==,type:float]",
                 "example_float:",
-                RopsValue::Float(1234.56789),
+                RopsValue::Float(1234.56789.to_string()),
             );
         }
     }

@@ -41,7 +41,7 @@ impl<C: Cipher> EncryptedRopsValue<C> {
             &self.nonce,
             data_key,
             in_place_buffer.as_mut(),
-            key_path.as_bytes(),
+            key_path.as_ref(),
             &self.authorization_tag,
         )
         .map_err(|error| DecryptRopsValueError::Cipher(error.to_string()))?;

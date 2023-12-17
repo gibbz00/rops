@@ -126,7 +126,7 @@ mod decrypted {
                     YamlValue::Bool(boolean) => RopsTree::Leaf(RopsValue::Boolean(boolean)),
                     YamlValue::String(string) => RopsTree::Leaf(RopsValue::String(string)),
                     YamlValue::Number(number) => RopsTree::Leaf(match number.is_f64() {
-                        true => RopsValue::Float(number.as_f64().expect("number not a f64")),
+                        true => RopsValue::Float(number.as_f64().expect("number not a f64").to_string()),
                         false => RopsValue::Integer(
                             number
                                 .as_i64()

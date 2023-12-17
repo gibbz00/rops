@@ -11,7 +11,7 @@ mod value;
 pub use value::*;
 
 mod tree;
-pub use tree::{MapToTreeError, RopsTree};
+pub use tree::{MapToTreeError, RopsTree, SavedRopsTreeNonces};
 
 mod metadata;
 pub use metadata::*;
