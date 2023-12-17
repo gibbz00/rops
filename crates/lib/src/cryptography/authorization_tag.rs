@@ -6,8 +6,8 @@ use generic_array::GenericArray;
 use crate::*;
 
 #[derive(Debug, PartialEq, AsRef, AsMut, From)]
-#[as_mut(forward)]
-#[as_ref(forward)]
+#[as_mut]
+#[as_ref]
 pub struct AuthorizationTag<C: AeadCipher>(GenericArray<u8, C::AuthorizationTagSize>);
 
 impl<C: AeadCipher> FromStr for AuthorizationTag<C> {

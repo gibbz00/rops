@@ -6,6 +6,12 @@ use crate::*;
 #[derive(Debug, PartialEq)]
 pub struct AES256GCM;
 
+impl AES256GCM {
+    pub fn cipher(data_key: &DataKey) -> AesGcm<Aes256, <Self as AeadCipher>::NonceSize, <Self as AeadCipher>::AuthorizationTagSize> {
+        AesGcm::new(Key::<Aes256Gcm>::from_slice(data_key.as_ref()))
+    }
+}
+
 impl AeadCipher for AES256GCM {
     const NAME: &'static str = "AES256_GCM";
 
@@ -13,17 +19,31 @@ impl AeadCipher for AES256GCM {
 
     type AuthorizationTagSize = <Aes256Gcm as AeadCore>::TagSize;
 
-    type EncryptError = aes_gcm::Error;
+    type Error = aes_gcm::Error;
 
     fn encrypt(
         nonce: &Nonce<Self::NonceSize>,
         data_key: &DataKey,
         in_place_buffer: &mut [u8],
         associated_data: &[u8],
-    ) -> Result<AuthorizationTag<Self>, Self::EncryptError> {
-        let cipher = AesGcm::<Aes256, Self::NonceSize>::new(Key::<Aes256Gcm>::from_slice(data_key.as_ref()));
-        cipher
+    ) -> Result<AuthorizationTag<Self>, Self::Error> {
+        Self::cipher(data_key)
             .encrypt_in_place_detached(nonce.as_ref().into(), associated_data, in_place_buffer)
             .map(Into::into)
+    }
+
+    fn decrypt(
+        nonce: &Nonce<Self::NonceSize>,
+        data_key: &DataKey,
+        in_place_buffer: &mut [u8],
+        associated_data: &[u8],
+        authorization_tag: &AuthorizationTag<Self>,
+    ) -> Result<(), Self::Error> {
+        Self::cipher(data_key).decrypt_in_place_detached(
+            nonce.as_ref().into(),
+            associated_data,
+            in_place_buffer,
+            authorization_tag.as_ref(),
+        )
     }
 }

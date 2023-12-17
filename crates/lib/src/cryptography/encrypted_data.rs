@@ -1,11 +1,12 @@
 use std::str::FromStr;
 
-use derive_more::{AsRef, From};
+use derive_more::{AsMut, AsRef, From, Into};
 
 use crate::*;
 
-#[derive(Debug, PartialEq, AsRef, From)]
+#[derive(Debug, PartialEq, AsRef, AsMut, From, Into)]
 #[as_ref(forward)]
+#[as_mut(forward)]
 pub struct EncryptedData(Vec<u8>);
 
 impl FromStr for EncryptedData {

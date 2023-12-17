@@ -11,12 +11,15 @@ pub enum RopsValue {
 }
 
 impl RopsValue {
+    const BOOLEAN_TRUE_BYTES: &'static [u8] = b"True";
+    const BOOLEAN_FALSE_BYTES: &'static [u8] = b"False";
+
     pub fn encrypt<C: AeadCipher>(
         &self,
         nonce: Nonce<C::NonceSize>,
         data_key: &DataKey,
         key_path: &KeyPath,
-    ) -> Result<EncryptedRopsValue<C>, C::EncryptError> {
+    ) -> Result<EncryptedRopsValue<C>, C::Error> {
         let mut in_place_buffer = self.as_bytes().to_vec();
 
         let authorization_tag = C::encrypt(&nonce, data_key, &mut in_place_buffer, key_path.as_bytes())?;
@@ -33,13 +36,38 @@ impl RopsValue {
         match self {
             RopsValue::String(string) => Cow::Borrowed(string.as_bytes()),
             RopsValue::Boolean(boolean) => Cow::Borrowed(match boolean {
-                true => b"True",
-                false => b"False",
+                true => Self::BOOLEAN_TRUE_BYTES,
+                false => Self::BOOLEAN_FALSE_BYTES,
             }),
             RopsValue::Integer(integer) => Cow::Owned(integer.to_string().into_bytes()),
             RopsValue::Float(float) => Cow::Owned(float.to_string().into_bytes()),
         }
     }
+
+    pub fn from_bytes(bytes: Vec<u8>, variant: RopsValueVariant) -> Result<Self, RopsValueFromBytesError> {
+        Ok(match variant {
+            RopsValueVariant::String => Self::String(std::str::from_utf8(&bytes)?.to_string()),
+            RopsValueVariant::Boolean => Self::Boolean(match bytes.as_slice() {
+                Self::BOOLEAN_TRUE_BYTES => true,
+                Self::BOOLEAN_FALSE_BYTES => false,
+                _ => return Err(RopsValueFromBytesError::Boolean(bytes)),
+            }),
+            RopsValueVariant::Integer => Self::Integer(std::str::from_utf8(&bytes)?.parse()?),
+            RopsValueVariant::Float => Self::Float(std::str::from_utf8(&bytes)?.parse()?),
+        })
+    }
+}
+
+#[derive(Debug, thiserror::Error)]
+pub enum RopsValueFromBytesError {
+    #[error("unable to validate bytes as UTF-8: {0}")]
+    String(#[from] std::str::Utf8Error),
+    #[error("invalid byte representation for boolean values: {0:?}")]
+    Boolean(Vec<u8>),
+    #[error("integer parse error: {0}")]
+    Integer(#[from] std::num::ParseIntError),
+    #[error("float parse error: {0}")]
+    Float(#[from] std::num::ParseFloatError),
 }
 
 impl From<&RopsValue> for RopsValueVariant {
@@ -49,6 +77,17 @@ impl From<&RopsValue> for RopsValueVariant {
             RopsValue::Boolean(_) => RopsValueVariant::Boolean,
             RopsValue::Integer(_) => RopsValueVariant::Integer,
             RopsValue::Float(_) => RopsValueVariant::Float,
+        }
+    }
+}
+
+#[cfg(feature = "test-utils")]
+mod mock {
+    use super::*;
+
+    impl MockTestUtil for RopsValue {
+        fn mock() -> Self {
+            Self::String("world!".to_string())
         }
     }
 }

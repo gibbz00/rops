@@ -17,10 +17,24 @@ pub enum MapToTreeError {
     #[error("integer out of range, allowed values must fit inside an i64, found: {0}")]
     IntegerOutOfRange(u64),
     #[error("unable to parse encrypted value components: {0}")]
-    EncryptedRopsValue(#[from] EncryptedRopsValueError),
+    EncryptedRopsValue(#[from] EncryptedRopsValueFromStrError),
     // TEMP: Deprecate once partial encryption feature arrives.
     #[error("invalid valid for an encrypted file")]
     InvalidValueForEncrypted(String),
+}
+
+mod decrypt {
+    use std::collections::HashMap;
+
+    use super::*;
+
+    type SavedNonces<'a> = HashMap<(KeyPath, &'a RopsValue), Nonce>;
+
+    impl<C: AeadCipher> RopsTree<Encrypted<C>> {
+        pub fn decrypt(self, _data_key: &DataKey) -> Result<(RopsTree<Decrypted>, SavedNonces), C::Error> {
+            todo!()
+        }
+    }
 }
 
 #[cfg(feature = "test-utils")]

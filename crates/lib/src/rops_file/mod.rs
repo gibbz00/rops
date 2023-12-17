@@ -1,8 +1,6 @@
 mod core;
 pub use core::RopsFile;
 
-mod decrypt;
-
 mod map;
 pub use map::RopsFileMap;
 
