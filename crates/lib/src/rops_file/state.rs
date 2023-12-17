@@ -1,9 +1,9 @@
-use std::marker::PhantomData;
+use std::{fmt::Debug, marker::PhantomData};
 
 use crate::*;
 
-pub trait RopsFileState {
-    type RopsTreeLeaf;
+pub trait RopsFileState: Debug + PartialEq {
+    type RopsTreeLeaf: Debug + PartialEq;
 }
 
 #[derive(Debug, PartialEq)]

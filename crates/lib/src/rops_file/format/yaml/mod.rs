@@ -17,7 +17,7 @@ impl FileFormat for YamlFileFormat {
     }
 }
 
-mod map_to_tree;
+mod to_internal_map;
 
 #[cfg(feature = "test-utils")]
 mod mock;

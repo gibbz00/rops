@@ -6,22 +6,22 @@ use crate::*;
 mod tree_traversal {
     use super::*;
 
-    pub fn recursive_map_call<F, S: RopsFileState>(yaml_map: YamlMap, recursive_value_fn: F) -> Result<RopsTree<S>, MapToTreeError>
+    pub fn recursive_map_call<F, S: RopsFileState>(yaml_map: YamlMap, recursive_value_fn: F) -> Result<RopsMap<S>, FormatToInternalMapError>
     where
-        F: Fn(YamlValue) -> Result<RopsTree<S>, MapToTreeError>,
+        F: Fn(YamlValue) -> Result<RopsTree<S>, FormatToInternalMapError>,
     {
-        let mut inner_map = IndexMap::default();
+        let mut tree_map = IndexMap::default();
 
         for (yaml_key, value_yaml) in yaml_map {
-            inner_map.insert(validate_key(yaml_key)?, recursive_value_fn(value_yaml)?);
+            tree_map.insert(validate_key(yaml_key)?, recursive_value_fn(value_yaml)?);
         }
 
-        return Ok(RopsTree::Map(inner_map));
+        return Ok(tree_map.into());
 
-        fn validate_key(yaml_value: YamlValue) -> Result<String, MapToTreeError> {
+        fn validate_key(yaml_value: YamlValue) -> Result<String, FormatToInternalMapError> {
             match yaml_value {
                 YamlValue::String(string) => Ok(string),
-                other => Err(MapToTreeError::NonStringKey(
+                other => Err(FormatToInternalMapError::NonStringKey(
                     serde_yaml::to_string(&other).expect("yaml value not serializable"),
                 )),
             }
@@ -32,16 +32,16 @@ mod tree_traversal {
 mod encrypted {
     use super::*;
 
-    impl<C: Cipher> TryFrom<RopsFileMap<Encrypted<C>, YamlFileFormat>> for RopsTree<Encrypted<C>> {
-        type Error = MapToTreeError;
+    impl<C: Cipher> TryFrom<RopsFileFormatMap<Encrypted<C>, YamlFileFormat>> for RopsMap<Encrypted<C>> {
+        type Error = FormatToInternalMapError;
 
-        fn try_from(rops_file_map: RopsFileMap<Encrypted<C>, YamlFileFormat>) -> Result<Self, Self::Error> {
+        fn try_from(rops_file_map: RopsFileFormatMap<Encrypted<C>, YamlFileFormat>) -> Result<Self, Self::Error> {
             return tree_traversal::recursive_map_call(rops_file_map.into_inner_map(), recursive_value_call);
 
-            fn recursive_value_call<Ci: Cipher>(yaml_value: YamlValue) -> Result<RopsTree<Encrypted<Ci>>, MapToTreeError> {
+            fn recursive_value_call<Ci: Cipher>(yaml_value: YamlValue) -> Result<RopsTree<Encrypted<Ci>>, FormatToInternalMapError> {
                 Ok(match yaml_value {
                     YamlValue::Tagged(tagged) => recursive_value_call(tagged.value)?,
-                    YamlValue::Mapping(map) => tree_traversal::recursive_map_call(map, recursive_value_call)?,
+                    YamlValue::Mapping(map) => RopsTree::Map(tree_traversal::recursive_map_call(map, recursive_value_call)?),
                     YamlValue::String(encrypted_string) => RopsTree::Leaf(encrypted_string.parse()?),
                     YamlValue::Sequence(sequence) => {
                         RopsTree::Sequence(sequence.into_iter().map(recursive_value_call).collect::<Result<Vec<_>, _>>()?)
@@ -49,7 +49,7 @@ mod encrypted {
                     YamlValue::Null => RopsTree::Null,
                     YamlValue::Bool(_) | YamlValue::Number(_) => {
                         // TEMP: handle as hard error until partial encryption support is added
-                        return Err(MapToTreeError::InvalidValueForEncrypted(
+                        return Err(FormatToInternalMapError::InvalidValueForEncrypted(
                             serde_yaml::to_string(&yaml_value).expect("unable to serialize yaml value"),
                         ));
                     }
@@ -69,18 +69,20 @@ mod encrypted {
             #[test]
             fn transforms_encrypted_yaml_map() {
                 assert_eq!(
-                    RopsTree::mock(),
-                    RopsFileMap::<Encrypted<AES256GCM>, YamlFileFormat>::mock().try_into().unwrap()
+                    RopsMap::mock(),
+                    RopsFileFormatMap::<Encrypted<AES256GCM>, YamlFileFormat>::mock()
+                        .try_into()
+                        .unwrap()
                 )
             }
         }
 
         #[test]
         fn dissallows_non_string_keys() {
-            let file_map = RopsFileMap::from_inner_map(serde_yaml::from_str::<YamlMap>("true: xxx").unwrap());
+            let file_map = RopsFileFormatMap::from_inner_map(serde_yaml::from_str::<YamlMap>("true: xxx").unwrap());
             assert!(matches!(
-                RopsTree::<Encrypted<StubCipher>>::try_from(file_map).unwrap_err(),
-                MapToTreeError::NonStringKey(_)
+                RopsMap::<Encrypted<StubCipher>>::try_from(file_map).unwrap_err(),
+                FormatToInternalMapError::NonStringKey(_)
             ))
         }
 
@@ -88,10 +90,10 @@ mod encrypted {
             TEMP(NOTE): Not necassarily true once partial encryption arrives:
         */
         fn assert_disallowed_value_helper(key_value_str: &str) {
-            let file_map = RopsFileMap::from_inner_map(serde_yaml::from_str::<YamlMap>(key_value_str).unwrap());
+            let file_map = RopsFileFormatMap::from_inner_map(serde_yaml::from_str::<YamlMap>(key_value_str).unwrap());
             assert!(matches!(
-                RopsTree::<Encrypted<StubCipher>>::try_from(file_map).unwrap_err(),
-                MapToTreeError::InvalidValueForEncrypted(_)
+                RopsMap::<Encrypted<StubCipher>>::try_from(file_map).unwrap_err(),
+                FormatToInternalMapError::InvalidValueForEncrypted(_)
             ))
         }
 
@@ -110,19 +112,19 @@ mod encrypted {
 mod decrypted {
     use super::*;
 
-    impl TryFrom<RopsFileMap<Decrypted, YamlFileFormat>> for RopsTree<Decrypted> {
-        type Error = MapToTreeError;
+    impl TryFrom<RopsFileFormatMap<Decrypted, YamlFileFormat>> for RopsMap<Decrypted> {
+        type Error = FormatToInternalMapError;
 
-        fn try_from(rops_file_map: RopsFileMap<Decrypted, YamlFileFormat>) -> Result<Self, Self::Error> {
+        fn try_from(rops_file_map: RopsFileFormatMap<Decrypted, YamlFileFormat>) -> Result<Self, Self::Error> {
             return tree_traversal::recursive_map_call(rops_file_map.into_inner_map(), recursive_value_call);
 
-            fn recursive_value_call(yaml_value: YamlValue) -> Result<RopsTree<Decrypted>, MapToTreeError> {
+            fn recursive_value_call(yaml_value: YamlValue) -> Result<RopsTree<Decrypted>, FormatToInternalMapError> {
                 Ok(match yaml_value {
                     // SOPS simply throws away tags, so do we for now.
                     // It can, however, deserialize manually added tags to encrypted documents,
                     // so we could in theory keep the tags somewhere without breaking SOPS compatability.
                     YamlValue::Tagged(tagged) => recursive_value_call(tagged.value)?,
-                    YamlValue::Mapping(map) => tree_traversal::recursive_map_call(map, recursive_value_call)?,
+                    YamlValue::Mapping(map) => RopsTree::Map(tree_traversal::recursive_map_call(map, recursive_value_call)?),
                     YamlValue::Bool(boolean) => RopsTree::Leaf(RopsValue::Boolean(boolean)),
                     YamlValue::String(string) => RopsTree::Leaf(RopsValue::String(string)),
                     YamlValue::Number(number) => RopsTree::Leaf(match number.is_f64() {
@@ -130,7 +132,7 @@ mod decrypted {
                         false => RopsValue::Integer(
                             number
                                 .as_i64()
-                                .ok_or_else(|| MapToTreeError::IntegerOutOfRange(number.as_u64().expect("number not an u64")))?,
+                                .ok_or_else(|| FormatToInternalMapError::IntegerOutOfRange(number.as_u64().expect("number not an u64")))?,
                         ),
                     }),
                     YamlValue::Sequence(sequence) => {
@@ -149,26 +151,27 @@ mod decrypted {
         #[test]
         fn transforms_decrypted_yaml_map() {
             assert_eq!(
-                RopsTree::mock(),
-                RopsFileMap::<Decrypted, YamlFileFormat>::mock().try_into().unwrap()
+                RopsMap::mock(),
+                RopsFileFormatMap::<Decrypted, YamlFileFormat>::mock().try_into().unwrap()
             )
         }
 
         #[test]
         fn dissallows_non_string_keys() {
-            let file_map = RopsFileMap::from_inner_map(serde_yaml::from_str::<YamlMap>("123: 456").unwrap());
+            let file_map = RopsFileFormatMap::from_inner_map(serde_yaml::from_str::<YamlMap>("123: 456").unwrap());
             assert!(matches!(
-                RopsTree::<Decrypted>::try_from(file_map).unwrap_err(),
-                MapToTreeError::NonStringKey(_)
+                RopsMap::<Decrypted>::try_from(file_map).unwrap_err(),
+                FormatToInternalMapError::NonStringKey(_)
             ))
         }
 
         #[test]
         fn dissallows_out_of_range_integers() {
-            let file_map = RopsFileMap::from_inner_map(serde_yaml::from_str::<YamlMap>(&format!("invalid_integer: {}", u64::MAX)).unwrap());
+            let file_map =
+                RopsFileFormatMap::from_inner_map(serde_yaml::from_str::<YamlMap>(&format!("invalid_integer: {}", u64::MAX)).unwrap());
             assert!(matches!(
-                RopsTree::<Decrypted>::try_from(file_map).unwrap_err(),
-                MapToTreeError::IntegerOutOfRange(_)
+                RopsMap::<Decrypted>::try_from(file_map).unwrap_err(),
+                FormatToInternalMapError::IntegerOutOfRange(_)
             ))
         }
     }

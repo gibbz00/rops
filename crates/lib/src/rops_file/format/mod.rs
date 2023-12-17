@@ -1,6 +1,9 @@
 mod core;
 pub use core::FileFormat;
 
+mod map;
+pub use map::{FormatToInternalMapError, RopsFileFormatMap};
+
 #[cfg(feature = "yaml")]
 mod yaml;
 #[cfg(feature = "yaml")]

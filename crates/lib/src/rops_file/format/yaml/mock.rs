@@ -3,14 +3,14 @@ mod rops_file {
 
     impl<S: RopsFileState> MockFileFormatUtil<YamlFileFormat> for RopsFile<S, YamlFileFormat>
     where
-        RopsFileMap<S, YamlFileFormat>: MockFileFormatUtil<YamlFileFormat>,
+        RopsFileFormatMap<S, YamlFileFormat>: MockFileFormatUtil<YamlFileFormat>,
     {
         fn mock_format_display() -> String {
             indoc::formatdoc! {"
                     {}
                     sops:
                     {}",
-                RopsFileMap::mock_format_display(),
+                RopsFileFormatMap::mock_format_display(),
                 textwrap::indent(&RopsFileMetadata::mock_format_display(),"  ")
             }
         }
@@ -20,7 +20,7 @@ mod rops_file {
 mod map {
     use crate::*;
 
-    impl MockFileFormatUtil<YamlFileFormat> for RopsFileMap<Decrypted, YamlFileFormat> {
+    impl MockFileFormatUtil<YamlFileFormat> for RopsFileFormatMap<Decrypted, YamlFileFormat> {
         fn mock_format_display() -> String {
             indoc::indoc! {"
                     hello: world!
@@ -40,7 +40,7 @@ mod map {
     }
 
     #[cfg(feature = "aes-gcm")]
-    impl MockFileFormatUtil<YamlFileFormat> for RopsFileMap<Encrypted<AES256GCM>, YamlFileFormat> {
+    impl MockFileFormatUtil<YamlFileFormat> for RopsFileFormatMap<Encrypted<AES256GCM>, YamlFileFormat> {
         fn mock_format_display() -> String {
             indoc::indoc! {"
                     hello: ENC[AES256_GCM,data:3S1E9am/,iv:WUQoQTrRXw/tUgwpmSG69xWtd5dVMfe8qUly1VB8ucM=,tag:nQUDkuh0OR1cjR5hGC5jOw==,type:str]
@@ -59,7 +59,7 @@ mod map {
         }
     }
 
-    impl<S: RopsFileState> MockTestUtil for RopsFileMap<S, YamlFileFormat>
+    impl<S: RopsFileState> MockTestUtil for RopsFileFormatMap<S, YamlFileFormat>
     where
         Self: MockFileFormatUtil<YamlFileFormat>,
     {

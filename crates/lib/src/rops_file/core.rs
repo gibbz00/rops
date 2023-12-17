@@ -6,7 +6,7 @@ use crate::*;
 #[serde(bound = "F: FileFormat")]
 pub struct RopsFile<S: RopsFileState, F: FileFormat> {
     #[serde(flatten)]
-    pub map: RopsFileMap<S, F>,
+    pub map: RopsFileFormatMap<S, F>,
     #[serde(rename = "sops")]
     pub metadata: RopsFileMetadata,
 }
@@ -17,7 +17,7 @@ mod mock {
 
     impl<S: RopsFileState, F: FileFormat> MockTestUtil for RopsFile<S, F>
     where
-        RopsFileMap<S, F>: MockTestUtil,
+        RopsFileFormatMap<S, F>: MockTestUtil,
     {
         fn mock() -> Self {
             Self {

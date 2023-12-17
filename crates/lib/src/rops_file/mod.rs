@@ -1,9 +1,6 @@
 mod core;
 pub use core::RopsFile;
 
-mod map;
-pub use map::RopsFileMap;
-
 mod key_path;
 pub use key_path::KeyPath;
 
@@ -11,7 +8,7 @@ mod value;
 pub use value::*;
 
 mod tree;
-pub use tree::{MapToTreeError, RopsTree, SavedRopsTreeNonces};
+pub use tree::{RopsMap, RopsTree, SavedRopsTreeNonces};
 
 mod metadata;
 pub use metadata::*;
