@@ -7,12 +7,12 @@ use crate::*;
 pub struct AES256GCM;
 
 impl AES256GCM {
-    pub fn cipher(data_key: &DataKey) -> AesGcm<Aes256, <Self as AeadCipher>::NonceSize, <Self as AeadCipher>::AuthorizationTagSize> {
+    pub fn cipher(data_key: &DataKey) -> AesGcm<Aes256, <Self as Cipher>::NonceSize, <Self as Cipher>::AuthorizationTagSize> {
         AesGcm::new(Key::<Aes256Gcm>::from_slice(data_key.as_ref()))
     }
 }
 
-impl AeadCipher for AES256GCM {
+impl Cipher for AES256GCM {
     const NAME: &'static str = "AES256_GCM";
 
     type NonceSize = U32;

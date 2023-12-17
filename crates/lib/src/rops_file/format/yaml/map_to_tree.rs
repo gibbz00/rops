@@ -32,13 +32,13 @@ mod tree_traversal {
 mod encrypted {
     use super::*;
 
-    impl<C: AeadCipher> TryFrom<RopsFileMap<Encrypted<C>, YamlFileFormat>> for RopsTree<Encrypted<C>> {
+    impl<C: Cipher> TryFrom<RopsFileMap<Encrypted<C>, YamlFileFormat>> for RopsTree<Encrypted<C>> {
         type Error = MapToTreeError;
 
         fn try_from(rops_file_map: RopsFileMap<Encrypted<C>, YamlFileFormat>) -> Result<Self, Self::Error> {
             return tree_traversal::recursive_map_call(rops_file_map.into_inner_map(), recursive_value_call);
 
-            fn recursive_value_call<Ci: AeadCipher>(yaml_value: YamlValue) -> Result<RopsTree<Encrypted<Ci>>, MapToTreeError> {
+            fn recursive_value_call<Ci: Cipher>(yaml_value: YamlValue) -> Result<RopsTree<Encrypted<Ci>>, MapToTreeError> {
                 Ok(match yaml_value {
                     YamlValue::Tagged(tagged) => recursive_value_call(tagged.value)?,
                     YamlValue::Mapping(map) => tree_traversal::recursive_map_call(map, recursive_value_call)?,

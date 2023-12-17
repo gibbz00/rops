@@ -4,7 +4,7 @@ use generic_array::ArrayLength;
 
 use crate::*;
 
-pub trait AeadCipher: Sized {
+pub trait Cipher: Sized {
     const NAME: &'static str;
 
     type NonceSize: ArrayLength<u8> + Debug + PartialEq;

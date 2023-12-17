@@ -30,7 +30,7 @@ mod decrypt {
 
     type SavedNonces<'a> = HashMap<(KeyPath, &'a RopsValue), Nonce>;
 
-    impl<C: AeadCipher> RopsTree<Encrypted<C>> {
+    impl<C: Cipher> RopsTree<Encrypted<C>> {
         pub fn decrypt(self, _data_key: &DataKey) -> Result<(RopsTree<Decrypted>, SavedNonces), C::Error> {
             todo!()
         }

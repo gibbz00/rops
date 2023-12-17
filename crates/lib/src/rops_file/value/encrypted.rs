@@ -6,7 +6,7 @@ use std::{
 use crate::*;
 
 #[derive(Debug, PartialEq)]
-pub struct EncryptedRopsValue<C: AeadCipher> {
+pub struct EncryptedRopsValue<C: Cipher> {
     pub data: EncryptedData,
     pub authorization_tag: AuthorizationTag<C>,
     pub nonce: Nonce<C::NonceSize>,
@@ -33,7 +33,7 @@ pub enum EncryptedRopsValueFromStrError {
     Base64Decode(#[from] Base64DecodeError),
 }
 
-impl<C: AeadCipher> EncryptedRopsValue<C> {
+impl<C: Cipher> EncryptedRopsValue<C> {
     pub fn decrypt(self, data_key: &DataKey, key_path: &KeyPath) -> Result<RopsValue, DecryptRopsValueError> {
         let mut in_place_buffer = self.data;
 
@@ -50,7 +50,7 @@ impl<C: AeadCipher> EncryptedRopsValue<C> {
     }
 }
 
-impl<C: AeadCipher> Display for EncryptedRopsValue<C> {
+impl<C: Cipher> Display for EncryptedRopsValue<C> {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         write!(
             f,
@@ -64,7 +64,7 @@ impl<C: AeadCipher> Display for EncryptedRopsValue<C> {
     }
 }
 
-impl<C: AeadCipher> FromStr for EncryptedRopsValue<C> {
+impl<C: Cipher> FromStr for EncryptedRopsValue<C> {
     type Err = EncryptedRopsValueFromStrError;
 
     fn from_str(input: &str) -> Result<Self, Self::Err> {
@@ -122,7 +122,7 @@ impl<C: AeadCipher> FromStr for EncryptedRopsValue<C> {
 mod mock {
     use super::*;
 
-    impl<C: AeadCipher> MockTestUtil for EncryptedRopsValue<C>
+    impl<C: Cipher> MockTestUtil for EncryptedRopsValue<C>
     where
         AuthorizationTag<C>: MockTestUtil,
         Nonce<C::NonceSize>: MockTestUtil,
@@ -137,7 +137,7 @@ mod mock {
         }
     }
 
-    impl<C: AeadCipher> MockDisplayTestUtil for EncryptedRopsValue<C>
+    impl<C: Cipher> MockDisplayTestUtil for EncryptedRopsValue<C>
     where
         AuthorizationTag<C>: MockDisplayTestUtil,
     {

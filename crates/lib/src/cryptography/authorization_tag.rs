@@ -8,9 +8,9 @@ use crate::*;
 #[derive(Debug, PartialEq, AsRef, AsMut, From)]
 #[as_mut]
 #[as_ref]
-pub struct AuthorizationTag<C: AeadCipher>(GenericArray<u8, C::AuthorizationTagSize>);
+pub struct AuthorizationTag<C: Cipher>(GenericArray<u8, C::AuthorizationTagSize>);
 
-impl<C: AeadCipher> FromStr for AuthorizationTag<C> {
+impl<C: Cipher> FromStr for AuthorizationTag<C> {
     type Err = Base64DecodeError;
 
     fn from_str(base64_str: &str) -> Result<Self, Self::Err> {
@@ -31,7 +31,7 @@ mod mock {
             }
         }
 
-        impl<C: AeadCipher> MockDisplayTestUtil for AuthorizationTag<C> {
+        impl<C: Cipher> MockDisplayTestUtil for AuthorizationTag<C> {
             fn mock_display() -> String {
                 "nQUDkuh0OR1cjR5hGC5jOw==".to_string()
             }

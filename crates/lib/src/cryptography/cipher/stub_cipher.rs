@@ -9,7 +9,7 @@ pub struct StubCipher;
 #[error("stub cipher error")]
 pub struct StubError;
 
-impl AeadCipher for StubCipher {
+impl Cipher for StubCipher {
     const NAME: &'static str = "STUB";
 
     type NonceSize = U32;

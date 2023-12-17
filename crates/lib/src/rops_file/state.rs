@@ -7,8 +7,8 @@ pub trait RopsFileState {
 }
 
 #[derive(Debug, PartialEq)]
-pub struct Encrypted<C: AeadCipher>(PhantomData<C>);
-impl<C: AeadCipher> RopsFileState for Encrypted<C> {
+pub struct Encrypted<C: Cipher>(PhantomData<C>);
+impl<C: Cipher> RopsFileState for Encrypted<C> {
     type RopsTreeLeaf = EncryptedRopsValue<C>;
 }
 

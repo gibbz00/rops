@@ -14,7 +14,7 @@ impl RopsValue {
     const BOOLEAN_TRUE_BYTES: &'static [u8] = b"True";
     const BOOLEAN_FALSE_BYTES: &'static [u8] = b"False";
 
-    pub fn encrypt<C: AeadCipher>(
+    pub fn encrypt<C: Cipher>(
         &self,
         nonce: Nonce<C::NonceSize>,
         data_key: &DataKey,
