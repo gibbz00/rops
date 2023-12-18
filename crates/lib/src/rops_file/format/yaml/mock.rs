@@ -75,20 +75,26 @@ mod metadata {
 
         impl MockFileFormatUtil<YamlFileFormat> for RopsFileMetadata {
             fn mock_format_display() -> String {
+                let mut metadata_string = String::new();
+
                 #[cfg(feature = "age")]
                 {
                     let age_metadata_yaml_string = RopsFileAgeMetadata::mock_format_display();
                     let (first_line, remaining_lines) = age_metadata_yaml_string
                         .split_once('\n')
                         .expect("no newline delimeter in yaml age metadata");
-                    indoc::formatdoc! {"
+                    metadata_string.push_str(&indoc::formatdoc! {"
                             age:
                             - {}
                             {}",
                         first_line,
                         textwrap::indent(remaining_lines, "  ")
-                    }
+                    });
                 }
+
+                metadata_string.push_str(&format!("lastmodified: {}\n", LastModifiedDateTime::mock_display()));
+
+                metadata_string
             }
         }
     }

@@ -6,6 +6,7 @@ members = [ "crates/*" ]
 age = "0.9"
 aes-gcm = { version = "0.10", features = ["std"] }
 base64 = "0.21"
+chrono = { version = "0.4", features = ["serde"] }
 derive_more = "0.99"
 generic-array = "0.14"
 indexmap = "2"

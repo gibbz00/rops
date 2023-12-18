@@ -11,11 +11,12 @@ age-test-utils = ["age", "test-utils", "dep:indoc", "dep:textwrap"]
 yaml = ["dep:serde_yaml"]
 # Ciphers
 aes-gcm = ["dep:aes-gcm"]
-
+# Test utils
 test-utils = ["dep:pretty_assertions"]
 
 [dependencies]
 base64.workspace = true
+chrono.workspace = true
 derive_more.workspace = true
 generic-array.workspace = true
 indexmap.workspace = true

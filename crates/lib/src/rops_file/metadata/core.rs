@@ -6,6 +6,8 @@ use crate::*;
 pub struct RopsFileMetadata {
     #[cfg(feature = "age")]
     pub age: Vec<RopsFileAgeMetadata>,
+    #[serde(rename = "lastmodified")]
+    pub last_modified: LastModifiedDateTime,
 }
 
 #[cfg(feature = "test-utils")]
@@ -17,6 +19,7 @@ mod mock {
             Self {
                 #[cfg(feature = "age")]
                 age: vec![RopsFileAgeMetadata::mock()],
+                last_modified: MockTestUtil::mock(),
             }
         }
     }
