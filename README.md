@@ -132,6 +132,8 @@ hashicorp_kv | `X`                           | `X`                              
 
   (Con: will skip initialization vector reuse for unchanged value.)
 
+- `--ignore-mac` flag. Why?
+
 - [Integrated formatting configuration](https://github.com/getsops/sops#32json-and-json_binary-indentation)
 
 - [Integrated secrets publishing](https://github.com/getsops/sops#219using-the-publish-command)

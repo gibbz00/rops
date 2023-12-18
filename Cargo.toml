@@ -16,6 +16,7 @@ rand = "0.8"
 serde = { version = "1", features = ["derive"] }
 serde_with = "3"
 serde_yaml = "0.9"
+sha2 = "0.10.8"
 strum = { version = "0.25", features = ["derive"] }
 textwrap = "0.16"
 thiserror = "1"

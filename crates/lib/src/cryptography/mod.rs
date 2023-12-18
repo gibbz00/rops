@@ -16,5 +16,8 @@ pub use encrypted_data::EncryptedData;
 mod cipher;
 pub use cipher::*;
 
+mod hasher;
+pub use hasher::*;
+
 mod integration;
 pub use integration::*;

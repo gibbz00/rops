@@ -18,3 +18,6 @@ pub use state::{Decrypted, Encrypted, RopsFileState};
 
 mod format;
 pub use format::*;
+
+mod mac;
+pub use mac::Mac;

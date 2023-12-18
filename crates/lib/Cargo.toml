@@ -11,6 +11,8 @@ age-test-utils = ["age", "test-utils", "dep:indoc", "dep:textwrap"]
 yaml = ["dep:serde_yaml"]
 # Ciphers
 aes-gcm = ["dep:aes-gcm"]
+# Hashers
+sha2 = ["dep:sha2"]
 # Test utils
 test-utils = ["dep:pretty_assertions"]
 
@@ -38,6 +40,9 @@ serde_yaml = { workspace = true, optional = true }
 
 # AES_GCM
 aes-gcm = { workspace = true, optional = true }
+
+# SHA2
+sha2 = { workspace = true, optional = true }
 
 # TEST_UTILS
 pretty_assertions = { workspace = true, optional = true }

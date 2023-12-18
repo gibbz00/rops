@@ -1,9 +1,10 @@
 use std::fmt::Display;
 
 use chrono::{DateTime, Utc};
+use derive_more::AsRef;
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, PartialEq, Serialize, Deserialize, AsRef)]
 pub struct LastModifiedDateTime(DateTime<Utc>);
 
 impl LastModifiedDateTime {
