@@ -18,8 +18,8 @@
 ### File:
 
 - Formats:
-  - [ ] JSON
   - [ ] YAML
+  - [ ] JSON
   - [ ] INI
   - [ ] ENV
   - [ ] BINARY
@@ -44,7 +44,6 @@
   - [ ] Message authentication code (MAC) for encrypted parts only.
     - Flag: `--mac-only-encrypted`.
     - `.rops.yaml`: `partial_encryption.mac_only_encrypted: true`.
-- [ ] Last modified metadata
 - [ ] File comment encryption
 
 ### Integrations:
