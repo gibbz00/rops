@@ -77,6 +77,23 @@ where
             value_variant: RopsValueVariant::String,
         })
     }
+
+    pub fn decrypt<C: Cipher>(
+        encrypted_value: EncryptedRopsValue<C>,
+        data_key: &DataKey,
+        last_modified_date_time: &LastModifiedDateTime,
+    ) -> Result<Self, C::Error> {
+        let mut in_place_buffer = GenericArray::<_, _>::from_iter(Vec::from(encrypted_value.data));
+        C::decrypt(
+            &encrypted_value.nonce,
+            data_key,
+            in_place_buffer.as_mut(),
+            last_modified_date_time.as_ref().to_rfc3339().as_bytes(),
+            &encrypted_value.authorization_tag,
+        )?;
+
+        Ok(Self(in_place_buffer))
+    }
 }
 
 // WORKAROUND: derive proc macro struggles with trait bounds
@@ -107,6 +124,17 @@ mod mock {
                 Self(GenericArray::from_slice(b"A0FBBFF515AC1EF88827C911653675DE4155901880355C59BA4FE4043395A0DE5EA77762EB3CAC54CC6F2B37EDDD916127A32566E810B0A5DADFA2F60B061331").to_owned())
             }
         }
+
+        #[cfg(feature = "aes-gcm")]
+        mod aes_gcm {
+            use super::*;
+
+            impl MockDisplayTestUtil for Mac<SHA512> {
+                fn mock_display() -> String {
+                    "ENC[AES256_GCM,data:W1CX5S5kbJ6f4uKuo6G5083Ekp50RAzqheQjbMEJpF1eZ7+d1/KSrLWIWjqZlyvzTDB1aMWp8xcOmCRCKyGn2cZCrr8SXU1yxpWW/42xue48LjFB0PVPt7YNTUtKrkb7KXOuvIrZ5HOXgoGpahopVCh06mG/T3hEHm/i2z/pzwk=,iv:fSPQ/8OhW8Mw2GMBHsO+qnhN4aKIN2sJYMNfjuxM+A8=,tag:kzpxGxIx4bVstvZrtMSFGQ==,type:str]".to_string()
+                }
+            }
+        }
     }
 }
 
@@ -114,12 +142,40 @@ mod mock {
 mod tests {
     #[cfg(feature = "sha2")]
     mod sha2 {
-
         use crate::*;
 
         #[test]
         fn computes_mac() {
             assert_eq!(Mac::mock(), Mac::<SHA512>::compute(false, &RopsMap::mock()))
+        }
+
+        #[cfg(feature = "aes-gcm")]
+        mod aes_gcm {
+            use super::*;
+
+            #[test]
+            fn decrypts_mac() {
+                assert_eq!(
+                    Mac::<SHA512>::mock(),
+                    Mac::decrypt::<AES256GCM>(
+                        Mac::mock_display().parse().unwrap(),
+                        &DataKey::mock(),
+                        &LastModifiedDateTime::mock()
+                    )
+                    .unwrap()
+                )
+            }
+
+            #[test]
+            fn encrypts_mac() {
+                let data_key = DataKey::mock();
+                let last_modified = LastModifiedDateTime::mock();
+
+                let encrypted = Mac::<SHA512>::mock().encrypt::<AES256GCM>(&data_key, &last_modified).unwrap();
+                let decrypted = Mac::<SHA512>::decrypt(encrypted, &data_key, &last_modified).unwrap();
+
+                assert_eq!(Mac::mock(), decrypted)
+            }
         }
     }
 }
