@@ -24,8 +24,9 @@ impl Integration for AgeIntegration {
             .map_err(|err: &str| IntegrationError::PublicKeyParsing(err.to_string()))
     }
 
-    fn parse_private_key(private_key_str: &str) -> IntegrationResult<Self::PrivateKey> {
+    fn parse_private_key(private_key_str: impl AsRef<str>) -> IntegrationResult<Self::PrivateKey> {
         private_key_str
+            .as_ref()
             .parse()
             .map_err(|err: &str| IntegrationError::PrivateKeyParsing(err.to_string()))
     }

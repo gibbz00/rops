@@ -11,19 +11,31 @@ pub trait Integration {
         format!("ROPS_{}", Self::NAME.to_uppercase())
     }
 
-    fn private_key_strings_from_env() -> IntegrationResult<Option<Vec<String>>> {
+    fn private_key_strings_from_env() -> IntegrationResult<Vec<String>> {
         match std::env::var(Self::private_key_env_var_name()) {
-            Ok(found_string) => Ok(Some(found_string.split(',').map(ToString::to_string).collect())),
+            Ok(found_string) => Ok(found_string.split(',').map(ToString::to_string).collect()),
             Err(env_var_error) => match env_var_error {
-                VarError::NotPresent => Ok(None),
+                VarError::NotPresent => Ok(Vec::default()),
                 VarError::NotUnicode(os_str) => Err(IntegrationError::EnvVarNotUnicode(os_str)),
             },
         }
     }
 
+    fn retrieve_private_keys() -> IntegrationResult<Vec<Self::PrivateKey>> {
+        let mut private_key_strings = Vec::<String>::new();
+
+        // TODO: Expand key retrieval methods, see README.md
+        private_key_strings.append(&mut Self::private_key_strings_from_env()?);
+
+        private_key_strings
+            .into_iter()
+            .map(Self::parse_private_key)
+            .collect::<Result<Vec<_>, _>>()
+    }
+
     fn parse_public_key(public_key_str: &str) -> IntegrationResult<Self::PublicKey>;
 
-    fn parse_private_key(private_key_str: &str) -> IntegrationResult<Self::PrivateKey>;
+    fn parse_private_key(private_key_str: impl AsRef<str>) -> IntegrationResult<Self::PrivateKey>;
 
     fn encrypt_data_key(public_key: &Self::PublicKey, data_key: &DataKey) -> IntegrationResult<String>;
 
@@ -49,7 +61,7 @@ mod stub_integration {
             unimplemented!()
         }
 
-        fn parse_private_key(_private_key_str: &str) -> IntegrationResult<Self::PrivateKey> {
+        fn parse_private_key(_private_key_str: impl AsRef<str>) -> IntegrationResult<Self::PrivateKey> {
             unimplemented!()
         }
 
@@ -79,7 +91,7 @@ mod tests {
 
         assert_eq!(
             &["key1", "key2"],
-            StubIntegration::private_key_strings_from_env().unwrap().unwrap().as_slice()
+            StubIntegration::private_key_strings_from_env().unwrap().as_slice()
         );
 
         std::env::remove_var(&var_name);

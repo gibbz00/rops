@@ -73,6 +73,7 @@
 ### Key management
 
 - Retrieval
+  - [ ] As an CLI argument.
   - [X] By an environment variable.
     - [X] Multiple keys per variable.
   - [ ] By key file location.
