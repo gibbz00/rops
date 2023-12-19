@@ -1,3 +1,5 @@
+use std::ffi::OsString;
+
 use thiserror::Error;
 
 pub type IntegrationResult<T> = Result<T, IntegrationError>;
@@ -10,12 +12,14 @@ pub enum IntegrationError {
     Decryption(&'static str, String),
     #[error("unable to parse public key string: {0}")]
     PublicKeyParsing(String),
-    #[error("unalbe to parse private key string: {0}")]
+    #[error("unnable to parse private key string: {0}")]
     PrivateKeyParsing(String),
     #[error("io error during encryption/decryption: {0}")]
     Io(#[from] std::io::Error),
-    #[error("Unable to convert bytes into a UTF-8 string")]
+    #[error("unable to convert bytes into a UTF-8 string")]
     Utf8Error(#[from] std::string::FromUtf8Error),
+    #[error("matched environment variable not valid UTF-8: {0:?}")]
+    EnvVarNotUnicode(OsString),
 }
 
 #[cfg(feature = "age")]

@@ -13,7 +13,7 @@
 * Identical CLI to `sops`.
 * Full CLI feature parity with `sops`, see [feature non-goals](#preliminary-non-goals).
 
-## Feature support:
+## Supported features:
 
 ### File:
 
@@ -73,8 +73,8 @@
 ### Key management
 
 - Retrieval
-  - [ ] By an environment variable.
-    - [ ] Multiple keys per variable.
+  - [X] By an environment variable.
+    - [X] Multiple keys per variable.
   - [ ] By key file location.
     - [ ] Specify with a `--key-file INTEGRATION PATH` flag.
     - [ ] Specify with a `$ROPS_INTEGRATION_KEY_FILE` environment variable.
@@ -94,6 +94,19 @@
     - [ ] `--remove INTEGRATION KEY FILE`
     - [ ] `--show-master-keys/-s FILE`
 - [ ] [Grouping](https://github.com/getsops/sops#214key-groups)
+
+#### Default private key environment variables:
+
+Integration  | Name              | Example                                                                                        |
+---          | ---               | ---                                                                                            |
+age          | ROPS_AGE          | `ROPS_AGE='AGE-SECRET-KEY-1CZG0RPQJNDZWZMRMJLNYSF6H00WK0ECYAVE83ALFC2KE53WJ2FRSNZ8GCL'`        |
+pgp          | ROPS_PGP          | `ROPS_PGP='85D77543B3D624B63CEA9E6DBC17301B491B3F21,E60892BB9BD89A69F759A1A0A3D652173B763E8F'` |
+aws_kms      | ROPS_AWS_KMS      | `ROPS_AWS_KMS='arn:aws:kms:us-east-1:656532927350:key/920aff2e-c5f1-4040-943a-047fa387b27e'`   |
+gcp_kms      | ROPS_GCP_KMS      | `ROPS_GCP_KMS='projects/my-project/locations/global/keyRings/sops/cryptoKeys/sops-key'`        |
+azure_kv     | ROPS_AZURE_KV     | `ROPS_AZURE_KV='https://sops.vault.azure.net/keys/sops-key/some-string'`                       |
+hashicorp_kv | ROPS_HASHICORP_KV | `ROPS_HASHICORP_KV='http://127.0.0.1:8200/v1/sops/keys/firstkey'`                              |
+
+All integrations also support providing multiple keys through a comma separated list, e.g. `ROPS_INTEGRATION='key1,key2'`.
 
 #### Default key file locations
 
@@ -119,8 +132,7 @@ hashicorp_kv | `X`                           | `X`                              
 
 ### Misc
 
-- [ ] [Access logging](https://github.com/getsops/sops#216auditing)
-- [ ] [Sub-process secret passing](https://github.com/getsops/sops#218passing-secrets-to-other-processes)
+  - [ ] [Sub-process secret passing](https://github.com/getsops/sops#218passing-secrets-to-other-processes)
 
 ### Preliminary non-goals
 
@@ -137,5 +149,7 @@ hashicorp_kv | `X`                           | `X`                              
 - [Integrated formatting configuration](https://github.com/getsops/sops#32json-and-json_binary-indentation)
 
 - [Integrated secrets publishing](https://github.com/getsops/sops#219using-the-publish-command)
+
+- [Access logging](https://github.com/getsops/sops#216auditing) Better handled by the integrations?
 
 - [Remote key service](https://github.com/getsops/sops#215key-service)

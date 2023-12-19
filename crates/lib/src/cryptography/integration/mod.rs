@@ -1,5 +1,7 @@
 mod core;
 pub use core::Integration;
+#[cfg(feature = "test-utils")]
+pub use core::StubIntegration;
 
 mod error;
 pub use error::{IntegrationError, IntegrationResult};
