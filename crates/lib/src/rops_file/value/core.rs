@@ -7,8 +7,33 @@ pub enum RopsValue {
     String(String),
     Boolean(bool),
     Integer(i64),
+    Float(RopsFloat),
+}
+
+pub use rops_float::RopsFloat;
+mod rops_float {
+
+    #[derive(Debug, Clone, PartialEq, Eq, Hash)]
     // Stored as String to enable hashing
-    Float(String),
+    pub struct RopsFloat(String);
+
+    impl From<f64> for RopsFloat {
+        fn from(float: f64) -> Self {
+            Self(float.to_string())
+        }
+    }
+
+    impl From<RopsFloat> for f64 {
+        fn from(rops_float: RopsFloat) -> Self {
+            rops_float.0.parse().expect("inner string not a valid f64 string")
+        }
+    }
+
+    impl RopsFloat {
+        pub fn as_bytes(&self) -> &[u8] {
+            self.0.as_bytes()
+        }
+    }
 }
 
 impl RopsValue {
@@ -54,7 +79,7 @@ impl RopsValue {
                 _ => return Err(RopsValueFromBytesError::Boolean(bytes)),
             }),
             RopsValueVariant::Integer => Self::Integer(std::str::from_utf8(&bytes)?.parse()?),
-            RopsValueVariant::Float => Self::Float(std::str::from_utf8(&bytes)?.parse::<f64>()?.to_string()),
+            RopsValueVariant::Float => Self::Float(std::str::from_utf8(&bytes)?.parse::<f64>()?.into()),
         })
     }
 }
@@ -150,7 +175,7 @@ mod tests {
             assert_encrypts_value(
                 "ENC[AES256_GCM,data:fglPlT+e9ACWrA==,iv:pefOFnMThS6qICGrLuai+rSBtrmliGWdqJrXzcl2qAo=,tag:tHVQiwreFZurqiroPCIXHw==,type:float]",
                 "example_float:",
-                RopsValue::Float(1234.56789.to_string()),
+                RopsValue::Float(1234.56789.into()),
             );
         }
     }

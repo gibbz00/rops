@@ -9,6 +9,8 @@ base64 = "0.21"
 chrono = { version = "0.4", features = ["serde"] }
 derive_more = "0.99"
 generic-array = "0.14"
+hex = "0.4"
+impl-tools = "0.10"
 indexmap = "2"
 indoc = "2"
 pretty_assertions = "1"

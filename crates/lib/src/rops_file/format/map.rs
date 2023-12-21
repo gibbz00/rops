@@ -4,9 +4,10 @@ use serde::{Deserialize, Serialize};
 
 use crate::*;
 
-#[derive(Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
+#[impl_tools::autoimpl(PartialEq)]
 #[serde(transparent)]
-pub struct RopsFileFormatMap<S: RopsFileState, F: FileFormat> {
+pub struct RopsFileFormatMap<S: RopsMapState, F: FileFormat> {
     #[serde(flatten)]
     inner: F::Map,
     #[serde(skip)]
@@ -24,11 +25,11 @@ pub enum FormatToInternalMapError {
     #[error("unable to parse encrypted value components: {0}")]
     EncryptedRopsValue(#[from] EncryptedRopsValueFromStrError),
     // TEMP: Deprecate once partial encryption feature arrives.
-    #[error("invalid valid for an encrypted file")]
-    InvalidValueForEncrypted(String),
+    #[error("invalid value type for an encrypted file")]
+    InvalidValueTypeForEncrypted(String),
 }
 
-impl<S: RopsFileState, F: FileFormat> RopsFileFormatMap<S, F> {
+impl<S: RopsMapState, F: FileFormat> RopsFileFormatMap<S, F> {
     pub fn into_inner_map(self) -> F::Map {
         self.inner
     }

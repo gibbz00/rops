@@ -1,44 +1,49 @@
 mod rops_file {
     use crate::*;
 
-    #[test]
-    fn serializes_decrypted_rops_file() {
-        FileFormatTestUtils::assert_serialization::<YamlFileFormat, RopsFile<Decrypted, YamlFileFormat>>()
-    }
-
-    #[test]
-    fn deserializes_decrypted_rops_file() {
-        FileFormatTestUtils::assert_deserialization::<YamlFileFormat, RopsFile<Decrypted, YamlFileFormat>>()
-    }
-
-    #[cfg(feature = "aes-gcm")]
+    #[cfg(all(feature = "aes-gcm", feature = "sha2"))]
     mod aes_gcm {
         use super::*;
 
         #[test]
+        fn serializes_decrypted_rops_file() {
+            FileFormatTestUtils::assert_serialization::<YamlFileFormat, RopsFile<DecryptedFile<SHA512>, YamlFileFormat>>()
+        }
+
+        #[test]
+        fn deserializes_decrypted_rops_file() {
+            FileFormatTestUtils::assert_deserialization::<YamlFileFormat, RopsFile<DecryptedFile<SHA512>, YamlFileFormat>>()
+        }
+
+        #[test]
         fn serializes_encrypted_rops_file() {
-            FileFormatTestUtils::assert_serialization::<YamlFileFormat, RopsFile<Encrypted<AES256GCM>, YamlFileFormat>>()
+            FileFormatTestUtils::assert_serialization::<YamlFileFormat, RopsFile<EncryptedFile<AES256GCM, SHA512>, YamlFileFormat>>()
         }
 
         #[test]
         fn deserializes_encrypted_rops_file() {
-            FileFormatTestUtils::assert_deserialization::<YamlFileFormat, RopsFile<Encrypted<AES256GCM>, YamlFileFormat>>()
+            FileFormatTestUtils::assert_deserialization::<YamlFileFormat, RopsFile<EncryptedFile<AES256GCM, SHA512>, YamlFileFormat>>()
         }
     }
 }
 
 mod metadata {
     mod core {
-        use crate::*;
+        #[cfg(all(feature = "aes-gcm", feature = "sha2"))]
+        mod aes_gcm_sha_2 {
+            use crate::*;
 
-        #[test]
-        fn serializes_metadata() {
-            FileFormatTestUtils::assert_serialization::<YamlFileFormat, RopsFileMetadata>()
-        }
+            // TODO: test both encrypted and decrypted serialization
 
-        #[test]
-        fn deserializes_metadata() {
-            FileFormatTestUtils::assert_deserialization::<YamlFileFormat, RopsFileMetadata>()
+            #[test]
+            fn serializes_metadata() {
+                FileFormatTestUtils::assert_serialization::<YamlFileFormat, RopsFileMetadata<DecryptedMetadata<SHA512>>>()
+            }
+
+            #[test]
+            fn deserializes_metadata() {
+                FileFormatTestUtils::assert_deserialization::<YamlFileFormat, RopsFileMetadata<DecryptedMetadata<SHA512>>>()
+            }
         }
     }
 

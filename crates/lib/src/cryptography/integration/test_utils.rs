@@ -1,6 +1,10 @@
 use crate::*;
 
 pub trait IntegrationTestUtils: Integration {
+    fn set_mock_private_key_env_var() {
+        std::env::set_var(Self::private_key_env_var_name(), Self::mock_private_key_str())
+    }
+
     fn mock_public_key_str() -> &'static str;
 
     fn mock_public_key() -> Self::PublicKey {

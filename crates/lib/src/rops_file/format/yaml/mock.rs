@@ -1,9 +1,13 @@
 mod rops_file {
+    use std::{fmt::Display, str::FromStr};
+
     use crate::*;
 
     impl<S: RopsFileState> MockFileFormatUtil<YamlFileFormat> for RopsFile<S, YamlFileFormat>
     where
-        RopsFileFormatMap<S, YamlFileFormat>: MockFileFormatUtil<YamlFileFormat>,
+        RopsFileFormatMap<S::MapState, YamlFileFormat>: MockFileFormatUtil<YamlFileFormat>,
+        RopsFileMetadata<S::MetadataState>: MockFileFormatUtil<YamlFileFormat>,
+        <<S::MetadataState as RopsMetadataState>::Mac as FromStr>::Err: Display,
     {
         fn mock_format_display() -> String {
             indoc::formatdoc! {"
@@ -20,7 +24,7 @@ mod rops_file {
 mod map {
     use crate::*;
 
-    impl MockFileFormatUtil<YamlFileFormat> for RopsFileFormatMap<Decrypted, YamlFileFormat> {
+    impl MockFileFormatUtil<YamlFileFormat> for RopsFileFormatMap<DecryptedMap, YamlFileFormat> {
         fn mock_format_display() -> String {
             indoc::indoc! {"
                     hello: world!
@@ -40,7 +44,7 @@ mod map {
     }
 
     #[cfg(feature = "aes-gcm")]
-    impl MockFileFormatUtil<YamlFileFormat> for RopsFileFormatMap<Encrypted<AES256GCM>, YamlFileFormat> {
+    impl MockFileFormatUtil<YamlFileFormat> for RopsFileFormatMap<EncryptedMap<AES256GCM>, YamlFileFormat> {
         fn mock_format_display() -> String {
             indoc::indoc! {"
                     hello: ENC[AES256_GCM,data:3S1E9am/,iv:WUQoQTrRXw/tUgwpmSG69xWtd5dVMfe8qUly1VB8ucM=,tag:nQUDkuh0OR1cjR5hGC5jOw==,type:str]
@@ -59,7 +63,7 @@ mod map {
         }
     }
 
-    impl<S: RopsFileState> MockTestUtil for RopsFileFormatMap<S, YamlFileFormat>
+    impl<S: RopsMapState> MockTestUtil for RopsFileFormatMap<S, YamlFileFormat>
     where
         Self: MockFileFormatUtil<YamlFileFormat>,
     {
@@ -71,9 +75,15 @@ mod map {
 
 mod metadata {
     mod core {
+        use std::{fmt::Display, str::FromStr};
+
         use crate::*;
 
-        impl MockFileFormatUtil<YamlFileFormat> for RopsFileMetadata {
+        impl<S: RopsMetadataState> MockFileFormatUtil<YamlFileFormat> for RopsFileMetadata<S>
+        where
+            S::Mac: MockDisplayTestUtil,
+            <S::Mac as FromStr>::Err: Display,
+        {
             fn mock_format_display() -> String {
                 let mut metadata_string = String::new();
 
@@ -93,6 +103,7 @@ mod metadata {
                 }
 
                 metadata_string.push_str(&format!("lastmodified: {}\n", LastModifiedDateTime::mock_display()));
+                metadata_string.push_str(&format!("mac: {}\n", S::Mac::mock_display()));
 
                 metadata_string
             }

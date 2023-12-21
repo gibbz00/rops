@@ -42,8 +42,9 @@
       - [ ] Flag: `--encrypted-regex`.
       - [ ] `.rops.yaml`: `partial_encryption.limit.regex`.
   - [ ] Message authentication code (MAC) for encrypted parts only.
-    - Flag: `--mac-only-encrypted`.
-    - `.rops.yaml`: `partial_encryption.mac_only_encrypted: true`.
+    - [ ] Flag: `--mac-only-encrypted`.
+    - [ ] `.rops.yaml`: `partial_encryption.mac_only_encrypted: true`.
+    - [ ] In library
 - [ ] File comment encryption
 
 ### Integrations:

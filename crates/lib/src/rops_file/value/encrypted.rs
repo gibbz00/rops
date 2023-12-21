@@ -15,7 +15,7 @@ pub struct EncryptedRopsValue<C: Cipher> {
 
 #[derive(Debug, thiserror::Error)]
 pub enum DecryptRopsValueError {
-    #[error("cipher error: {0}")]
+    #[error("encountered cipher error: {0}")]
     Cipher(String),
     #[error("unable convert value from decrypted bytes: {0}")]
     FromBytes(#[from] RopsValueFromBytesError),
