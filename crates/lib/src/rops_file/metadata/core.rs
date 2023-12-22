@@ -30,7 +30,6 @@ pub enum RopsFileMetadataDecryptError {
     MissingDataKey,
 }
 
-// TODO: explicit error handling. I.e. return that encryption failed for the mac value.
 impl<C: Cipher, H: Hasher> RopsFileMetadata<EncryptedMetadata<C, H>> {
     pub fn decrypt(self) -> Result<(RopsFileMetadata<DecryptedMetadata<H>>, DataKey), RopsFileMetadataDecryptError> {
         let Some(data_key) = self.retrieve_data_key()? else {

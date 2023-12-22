@@ -33,16 +33,24 @@ mod metadata {
         mod aes_gcm_sha_2 {
             use crate::*;
 
-            // TODO: test both encrypted and decrypted serialization
-
             #[test]
-            fn serializes_metadata() {
+            fn serializes_decrypted_metadata() {
                 FileFormatTestUtils::assert_serialization::<YamlFileFormat, RopsFileMetadata<DecryptedMetadata<SHA512>>>()
             }
 
             #[test]
-            fn deserializes_metadata() {
+            fn deserializes_decrypted_metadata() {
                 FileFormatTestUtils::assert_deserialization::<YamlFileFormat, RopsFileMetadata<DecryptedMetadata<SHA512>>>()
+            }
+
+            #[test]
+            fn serializes_encrypted_metadata() {
+                FileFormatTestUtils::assert_serialization::<YamlFileFormat, RopsFileMetadata<EncryptedMetadata<AES256GCM, SHA512>>>()
+            }
+
+            #[test]
+            fn deserializes_encrypted_metadata() {
+                FileFormatTestUtils::assert_deserialization::<YamlFileFormat, RopsFileMetadata<EncryptedMetadata<AES256GCM, SHA512>>>()
             }
         }
     }
