@@ -1,5 +1,3 @@
-use std::{borrow::Cow, collections::HashMap};
-
 use indexmap::IndexMap;
 
 use crate::*;
@@ -13,7 +11,7 @@ impl<C: Cipher> RopsMap<EncryptedMap<C>> {
         self,
         data_key: &DataKey,
     ) -> Result<(RopsMap<DecryptedMap>, SavedRopsMapNonces<C>), DecryptRopsValueError> {
-        let mut saved_nonces = SavedRopsMapNonces(HashMap::new());
+        let mut saved_nonces = SavedRopsMapNonces::default();
         Self::decrypt_impl(self, data_key, &KeyPath::default(), &mut Some(&mut saved_nonces)).map(|tree| (tree, saved_nonces))
     }
 
@@ -65,7 +63,7 @@ impl<C: Cipher> RopsMap<EncryptedMap<C>> {
                     Some(saved_nonces) => {
                         let nonce = encrypted_value.nonce.clone();
                         let decrypted_value = encrypted_value.decrypt(data_key, key_path)?;
-                        saved_nonces.insert((Cow::Owned(key_path.clone()), Cow::Owned(decrypted_value.clone())), nonce);
+                        saved_nonces.insert((key_path.clone(), decrypted_value.clone()), nonce);
                         decrypted_value
                     }
                     None => encrypted_value.decrypt(data_key, key_path)?,

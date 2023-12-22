@@ -20,4 +20,4 @@ mod format;
 pub use format::*;
 
 mod mac;
-pub use mac::{EncryptedMac, Mac};
+pub use mac::{EncryptedMac, Mac, SavedMacNonce};

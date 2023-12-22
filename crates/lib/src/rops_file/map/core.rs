@@ -1,5 +1,3 @@
-use std::{borrow::Cow, collections::HashMap};
-
 use derive_more::{Deref, DerefMut, From, Into};
 
 use crate::*;
@@ -14,8 +12,3 @@ pub enum RopsTree<S: RopsMapState> {
     Null,
     Leaf(S::RopsTreeLeaf),
 }
-
-// WORKAROUND: Non-cow tuple key doesn't allow saved_nounces.get((&key, &value))
-#[derive(Debug, PartialEq, Deref, DerefMut)]
-#[allow(clippy::complexity)]
-pub struct SavedRopsMapNonces<C: Cipher>(pub(crate) HashMap<(Cow<'static, KeyPath>, Cow<'static, RopsValue>), Nonce<C::NonceSize>>);

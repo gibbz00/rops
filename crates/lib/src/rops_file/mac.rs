@@ -14,13 +14,13 @@ const MAC_ENCRYPTED_ONLY_INIT_BYTES: [u8; 32] = [
 // size. The buffer contains in other words UTF-8 byte codes the hex string encoded from the
 // computed MAC, and not the computed MAC itself.
 //
-// NOTE: Non-constant equality checking is currently protected against timing attacks
-// since the MAC must be decrypted before being compared.
-//
 // TEMP(HACK): Inner buffer should ideally be a GenericArray<u8, Sum<H::OutputSize, H::OutputSize>>.
 // But because where clauses aren't inferred in any function signature containing Mac<H>, a Vec is
 // used instead. https://github.com/rust-lang/rust/issues/20671
-#[impl_tools::autoimpl(Debug, PartialEq)]
+//
+// NOTE: Non-constant equality checking is currently protected against timing attacks
+// by requiring that the MAC must be decrypted before being compared.
+#[impl_tools::autoimpl(Debug, Clone, PartialEq)]
 pub struct Mac<H: Hasher>(Vec<u8>, PhantomData<H>);
 
 impl<H: Hasher> FromStr for Mac<H> {
@@ -82,8 +82,32 @@ impl<H: Hasher> Mac<H> {
         data_key: &DataKey,
         last_modified_date_time: &LastModifiedDateTime,
     ) -> Result<EncryptedMac<C, H>, C::Error> {
+        self.encrypt_impl(data_key, last_modified_date_time, None)
+    }
+
+    pub fn encrypt_with_saved_nonce<C: Cipher>(
+        self,
+        data_key: &DataKey,
+        last_modified_date_time: &LastModifiedDateTime,
+        saved_mac_nonce: SavedMacNonce<C, H>,
+    ) -> Result<EncryptedMac<C, H>, C::Error> {
+        self.encrypt_impl(data_key, last_modified_date_time, Some(saved_mac_nonce))
+    }
+
+    fn encrypt_impl<C: Cipher>(
+        self,
+        data_key: &DataKey,
+        last_modified_date_time: &LastModifiedDateTime,
+        optional_saved_mac_nonce: Option<SavedMacNonce<C, H>>,
+    ) -> Result<EncryptedMac<C, H>, C::Error> {
+        let nonce = match optional_saved_mac_nonce {
+            // IMPROVEMENT: throw error if saved nonce didn't match?
+            Some(saved_mac_nonce) => saved_mac_nonce.get_or_create(&self),
+            None => Nonce::new(),
+        };
+
         let mut in_place_buffer = self.0;
-        let nonce = Nonce::new();
+
         let authorization_tag = C::encrypt(
             &nonce,
             data_key,
@@ -120,6 +144,25 @@ impl<C: Cipher, H: Hasher> FromStr for EncryptedMac<C, H> {
 
 impl<C: Cipher, H: Hasher> EncryptedMac<C, H> {
     pub fn decrypt(self, data_key: &DataKey, last_modified_date_time: &LastModifiedDateTime) -> Result<Mac<H>, C::Error> {
+        self.decrypt_impl(data_key, last_modified_date_time).map(|(mac, _)| mac)
+    }
+
+    #[allow(clippy::type_complexity)]
+    pub fn decrypt_and_save_nonce(
+        self,
+        data_key: &DataKey,
+        last_modified_date_time: &LastModifiedDateTime,
+    ) -> Result<(Mac<H>, SavedMacNonce<C, H>), C::Error> {
+        self.decrypt_impl(data_key, last_modified_date_time)
+            .map(|(mac, nonce)| (mac.clone(), SavedMacNonce::new(mac, nonce)))
+    }
+
+    #[allow(clippy::type_complexity)]
+    fn decrypt_impl(
+        self,
+        data_key: &DataKey,
+        last_modified_date_time: &LastModifiedDateTime,
+    ) -> Result<(Mac<H>, Nonce<C::NonceSize>), C::Error> {
         let mut in_place_buffer = Vec::from(self.0.data);
         C::decrypt(
             &self.0.nonce,
@@ -129,7 +172,44 @@ impl<C: Cipher, H: Hasher> EncryptedMac<C, H> {
             &self.0.authorization_tag,
         )?;
 
-        Ok(Mac(in_place_buffer, PhantomData))
+        let mac = Mac(in_place_buffer, PhantomData);
+        Ok((mac.clone(), self.0.nonce))
+    }
+}
+
+pub use saved_mac_nonce::SavedMacNonce;
+mod saved_mac_nonce {
+    use crate::*;
+
+    #[impl_tools::autoimpl(Debug, PartialEq)]
+    pub struct SavedMacNonce<C: Cipher, H: Hasher>(Mac<H>, Nonce<C::NonceSize>);
+
+    impl<C: Cipher, H: Hasher> SavedMacNonce<C, H> {
+        pub fn new(mac: Mac<H>, nonce: Nonce<C::NonceSize>) -> Self {
+            Self(mac, nonce)
+        }
+
+        pub fn get_or_create(self, mac: &Mac<H>) -> Nonce<C::NonceSize> {
+            match &self.0 == mac {
+                true => self.1,
+                false => Nonce::new(),
+            }
+        }
+    }
+
+    #[cfg(feature = "test-utils")]
+    mod mock {
+        use super::*;
+
+        impl<C: Cipher, H: Hasher> MockTestUtil for SavedMacNonce<C, H>
+        where
+            Mac<H>: MockTestUtil,
+            EncryptedMac<C, H>: MockTestUtil,
+        {
+            fn mock() -> Self {
+                Self::new(Mac::mock(), EncryptedMac::<C, H>::mock().0.nonce)
+            }
+        }
     }
 }
 
@@ -188,6 +268,27 @@ mod tests {
             use super::*;
 
             #[test]
+            fn encrypts_mac() {
+                let data_key = DataKey::mock();
+                let last_modified = LastModifiedDateTime::mock();
+
+                let encrypted = Mac::<SHA512>::mock().encrypt::<AES256GCM>(&data_key, &last_modified).unwrap();
+                let decrypted = encrypted.decrypt(&data_key, &last_modified).unwrap();
+
+                assert_eq!(Mac::mock(), decrypted)
+            }
+
+            #[test]
+            fn encrypts_with_saved_nonce() {
+                assert_eq!(
+                    EncryptedMac::<AES256GCM, SHA512>::mock(),
+                    Mac::mock()
+                        .encrypt_with_saved_nonce(&DataKey::mock(), &LastModifiedDateTime::mock(), SavedMacNonce::mock())
+                        .unwrap()
+                );
+            }
+
+            #[test]
             fn decrypts_mac() {
                 assert_eq!(
                     Mac::mock(),
@@ -198,14 +299,39 @@ mod tests {
             }
 
             #[test]
-            fn encrypts_mac() {
+            fn decrypts_and_saves_nonce() {
+                let (decrypted_mac, saved_mac_nonce) = EncryptedMac::<AES256GCM, SHA512>::mock()
+                    .decrypt_and_save_nonce(&DataKey::mock(), &LastModifiedDateTime::mock())
+                    .unwrap();
+
+                assert_eq!(Mac::mock(), decrypted_mac);
+                assert_eq!(SavedMacNonce::mock(), saved_mac_nonce);
+            }
+
+            #[test]
+            fn protects_against_nonce_reuse() {
+                let mac = Mac::mock();
                 let data_key = DataKey::mock();
                 let last_modified = LastModifiedDateTime::mock();
 
-                let encrypted = Mac::<SHA512>::mock().encrypt::<AES256GCM>(&data_key, &last_modified).unwrap();
-                let decrypted = encrypted.decrypt(&data_key, &last_modified).unwrap();
+                let encrypted_mock_mac = mac
+                    .clone()
+                    .encrypt_with_saved_nonce::<AES256GCM>(&data_key, &last_modified, SavedMacNonce::mock())
+                    .unwrap();
 
-                assert_eq!(Mac::mock(), decrypted)
+                let other_saved_nonce = SavedMacNonce::<AES256GCM, SHA512>::new(
+                    Mac::compute(
+                        false,
+                        &RopsMap(indexmap::indexmap! {
+                            "mumbo".to_string() => RopsTree::Leaf(RopsValue::String("jumbo".to_string()))
+                        }),
+                    ),
+                    Nonce::mock(),
+                );
+
+                let encrypted_with_other_mac = mac.encrypt_with_saved_nonce(&data_key, &last_modified, other_saved_nonce).unwrap();
+
+                assert_ne!(encrypted_mock_mac, encrypted_with_other_mac)
             }
         }
     }

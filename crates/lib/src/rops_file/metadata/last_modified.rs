@@ -23,15 +23,15 @@ impl Display for LastModifiedDateTime {
 mod mock {
     use crate::*;
 
-    impl MockDisplayTestUtil for LastModifiedDateTime {
-        fn mock_display() -> String {
-            "2023-12-16T22:32:54Z".to_string()
-        }
-    }
-
     impl MockTestUtil for LastModifiedDateTime {
         fn mock() -> Self {
             "2023-12-16T22:32:54Z".parse().map(Self).unwrap()
+        }
+    }
+
+    impl MockDisplayTestUtil for LastModifiedDateTime {
+        fn mock_display() -> String {
+            "2023-12-16T22:32:54Z".to_string()
         }
     }
 }

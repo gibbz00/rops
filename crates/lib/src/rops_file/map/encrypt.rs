@@ -1,5 +1,3 @@
-use std::borrow::Cow;
-
 use indexmap::IndexMap;
 
 use crate::*;
@@ -59,7 +57,7 @@ impl RopsMap<DecryptedMap> {
                 RopsTree::Null => RopsTree::Null,
                 RopsTree::Leaf(value) => {
                     let nonce = optional_saved_nonces
-                        .map(|saved_nonces| saved_nonces.get(&(Cow::Borrowed(key_path), Cow::Borrowed(&value))).cloned())
+                        .map(|saved_nonces| saved_nonces.get((key_path, &value)).cloned())
                         .flatten()
                         .unwrap_or_else(Nonce::new);
                     RopsTree::Leaf(value.encrypt(nonce, data_key, key_path)?)

@@ -1,5 +1,3 @@
-use std::{borrow::Cow, collections::HashMap};
-
 use indexmap::indexmap;
 
 use crate::*;
@@ -36,7 +34,7 @@ where
     RopsMap<EncryptedMap<C>>: MockTestUtil,
 {
     fn mock() -> Self {
-        let mut saved_nonces = SavedRopsMapNonces(HashMap::new());
+        let mut saved_nonces = SavedRopsMapNonces::default();
         recurive_build(
             RopsTree::Map(RopsMap::mock()),
             &mut saved_nonces,
@@ -63,7 +61,7 @@ where
                 RopsTree::Leaf(encrypted_value) => {
                     let nonce = encrypted_value.nonce.clone();
                     let decrypted = encrypted_value.decrypt(data_key, key_path).unwrap();
-                    saved_nonces.insert((Cow::Owned(key_path.clone()), Cow::Owned(decrypted)), nonce);
+                    saved_nonces.insert((key_path.clone(), decrypted), nonce);
                 }
             }
         }
