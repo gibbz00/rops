@@ -102,11 +102,24 @@ mod mock {
 
 #[cfg(test)]
 mod tests {
-    #[cfg(feature = "age")]
-    mod age {
-        #[cfg(all(feature = "aes-gcm", feature = "sha2"))]
-        mod aes_gcm_sha2 {
-            use crate::*;
+    #[cfg(all(feature = "aes-gcm", feature = "sha2"))]
+    mod aes_gcm_sha2 {
+        use crate::*;
+
+        #[test]
+        fn decrypts_metadata() {
+            assert_eq!(
+                RopsFileMetadata::mock(),
+                RopsFileMetadata::<EncryptedMetadata<AES256GCM, SHA512>>::mock()
+                    .decrypt()
+                    .unwrap()
+                    .0
+            )
+        }
+
+        #[cfg(feature = "age")]
+        mod age {
+            use super::*;
 
             #[test]
             fn gets_data_key_from_age() {
