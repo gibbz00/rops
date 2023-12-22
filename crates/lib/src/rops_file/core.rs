@@ -41,6 +41,7 @@ impl<C: Cipher, F: FileFormat, H: Hasher> RopsFile<EncryptedFile<C, H>, F> {
         // TODO: use metadata.from_encrypted_values_only once partial encryption is added
         let computed_mac = Mac::<H>::compute(false, &decrypted_map);
         let stored_mac = &decrypted_metadata.mac;
+
         if &computed_mac != stored_mac {
             return Err(RopsFileDecryptError::MacMismatch(computed_mac.to_string(), stored_mac.to_string()));
         }

@@ -1,4 +1,4 @@
-use std::{marker::PhantomData, str::FromStr};
+use std::{fmt::Display, marker::PhantomData, str::FromStr};
 
 use derive_more::Display;
 use hex::FromHexError;
@@ -10,16 +10,34 @@ const MAC_ENCRYPTED_ONLY_INIT_BYTES: [u8; 32] = [
     0xc6, 0xfd, 0xad, 0xec, 0x81, 0x76, 0xf2, 0x7d, 0x69,
 ];
 
-#[derive(Display)]
-#[display(fmt = "{}", "self.0")]
+// SOPS stores the hex formatted byte representation of the computed MAC, hence the doubling in
+// size. The buffer contains in other words UTF-8 byte codes the hex string encoded from the
+// computed MAC, and not the computed MAC itself.
+//
+// NOTE: Non-constant equality checking is currently protected against timing attacks
+// since the MAC must be decrypted before being compared.
+//
+// TEMP(HACK): Inner buffer should ideally be a GenericArray<u8, Sum<H::OutputSize, H::OutputSize>>.
+// But because where clauses aren't inferred in any function signature containing Mac<H>, a Vec is
+// used instead. https://github.com/rust-lang/rust/issues/20671
 #[impl_tools::autoimpl(Debug, PartialEq)]
-pub struct Mac<H: Hasher>(String, PhantomData<H>);
+pub struct Mac<H: Hasher>(Vec<u8>, PhantomData<H>);
 
 impl<H: Hasher> FromStr for Mac<H> {
     type Err = FromHexError;
 
     fn from_str(str: &str) -> Result<Self, Self::Err> {
-        hex::decode(str).map(|_| Self(str.to_uppercase(), PhantomData))
+        hex::decode(str).map(|_| Self(str.as_bytes().to_vec(), PhantomData))
+    }
+}
+
+impl<H: Hasher> Display for Mac<H> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "{}",
+            std::str::from_utf8(&self.0).expect("internal buffer does not represent a valid UTF-8 hex string")
+        )
     }
 }
 
@@ -32,7 +50,7 @@ impl<H: Hasher> Mac<H> {
 
         traverse_map(&mut hasher, from_encrypted_values_only, decrypted_map);
 
-        return Mac(hex::encode_upper(hasher.finalize()), PhantomData);
+        return Mac(hex::encode_upper(hasher.finalize()).into_bytes(), PhantomData);
 
         fn traverse_map<Ha: Hasher>(hasher: &mut Ha, hash_encrypted_values_only: bool, map: &RopsMap<DecryptedMap>) {
             traverse_map_recursive(hasher, hash_encrypted_values_only, map);
@@ -64,7 +82,7 @@ impl<H: Hasher> Mac<H> {
         data_key: &DataKey,
         last_modified_date_time: &LastModifiedDateTime,
     ) -> Result<EncryptedMac<C, H>, C::Error> {
-        let mut in_place_buffer = self.0.into_bytes();
+        let mut in_place_buffer = self.0;
         let nonce = Nonce::new();
         let authorization_tag = C::encrypt(
             &nonce,
@@ -106,12 +124,12 @@ impl<C: Cipher, H: Hasher> EncryptedMac<C, H> {
         C::decrypt(
             &self.0.nonce,
             data_key,
-            in_place_buffer.as_mut(),
+            &mut in_place_buffer,
             last_modified_date_time.as_ref().to_rfc3339().as_bytes(),
             &self.0.authorization_tag,
         )?;
 
-        Ok(Mac(hex::encode_upper(in_place_buffer), PhantomData))
+        Ok(Mac(in_place_buffer, PhantomData))
     }
 }
 
@@ -131,7 +149,7 @@ mod mock {
 
         impl MockTestUtil for Mac<SHA512> {
             fn mock() -> Self {
-                Self(Self::mock_display(), PhantomData)
+                Self(Self::mock_display().into_bytes(), PhantomData)
             }
         }
 
