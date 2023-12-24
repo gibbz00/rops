@@ -1,15 +1,18 @@
 use std::fmt::Display;
 
 use chrono::{DateTime, Utc};
-use derive_more::AsRef;
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, PartialEq, Serialize, Deserialize, AsRef)]
+#[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub struct LastModifiedDateTime(DateTime<Utc>);
 
 impl LastModifiedDateTime {
     pub fn now() -> Self {
         Self(Utc::now())
+    }
+
+    pub fn to_bytes(&self) -> Vec<u8> {
+        self.to_string().into_bytes()
     }
 }
 

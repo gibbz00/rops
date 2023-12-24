@@ -1,0 +1,9 @@
+hello: Welcome to SOPS! Edit this file as you please!
+example_key: example_value
+example_array:
+    - example_value1
+    - example_value2
+example_number: 1234.56789
+example_booleans:
+    - true
+    - false

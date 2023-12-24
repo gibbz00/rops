@@ -1,4 +1,4 @@
-use std::marker::PhantomData;
+use std::{fmt::Display, marker::PhantomData};
 
 use serde::{Deserialize, Serialize};
 
@@ -48,6 +48,12 @@ where
 {
     fn from(internal_map: RopsMap<S>) -> Self {
         Self::from_inner_map(internal_map.into())
+    }
+}
+
+impl<S: RopsMapState, F: FileFormat> Display for RopsFileFormatMap<S, F> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", F::serialize_to_string(self).expect("file format map not serializable"))
     }
 }
 

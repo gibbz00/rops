@@ -7,6 +7,7 @@ use age::{
 
 use crate::*;
 
+#[derive(Debug, PartialEq)]
 pub struct AgeIntegration;
 
 impl AgeIntegration {
@@ -17,6 +18,7 @@ impl Integration for AgeIntegration {
     const NAME: &'static str = "age";
     type PublicKey = age::x25519::Recipient;
     type PrivateKey = age::x25519::Identity;
+    type Config = AgeConfig;
 
     fn parse_public_key(public_key_str: &str) -> IntegrationResult<Self::PublicKey> {
         public_key_str
@@ -67,6 +69,41 @@ impl Integration for AgeIntegration {
         reader.read_exact(decrypted_data_key_buffer.as_mut()).unwrap();
 
         Ok(decrypted_data_key_buffer)
+    }
+}
+
+pub use config::AgeConfig;
+mod config {
+    use serde::{Deserialize, Serialize};
+    use serde_with::{serde_as, DisplayFromStr};
+
+    use crate::*;
+
+    #[serde_as]
+    #[derive(Debug, PartialEq, Serialize, Deserialize)]
+    pub struct AgeConfig {
+        #[serde_as(as = "DisplayFromStr")]
+        #[serde(rename = "recipient")]
+        pub public_key: <AgeIntegration as Integration>::PublicKey,
+    }
+
+    impl<'a> From<&'a AgeConfig> for &'a <AgeIntegration as Integration>::PublicKey {
+        fn from(config: &'a AgeConfig) -> Self {
+            &config.public_key
+        }
+    }
+
+    #[cfg(feature = "test-utils")]
+    mod mock {
+        use super::*;
+
+        impl MockTestUtil for AgeConfig {
+            fn mock() -> Self {
+                Self {
+                    public_key: AgeIntegration::mock_public_key(),
+                }
+            }
+        }
     }
 }
 

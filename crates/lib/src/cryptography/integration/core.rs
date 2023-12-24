@@ -1,4 +1,7 @@
-use std::{env::VarError, fmt::Display};
+use std::{
+    env::VarError,
+    fmt::{Debug, Display},
+};
 
 use crate::*;
 
@@ -6,6 +9,7 @@ pub trait Integration {
     const NAME: &'static str;
     type PublicKey: Display;
     type PrivateKey;
+    type Config: Debug + PartialEq;
 
     fn private_key_env_var_name() -> String {
         format!("ROPS_{}", Self::NAME.to_uppercase())
@@ -52,10 +56,9 @@ mod stub_integration {
 
     impl Integration for StubIntegration {
         const NAME: &'static str = "stub";
-
         type PublicKey = String;
-
         type PrivateKey = ();
+        type Config = ();
 
         fn parse_public_key(_public_key_str: &str) -> IntegrationResult<Self::PublicKey> {
             unimplemented!()

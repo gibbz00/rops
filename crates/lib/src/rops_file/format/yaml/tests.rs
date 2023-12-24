@@ -30,7 +30,7 @@ mod rops_file {
 
         #[test]
         fn encrypts_rops_file() {
-            IntegrationsHelper::set_private_keys();
+            IntegrationsTestUtils::set_private_keys();
 
             assert_eq!(
                 DecryptedRopsFile::mock(),
@@ -44,7 +44,7 @@ mod rops_file {
 
         #[test]
         fn encrypts_rops_file_with_saved_parameters() {
-            IntegrationsHelper::set_private_keys();
+            IntegrationsTestUtils::set_private_keys();
 
             assert_eq!(
                 EncryptedRopsFile::mock(),
@@ -56,14 +56,14 @@ mod rops_file {
 
         #[test]
         fn decrypts_rops_file() {
-            IntegrationsHelper::set_private_keys();
+            IntegrationsTestUtils::set_private_keys();
 
             assert_eq!(DecryptedRopsFile::mock(), EncryptedRopsFile::mock().decrypt().unwrap())
         }
 
         #[test]
         fn decrypts_rops_file_and_saves_parameters() {
-            IntegrationsHelper::set_private_keys();
+            IntegrationsTestUtils::set_private_keys();
 
             assert_eq!(
                 (DecryptedRopsFile::mock(), SavedParameters::mock()),
@@ -73,7 +73,7 @@ mod rops_file {
 
         #[test]
         fn decryption_disallows_mac_mismatch() {
-            IntegrationsHelper::set_private_keys();
+            IntegrationsTestUtils::set_private_keys();
 
             assert!(matches!(
                 RopsFile::new(RopsFileFormatMap::mock_other(), RopsFileMetadata::mock())
@@ -119,12 +119,12 @@ mod metadata {
 
         #[test]
         fn serializes_rops_file_age_metadata() {
-            FileFormatTestUtils::assert_serialization::<YamlFileFormat, RopsFileAgeMetadata>()
+            FileFormatTestUtils::assert_serialization::<YamlFileFormat, IntegrationMetadataUnit<AgeIntegration>>()
         }
 
         #[test]
         fn deserializes_rops_file_age_metadata() {
-            FileFormatTestUtils::assert_deserialization::<YamlFileFormat, RopsFileAgeMetadata>()
+            FileFormatTestUtils::assert_deserialization::<YamlFileFormat, AgeConfig>()
         }
     }
 }

@@ -1,8 +1,8 @@
 use crate::*;
 
-pub struct IntegrationsHelper;
+pub struct IntegrationsTestUtils;
 
-impl IntegrationsHelper {
+impl IntegrationsTestUtils {
     pub fn set_private_keys() {
         #[cfg(feature = "age")]
         AgeIntegration::set_mock_private_key_env_var();

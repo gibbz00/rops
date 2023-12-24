@@ -19,6 +19,10 @@ impl DataKey {
     pub fn empty() -> Self {
         Self(RngKey::empty())
     }
+
+    pub fn new() -> Self {
+        Self(RngKey::new())
+    }
 }
 
 #[cfg(feature = "test-utils")]

@@ -9,9 +9,9 @@ pub use error::{IntegrationError, IntegrationResult};
 #[cfg(feature = "age")]
 mod age;
 #[cfg(feature = "age")]
-pub use age::AgeIntegration;
+pub use age::{AgeConfig, AgeIntegration};
 
 #[cfg(feature = "test-utils")]
 mod test_utils;
 #[cfg(feature = "test-utils")]
-pub use test_utils::{IntegrationTestUtils, IntegrationsHelper};
+pub use test_utils::{IntegrationTestUtils, IntegrationsTestUtils};

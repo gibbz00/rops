@@ -1,6 +1,7 @@
 use std::{fmt::Display, str::FromStr};
 
 use serde::{Deserialize, Serialize};
+use thiserror::Error;
 
 use crate::*;
 
@@ -17,7 +18,7 @@ where
     pub metadata: RopsFileMetadata<S::MetadataState>,
 }
 
-#[derive(Debug, thiserror::Error)]
+#[derive(Debug, Error)]
 pub enum RopsFileEncryptError {
     #[error("invalid decrypted map format: {0}")]
     FormatToIntenrnalMap(#[from] FormatToInternalMapError),
@@ -29,13 +30,13 @@ pub enum RopsFileEncryptError {
     MetadataEncryption(String),
 }
 
-#[derive(Debug, thiserror::Error)]
+#[derive(Debug, Error)]
 pub enum RopsFileDecryptError {
     #[error("invalid encrypted map format; {0}")]
     FormatToIntenrnalMap(#[from] FormatToInternalMapError),
     #[error("unable to decrypt map value: {0}")]
     DecryptValue(#[from] DecryptRopsValueError),
-    #[error("unable to decrypt file metadata: {0}")]
+    #[error("unable to decrypt file metadata")]
     Metadata(#[from] RopsFileMetadataDecryptError),
     #[error("invalid MAC, computed {0}, stored {0}")]
     MacMismatch(String, String),
@@ -47,6 +48,32 @@ where
 {
     pub fn new(map: impl Into<RopsFileFormatMap<S::MapState, F>>, metadata: RopsFileMetadata<S::MetadataState>) -> Self {
         Self { map: map.into(), metadata }
+    }
+}
+
+impl<S: RopsFileState, F: FileFormat> Display for RopsFile<S, F>
+where
+    <<S::MetadataState as RopsMetadataState>::Mac as FromStr>::Err: Display,
+{
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", F::serialize_to_string(self).expect("failed to serialize rops map"))
+    }
+}
+
+#[derive(Debug, Error)]
+pub enum RopsFileFromStrError {
+    #[error("deserialize error")]
+    Deserialize(anyhow::Error),
+}
+
+impl<S: RopsFileState, F: FileFormat> FromStr for RopsFile<S, F>
+where
+    <<S::MetadataState as RopsMetadataState>::Mac as FromStr>::Err: Display,
+{
+    type Err = RopsFileFromStrError;
+
+    fn from_str(str: &str) -> Result<Self, Self::Err> {
+        F::deserialize_from_str(str).map_err(|error| RopsFileFromStrError::Deserialize(error.into()))
     }
 }
 

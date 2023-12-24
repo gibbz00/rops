@@ -12,8 +12,8 @@ pub struct RopsFileMetadata<S: RopsMetadataState>
 where
     <S::Mac as FromStr>::Err: Display,
 {
-    #[cfg(feature = "age")]
-    pub age: Vec<RopsFileAgeMetadata>,
+    #[serde(flatten)]
+    pub intregation: IntegrationMetadata,
     #[serde(rename = "lastmodified")]
     pub last_modified: LastModifiedDateTime,
     #[serde_as(as = "DisplayFromStr")]
@@ -41,36 +41,10 @@ where
     <S::Mac as FromStr>::Err: Display,
 {
     pub(crate) fn retrieve_data_key(&self) -> Result<DataKey, RopsFileMetadataDataKeyRetrievalError> {
-        match self.find_data_key()? {
+        match self.intregation.find_data_key()? {
             Some(data_key) => Ok(data_key),
             None => Err(RopsFileMetadataDataKeyRetrievalError::MissingDataKey),
         }
-    }
-
-    fn find_data_key(&self) -> IntegrationResult<Option<DataKey>> {
-        // In order of what is assumed to be quickest:
-
-        #[cfg(feature = "age")]
-        if let Some(data_key) = self.data_key_from_age()? {
-            return Ok(Some(data_key));
-        }
-
-        Ok(None)
-    }
-
-    #[cfg(feature = "age")]
-    fn data_key_from_age(&self) -> IntegrationResult<Option<DataKey>> {
-        let private_keys = AgeIntegration::retrieve_private_keys()?;
-
-        for age_metadata in &self.age {
-            for private_key in &private_keys {
-                if private_key.to_public() == age_metadata.public_key {
-                    return AgeIntegration::decrypt_data_key(private_key, &age_metadata.encrypted_data_key).map(Some);
-                }
-            }
-        }
-
-        Ok(None)
     }
 }
 
@@ -84,9 +58,7 @@ impl<C: Cipher, H: Hasher> RopsFileMetadata<EncryptedMetadata<C, H>> {
             .map_err(|error| RopsFileMetadataDecryptError::Mac(error.to_string()))?;
 
         let decrypted_metadata = RopsFileMetadata {
-            #[cfg(feature = "age")]
-            age: self.age,
-
+            intregation: self.intregation,
             last_modified: self.last_modified,
             mac: decrypted_map,
         };
@@ -106,9 +78,7 @@ impl<C: Cipher, H: Hasher> RopsFileMetadata<EncryptedMetadata<C, H>> {
             .map_err(|error| RopsFileMetadataDecryptError::Mac(error.to_string()))?;
 
         let decrypted_metadata = RopsFileMetadata {
-            #[cfg(feature = "age")]
-            age: self.age,
-
+            intregation: self.intregation,
             last_modified: self.last_modified,
             mac: decrypted_map,
         };
@@ -120,9 +90,7 @@ impl<C: Cipher, H: Hasher> RopsFileMetadata<EncryptedMetadata<C, H>> {
 impl<H: Hasher> RopsFileMetadata<DecryptedMetadata<H>> {
     pub fn encrypt<C: Cipher>(self, data_key: &DataKey) -> Result<RopsFileMetadata<EncryptedMetadata<C, H>>, C::Error> {
         Ok(RopsFileMetadata {
-            #[cfg(feature = "age")]
-            age: self.age,
-
+            intregation: self.intregation,
             mac: self.mac.encrypt(data_key, &self.last_modified)?,
             last_modified: self.last_modified,
         })
@@ -134,9 +102,7 @@ impl<H: Hasher> RopsFileMetadata<DecryptedMetadata<H>> {
         saved_mac_nonce: SavedMacNonce<C, H>,
     ) -> Result<RopsFileMetadata<EncryptedMetadata<C, H>>, C::Error> {
         Ok(RopsFileMetadata {
-            #[cfg(feature = "age")]
-            age: self.age,
-
+            intregation: self.intregation,
             mac: self.mac.encrypt_with_saved_nonce(data_key, &self.last_modified, saved_mac_nonce)?,
             last_modified: self.last_modified,
         })
@@ -154,9 +120,7 @@ mod mock {
     {
         fn mock() -> Self {
             Self {
-                #[cfg(feature = "age")]
-                age: vec![MockTestUtil::mock()],
-
+                intregation: IntegrationMetadata::mock(),
                 last_modified: MockTestUtil::mock(),
                 mac: MockTestUtil::mock(),
             }
@@ -212,23 +176,6 @@ mod tests {
 
             assert_eq!(RopsFileMetadata::mock(), decrypted_metadata);
             assert_eq!(SavedMacNonce::mock(), saved_mac_nonce);
-        }
-
-        #[cfg(feature = "age")]
-        mod age {
-            use super::*;
-
-            #[test]
-            fn gets_data_key_from_age() {
-                AgeIntegration::set_mock_private_key_env_var();
-                assert_eq!(
-                    DataKey::mock(),
-                    RopsFileMetadata::<EncryptedMetadata<AES256GCM, SHA512>>::mock()
-                        .data_key_from_age()
-                        .unwrap()
-                        .unwrap()
-                )
-            }
         }
     }
 }

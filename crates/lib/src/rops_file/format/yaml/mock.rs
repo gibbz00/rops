@@ -79,6 +79,21 @@ mod metadata {
 
         use crate::*;
 
+        impl<I: IntegrationTestUtils> MockFileFormatUtil<YamlFileFormat> for IntegrationMetadataUnit<I>
+        where
+            I::Config: MockFileFormatUtil<YamlFileFormat>,
+            for<'a> &'a I::PublicKey: From<&'a I::Config>,
+        {
+            fn mock_format_display() -> String {
+                indoc::formatdoc! {"
+                        {}
+                        enc: |
+                        {}",
+                    I::Config::mock_format_display(), textwrap::indent(I::mock_encrypted_data_key_str(), "  ")
+                }
+            }
+        }
+
         impl<S: RopsMetadataState> MockFileFormatUtil<YamlFileFormat> for RopsFileMetadata<S>
         where
             S::Mac: MockDisplayTestUtil,
@@ -89,23 +104,33 @@ mod metadata {
 
                 #[cfg(feature = "age")]
                 {
-                    let age_metadata_yaml_string = RopsFileAgeMetadata::mock_format_display();
-                    let (first_line, remaining_lines) = age_metadata_yaml_string
-                        .split_once('\n')
-                        .expect("no newline delimeter in yaml age metadata");
-                    metadata_string.push_str(&indoc::formatdoc! {"
-                            age:
-                            - {}
-                            {}",
-                        first_line,
-                        textwrap::indent(remaining_lines, "  ")
-                    });
+                    metadata_string.push_str(&display_integration_metadata_unit::<AgeIntegration>());
                 }
 
                 metadata_string.push_str(&format!("lastmodified: {}\n", LastModifiedDateTime::mock_display()));
                 metadata_string.push_str(&format!("mac: {}\n", S::Mac::mock_display()));
 
-                metadata_string
+                return metadata_string;
+
+                fn display_integration_metadata_unit<I: IntegrationTestUtils>() -> String
+                where
+                    IntegrationMetadataUnit<I>: MockFileFormatUtil<YamlFileFormat>,
+                    for<'a> &'a I::PublicKey: From<&'a I::Config>,
+                {
+                    let integration_metadata = IntegrationMetadataUnit::<I>::mock_format_display();
+                    let (first_metadata_line, remaning_metata_lines) = integration_metadata
+                        .split_once('\n')
+                        .expect("no newline delimeter in integration metadata");
+
+                    indoc::formatdoc! {"
+                            {}:
+                            - {}
+                            {}",
+                        I::NAME,
+                        first_metadata_line,
+                        textwrap::indent(remaning_metata_lines, "  ")
+                    }
+                }
             }
         }
     }
@@ -114,15 +139,9 @@ mod metadata {
     mod age {
         use crate::*;
 
-        impl MockFileFormatUtil<YamlFileFormat> for RopsFileAgeMetadata {
+        impl MockFileFormatUtil<YamlFileFormat> for AgeConfig {
             fn mock_format_display() -> String {
-                indoc::formatdoc! {"
-                        recipient: {}
-                        enc: |
-                        {}",
-                    AgeIntegration::mock_public_key_str(),
-                    textwrap::indent(AgeIntegration::mock_encrypted_data_key_str(),"  ")
-                }
+                format!("recipient: {}", AgeIntegration::mock_public_key_str(),)
             }
         }
     }

@@ -17,6 +17,7 @@ sha2 = ["dep:sha2"]
 test-utils = ["dep:pretty_assertions"]
 
 [dependencies]
+anyhow.workspace = true
 base64.workspace = true
 chrono.workspace = true
 derive_more.workspace = true

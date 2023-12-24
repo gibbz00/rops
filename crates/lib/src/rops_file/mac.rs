@@ -108,12 +108,7 @@ impl<H: Hasher> Mac<H> {
 
         let mut in_place_buffer = self.0;
 
-        let authorization_tag = C::encrypt(
-            &nonce,
-            data_key,
-            &mut in_place_buffer,
-            last_modified_date_time.as_ref().to_rfc3339().as_bytes(),
-        )?;
+        let authorization_tag = C::encrypt(&nonce, data_key, &mut in_place_buffer, &last_modified_date_time.to_bytes())?;
 
         Ok(EncryptedMac(
             EncryptedRopsValue {
@@ -168,7 +163,7 @@ impl<C: Cipher, H: Hasher> EncryptedMac<C, H> {
             &self.0.nonce,
             data_key,
             &mut in_place_buffer,
-            last_modified_date_time.as_ref().to_rfc3339().as_bytes(),
+            &last_modified_date_time.to_bytes(),
             &self.0.authorization_tag,
         )?;
 
@@ -245,7 +240,7 @@ mod mock {
 
             impl MockDisplayTestUtil for EncryptedMac<AES256GCM, SHA512> {
                 fn mock_display() -> String {
-                    "ENC[AES256_GCM,data:W1CX5S5kbJ6f4uKuo6G5083Ekp50RAzqheQjbMEJpF1eZ7+d1/KSrLWIWjqZlyvzTDB1aMWp8xcOmCRCKyGn2cZCrr8SXU1yxpWW/42xue48LjFB0PVPt7YNTUtKrkb7KXOuvIrZ5HOXgoGpahopVCh06mG/T3hEHm/i2z/pzwk=,iv:fSPQ/8OhW8Mw2GMBHsO+qnhN4aKIN2sJYMNfjuxM+A8=,tag:kzpxGxIx4bVstvZrtMSFGQ==,type:str]".to_string()
+                    "ENC[AES256_GCM,data:NGQmmmF7MMf3EiG3NY2iew5Ad3QrzoRD6lM4+Z7VbusLhu6yUksN3m410KWQNBYnGpowa3XgjSoajvn3RKmkV04CiU7dK3A0de+lXkX7Uvq2MzqAjI84gNdnIw9Ove4B18ioQHuL4h01E1eIXxhZcQ9qWIt91cNjyhcbEs2BWqQ=,iv:ufPWRTNV2fS3n/T/ptAhsre2S37rH5p8CgBAiK2c8r0=,tag:uHQApLnlF8NB/Gac0xnh+g==,type:str]".to_string()
                 }
             }
         }
