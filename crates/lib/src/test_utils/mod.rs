@@ -1,5 +1,5 @@
 mod mock;
-pub use mock::MockTestUtil;
+pub use mock::{MockOtherTestUtil, MockTestUtil};
 
 mod display;
 pub use display::{DisplayTestUtils, MockDisplayTestUtil};

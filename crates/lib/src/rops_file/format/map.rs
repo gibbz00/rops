@@ -34,7 +34,6 @@ impl<S: RopsMapState, F: FileFormat> RopsFileFormatMap<S, F> {
         self.inner
     }
 
-    #[cfg(feature = "test-utils")]
     pub fn from_inner_map(inner: F::Map) -> Self {
         Self {
             inner,

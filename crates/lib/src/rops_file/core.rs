@@ -33,7 +33,7 @@ impl<C: Cipher, F: FileFormat, H: Hasher> RopsFile<EncryptedFile<C, H>, F> {
     pub fn decrypt<Fo: FileFormat>(self) -> Result<RopsFile<DecryptedFile<H>, Fo>, RopsFileDecryptError>
     where
         RopsFileFormatMap<EncryptedMap<C>, F>: TryInto<RopsMap<EncryptedMap<C>>, Error = FormatToInternalMapError>,
-        RopsMap<DecryptedMap>: Into<RopsFileFormatMap<DecryptedMap, Fo>>,
+        RopsMap<DecryptedMap>: Into<Fo::Map>,
     {
         let (decrypted_metadata, data_key) = self.metadata.decrypt()?;
         let decrypted_map = self.map.try_into()?.decrypt(&data_key)?;
@@ -47,31 +47,12 @@ impl<C: Cipher, F: FileFormat, H: Hasher> RopsFile<EncryptedFile<C, H>, F> {
         }
 
         Ok(RopsFile {
-            map: decrypted_map.into(),
+            map: RopsFileFormatMap::from_inner_map(decrypted_map.into()),
             metadata: decrypted_metadata,
         })
     }
 
     pub fn decrypt_and_save_nonces() {
         todo!()
-    }
-}
-
-#[cfg(feature = "test-utils")]
-mod mock {
-    use super::*;
-
-    impl<S: RopsFileState, F: FileFormat> MockTestUtil for RopsFile<S, F>
-    where
-        RopsFileFormatMap<S::MapState, F>: MockTestUtil,
-        RopsFileMetadata<S::MetadataState>: MockTestUtil,
-        <<S::MetadataState as RopsMetadataState>::Mac as FromStr>::Err: Display,
-    {
-        fn mock() -> Self {
-            Self {
-                map: MockTestUtil::mock(),
-                metadata: MockTestUtil::mock(),
-            }
-        }
     }
 }

@@ -2,27 +2,40 @@ mod rops_file {
     use crate::*;
 
     #[cfg(all(feature = "aes-gcm", feature = "sha2"))]
-    mod aes_gcm {
+    mod aes_gcm_sha2 {
         use super::*;
+
+        type EncryptedRopsFile = RopsFile<EncryptedFile<AES256GCM, SHA512>, YamlFileFormat>;
+        type DecryptedRopsFile = RopsFile<DecryptedFile<SHA512>, YamlFileFormat>;
 
         #[test]
         fn serializes_decrypted_rops_file() {
-            FileFormatTestUtils::assert_serialization::<YamlFileFormat, RopsFile<DecryptedFile<SHA512>, YamlFileFormat>>()
+            FileFormatTestUtils::assert_serialization::<YamlFileFormat, DecryptedRopsFile>()
         }
 
         #[test]
         fn deserializes_decrypted_rops_file() {
-            FileFormatTestUtils::assert_deserialization::<YamlFileFormat, RopsFile<DecryptedFile<SHA512>, YamlFileFormat>>()
+            FileFormatTestUtils::assert_deserialization::<YamlFileFormat, DecryptedRopsFile>()
         }
 
         #[test]
         fn serializes_encrypted_rops_file() {
-            FileFormatTestUtils::assert_serialization::<YamlFileFormat, RopsFile<EncryptedFile<AES256GCM, SHA512>, YamlFileFormat>>()
+            FileFormatTestUtils::assert_serialization::<YamlFileFormat, EncryptedRopsFile>()
         }
 
         #[test]
         fn deserializes_encrypted_rops_file() {
-            FileFormatTestUtils::assert_deserialization::<YamlFileFormat, RopsFile<EncryptedFile<AES256GCM, SHA512>, YamlFileFormat>>()
+            FileFormatTestUtils::assert_deserialization::<YamlFileFormat, EncryptedRopsFile>()
+        }
+
+        #[test]
+        fn decrypts_rops_file() {
+            IntegrationsHelper::set_private_keys();
+
+            assert_eq!(
+                DecryptedRopsFile::mock(),
+                EncryptedRopsFile::mock().decrypt::<YamlFileFormat>().unwrap()
+            )
         }
     }
 }
