@@ -29,6 +29,15 @@ pub enum RopsFileDecryptError {
     MacMismatch(String, String),
 }
 
+impl<S: RopsFileState, F: FileFormat> RopsFile<S, F>
+where
+    <<S::MetadataState as RopsMetadataState>::Mac as FromStr>::Err: Display,
+{
+    pub fn new(map: impl Into<RopsFileFormatMap<S::MapState, F>>, metadata: RopsFileMetadata<S::MetadataState>) -> Self {
+        Self { map: map.into(), metadata }
+    }
+}
+
 impl<C: Cipher, F: FileFormat, H: Hasher> RopsFile<EncryptedFile<C, H>, F> {
     pub fn decrypt<Fo: FileFormat>(self) -> Result<RopsFile<DecryptedFile<H>, Fo>, RopsFileDecryptError>
     where
@@ -38,21 +47,34 @@ impl<C: Cipher, F: FileFormat, H: Hasher> RopsFile<EncryptedFile<C, H>, F> {
         let (decrypted_metadata, data_key) = self.metadata.decrypt()?;
         let decrypted_map = self.map.try_into()?.decrypt(&data_key)?;
 
-        // TODO: use metadata.from_encrypted_values_only once partial encryption is added
-        let computed_mac = Mac::<H>::compute(false, &decrypted_map);
-        let stored_mac = &decrypted_metadata.mac;
+        Self::validate_mac(&decrypted_map, &decrypted_metadata.mac)?;
 
-        if &computed_mac != stored_mac {
-            return Err(RopsFileDecryptError::MacMismatch(computed_mac.to_string(), stored_mac.to_string()));
-        }
-
-        Ok(RopsFile {
-            map: RopsFileFormatMap::from_inner_map(decrypted_map.into()),
-            metadata: decrypted_metadata,
-        })
+        Ok(RopsFile::new(decrypted_map, decrypted_metadata))
     }
 
-    pub fn decrypt_and_save_nonces() {
-        todo!()
+    #[allow(clippy::type_complexity)]
+    pub fn decrypt_and_save_nonces<Fo: FileFormat>(
+        self,
+    ) -> Result<(RopsFile<DecryptedFile<H>, Fo>, SavedRopsMapNonces<C>, SavedMacNonce<C, H>), RopsFileDecryptError>
+    where
+        RopsFileFormatMap<EncryptedMap<C>, F>: TryInto<RopsMap<EncryptedMap<C>>, Error = FormatToInternalMapError>,
+        RopsMap<DecryptedMap>: Into<Fo::Map>,
+    {
+        let (decrypted_metadata, data_key, saved_mac_nonce) = self.metadata.decrypt_and_save_mac_nonce()?;
+        let (decrypted_map, saved_map_nonces) = self.map.try_into()?.decrypt_and_save_nonces(&data_key)?;
+
+        Self::validate_mac(&decrypted_map, &decrypted_metadata.mac)?;
+
+        Ok((RopsFile::new(decrypted_map, decrypted_metadata), saved_map_nonces, saved_mac_nonce))
+    }
+
+    fn validate_mac(decrypted_map: &RopsMap<DecryptedMap>, stored_mac: &Mac<H>) -> Result<(), RopsFileDecryptError> {
+        // TODO: use metadata.from_encrypted_values_only once partial encryption is added
+        let computed_mac = Mac::<H>::compute(false, decrypted_map);
+
+        match &computed_mac != stored_mac {
+            true => Err(RopsFileDecryptError::MacMismatch(computed_mac.to_string(), stored_mac.to_string())),
+            false => Ok(()),
+        }
     }
 }

@@ -36,16 +36,23 @@ mod rops_file {
         }
 
         #[test]
-        fn disallows_mac_mismatch() {
+        fn decrypts_rops_file_and_saves_nonces() {
             IntegrationsHelper::set_private_keys();
 
-            let rops_file = RopsFile {
-                map: RopsFileFormatMap::mock_other(),
-                metadata: RopsFileMetadata::mock(),
-            };
+            assert_eq!(
+                (DecryptedRopsFile::mock(), SavedRopsMapNonces::mock(), SavedMacNonce::mock()),
+                EncryptedRopsFile::mock().decrypt_and_save_nonces().unwrap()
+            )
+        }
+
+        #[test]
+        fn decryption_disallows_mac_mismatch() {
+            IntegrationsHelper::set_private_keys();
 
             assert!(matches!(
-                rops_file.decrypt::<YamlFileFormat>().unwrap_err(),
+                RopsFile::new(RopsFileFormatMap::mock_other(), RopsFileMetadata::mock())
+                    .decrypt::<YamlFileFormat>()
+                    .unwrap_err(),
                 RopsFileDecryptError::MacMismatch(_, _)
             ))
         }

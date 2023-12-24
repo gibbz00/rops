@@ -42,6 +42,15 @@ impl<S: RopsMapState, F: FileFormat> RopsFileFormatMap<S, F> {
     }
 }
 
+impl<S: RopsMapState, F: FileFormat> From<RopsMap<S>> for RopsFileFormatMap<S, F>
+where
+    RopsMap<S>: Into<F::Map>,
+{
+    fn from(internal_map: RopsMap<S>) -> Self {
+        Self::from_inner_map(internal_map.into())
+    }
+}
+
 #[cfg(feature = "test-utils")]
 mod mock {
     use super::*;
