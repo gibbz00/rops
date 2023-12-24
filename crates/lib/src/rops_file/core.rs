@@ -18,6 +18,18 @@ where
 }
 
 #[derive(Debug, thiserror::Error)]
+pub enum RopsFileEncryptError {
+    #[error("invalid decrypted map format: {0}")]
+    FormatToIntenrnalMap(#[from] FormatToInternalMapError),
+    #[error("unable to retrieve data key: {0}")]
+    DataKeyRetrieval(#[from] RopsFileMetadataDataKeyRetrievalError),
+    #[error("unable to encrypt map: {0}")]
+    MapEncryption(String),
+    #[error("unable to encrypt metadata: {0}")]
+    MetadataEncryption(String),
+}
+
+#[derive(Debug, thiserror::Error)]
 pub enum RopsFileDecryptError {
     #[error("invalid encrypted map format; {0}")]
     FormatToIntenrnalMap(#[from] FormatToInternalMapError),
@@ -38,6 +50,54 @@ where
     }
 }
 
+impl<H: Hasher, F: FileFormat> RopsFile<DecryptedFile<H>, F> {
+    pub fn encrypt<C: Cipher, Fo: FileFormat>(self) -> Result<RopsFile<EncryptedFile<C, H>, Fo>, RopsFileEncryptError>
+    where
+        RopsFileFormatMap<DecryptedMap, F>: TryInto<RopsMap<DecryptedMap>, Error = FormatToInternalMapError>,
+        RopsMap<EncryptedMap<C>>: Into<Fo::Map>,
+    {
+        let data_key = self.metadata.retrieve_data_key()?;
+
+        let encrypted_map = self
+            .map
+            .try_into()?
+            .encrypt::<C>(&data_key)
+            .map_err(|error| RopsFileEncryptError::MapEncryption(error.to_string()))?;
+
+        let encrypted_metadata = self
+            .metadata
+            .encrypt::<C>(&data_key)
+            .map_err(|error| RopsFileEncryptError::MetadataEncryption(error.to_string()))?;
+
+        Ok(RopsFile::new(encrypted_map, encrypted_metadata))
+    }
+
+    pub fn encrypt_with_saved_parameters<C: Cipher, Fo: FileFormat>(
+        self,
+        saved_parameters: SavedParameters<C, H>,
+    ) -> Result<RopsFile<EncryptedFile<C, H>, Fo>, RopsFileEncryptError>
+    where
+        RopsFileFormatMap<DecryptedMap, F>: TryInto<RopsMap<DecryptedMap>, Error = FormatToInternalMapError>,
+        RopsMap<EncryptedMap<C>>: Into<Fo::Map>,
+    {
+        #[rustfmt::skip]
+        let SavedParameters { data_key, saved_map_nonces, saved_mac_nonce } = saved_parameters;
+
+        let encrypted_map = self
+            .map
+            .try_into()?
+            .encrypt_with_saved_nonces(&data_key, &saved_map_nonces)
+            .map_err(|error| RopsFileEncryptError::MetadataEncryption(error.to_string()))?;
+
+        let encrypted_metadata = self
+            .metadata
+            .encrypt_with_saved_mac_nonce::<C>(&data_key, saved_mac_nonce)
+            .map_err(|error| RopsFileEncryptError::MetadataEncryption(error.to_string()))?;
+
+        Ok(RopsFile::new(encrypted_map, encrypted_metadata))
+    }
+}
+
 impl<C: Cipher, F: FileFormat, H: Hasher> RopsFile<EncryptedFile<C, H>, F> {
     pub fn decrypt<Fo: FileFormat>(self) -> Result<RopsFile<DecryptedFile<H>, Fo>, RopsFileDecryptError>
     where
@@ -53,9 +113,9 @@ impl<C: Cipher, F: FileFormat, H: Hasher> RopsFile<EncryptedFile<C, H>, F> {
     }
 
     #[allow(clippy::type_complexity)]
-    pub fn decrypt_and_save_nonces<Fo: FileFormat>(
+    pub fn decrypt_and_save_parameters<Fo: FileFormat>(
         self,
-    ) -> Result<(RopsFile<DecryptedFile<H>, Fo>, SavedRopsMapNonces<C>, SavedMacNonce<C, H>), RopsFileDecryptError>
+    ) -> Result<(RopsFile<DecryptedFile<H>, Fo>, SavedParameters<C, H>), RopsFileDecryptError>
     where
         RopsFileFormatMap<EncryptedMap<C>, F>: TryInto<RopsMap<EncryptedMap<C>>, Error = FormatToInternalMapError>,
         RopsMap<DecryptedMap>: Into<Fo::Map>,
@@ -65,7 +125,14 @@ impl<C: Cipher, F: FileFormat, H: Hasher> RopsFile<EncryptedFile<C, H>, F> {
 
         Self::validate_mac(&decrypted_map, &decrypted_metadata.mac)?;
 
-        Ok((RopsFile::new(decrypted_map, decrypted_metadata), saved_map_nonces, saved_mac_nonce))
+        Ok((
+            RopsFile::new(decrypted_map, decrypted_metadata),
+            SavedParameters {
+                data_key,
+                saved_map_nonces,
+                saved_mac_nonce,
+            },
+        ))
     }
 
     fn validate_mac(decrypted_map: &RopsMap<DecryptedMap>, stored_mac: &Mac<H>) -> Result<(), RopsFileDecryptError> {

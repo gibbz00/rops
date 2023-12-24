@@ -24,10 +24,54 @@ where
 pub enum RopsFileMetadataDecryptError {
     #[error("unable to decrypt MAC: {0}")]
     Mac(String),
-    #[error("integration returned error during data key retrieval; {0}")]
+    #[error("unable to retrieve data key: {0}")]
+    DataKeyRetrieval(#[from] RopsFileMetadataDataKeyRetrievalError),
+}
+
+#[derive(Debug, thiserror::Error)]
+pub enum RopsFileMetadataDataKeyRetrievalError {
+    #[error("integration error; {0}")]
     Integration(#[from] IntegrationError),
     #[error("no data key found in metadata, make sure at least one integration is used")]
     MissingDataKey,
+}
+
+impl<S: RopsMetadataState> RopsFileMetadata<S>
+where
+    <S::Mac as FromStr>::Err: Display,
+{
+    pub(crate) fn retrieve_data_key(&self) -> Result<DataKey, RopsFileMetadataDataKeyRetrievalError> {
+        match self.find_data_key()? {
+            Some(data_key) => Ok(data_key),
+            None => Err(RopsFileMetadataDataKeyRetrievalError::MissingDataKey),
+        }
+    }
+
+    fn find_data_key(&self) -> IntegrationResult<Option<DataKey>> {
+        // In order of what is assumed to be quickest:
+
+        #[cfg(feature = "age")]
+        if let Some(data_key) = self.data_key_from_age()? {
+            return Ok(Some(data_key));
+        }
+
+        Ok(None)
+    }
+
+    #[cfg(feature = "age")]
+    fn data_key_from_age(&self) -> IntegrationResult<Option<DataKey>> {
+        let private_keys = AgeIntegration::retrieve_private_keys()?;
+
+        for age_metadata in &self.age {
+            for private_key in &private_keys {
+                if private_key.to_public() == age_metadata.public_key {
+                    return AgeIntegration::decrypt_data_key(private_key, &age_metadata.encrypted_data_key).map(Some);
+                }
+            }
+        }
+
+        Ok(None)
+    }
 }
 
 impl<C: Cipher, H: Hasher> RopsFileMetadata<EncryptedMetadata<C, H>> {
@@ -70,39 +114,6 @@ impl<C: Cipher, H: Hasher> RopsFileMetadata<EncryptedMetadata<C, H>> {
         };
 
         Ok((decrypted_metadata, data_key, saved_mac_nonce))
-    }
-
-    fn retrieve_data_key(&self) -> Result<DataKey, RopsFileMetadataDecryptError> {
-        match self.find_data_key()? {
-            Some(data_key) => Ok(data_key),
-            None => Err(RopsFileMetadataDecryptError::MissingDataKey),
-        }
-    }
-
-    fn find_data_key(&self) -> IntegrationResult<Option<DataKey>> {
-        // In order of what is assumed to be quickest:
-
-        #[cfg(feature = "age")]
-        if let Some(data_key) = self.data_key_from_age()? {
-            return Ok(Some(data_key));
-        }
-
-        Ok(None)
-    }
-
-    #[cfg(feature = "age")]
-    fn data_key_from_age(&self) -> IntegrationResult<Option<DataKey>> {
-        let private_keys = AgeIntegration::retrieve_private_keys()?;
-
-        for age_metadata in &self.age {
-            for private_key in &private_keys {
-                if private_key.to_public() == age_metadata.public_key {
-                    return AgeIntegration::decrypt_data_key(private_key, &age_metadata.encrypted_data_key).map(Some);
-                }
-            }
-        }
-
-        Ok(None)
     }
 }
 

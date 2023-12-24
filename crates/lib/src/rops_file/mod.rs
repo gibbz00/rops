@@ -22,5 +22,8 @@ pub use format::*;
 mod mac;
 pub use mac::{EncryptedMac, Mac, SavedMacNonce};
 
+mod saved_parameters;
+pub use saved_parameters::SavedParameters;
+
 #[cfg(feature = "test-utils")]
 mod mock;

@@ -1,5 +1,5 @@
 mod core;
-pub use core::{RopsFileMetadata, RopsFileMetadataDecryptError};
+pub use core::{RopsFileMetadata, RopsFileMetadataDataKeyRetrievalError, RopsFileMetadataDecryptError};
 
 mod last_modified;
 pub use last_modified::LastModifiedDateTime;

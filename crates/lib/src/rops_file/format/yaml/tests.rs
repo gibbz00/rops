@@ -29,6 +29,32 @@ mod rops_file {
         }
 
         #[test]
+        fn encrypts_rops_file() {
+            IntegrationsHelper::set_private_keys();
+
+            assert_eq!(
+                DecryptedRopsFile::mock(),
+                DecryptedRopsFile::mock()
+                    .encrypt::<AES256GCM, YamlFileFormat>()
+                    .unwrap()
+                    .decrypt()
+                    .unwrap()
+            )
+        }
+
+        #[test]
+        fn encrypts_rops_file_with_saved_parameters() {
+            IntegrationsHelper::set_private_keys();
+
+            assert_eq!(
+                EncryptedRopsFile::mock(),
+                DecryptedRopsFile::mock()
+                    .encrypt_with_saved_parameters(SavedParameters::mock())
+                    .unwrap()
+            )
+        }
+
+        #[test]
         fn decrypts_rops_file() {
             IntegrationsHelper::set_private_keys();
 
@@ -36,12 +62,12 @@ mod rops_file {
         }
 
         #[test]
-        fn decrypts_rops_file_and_saves_nonces() {
+        fn decrypts_rops_file_and_saves_parameters() {
             IntegrationsHelper::set_private_keys();
 
             assert_eq!(
-                (DecryptedRopsFile::mock(), SavedRopsMapNonces::mock(), SavedMacNonce::mock()),
-                EncryptedRopsFile::mock().decrypt_and_save_nonces().unwrap()
+                (DecryptedRopsFile::mock(), SavedParameters::mock()),
+                EncryptedRopsFile::mock().decrypt_and_save_parameters().unwrap()
             )
         }
 
