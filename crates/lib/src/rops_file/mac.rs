@@ -319,15 +319,7 @@ mod tests {
                     .encrypt_with_saved_nonce::<AES256GCM>(&data_key, &last_modified, SavedMacNonce::mock())
                     .unwrap();
 
-                let other_saved_nonce = SavedMacNonce::<AES256GCM, SHA512>::new(
-                    Mac::compute(
-                        false,
-                        &RopsMap(indexmap::indexmap! {
-                            "mumbo".to_string() => RopsTree::Leaf(RopsValue::String("jumbo".to_string()))
-                        }),
-                    ),
-                    Nonce::mock(),
-                );
+                let other_saved_nonce = SavedMacNonce::<AES256GCM, SHA512>::new(Mac::compute(false, &RopsMap::mock_other()), Nonce::mock());
 
                 let encrypted_with_other_mac = mac.encrypt_with_saved_nonce(&data_key, &last_modified, other_saved_nonce).unwrap();
 

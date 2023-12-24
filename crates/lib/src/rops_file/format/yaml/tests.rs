@@ -32,10 +32,22 @@ mod rops_file {
         fn decrypts_rops_file() {
             IntegrationsHelper::set_private_keys();
 
-            assert_eq!(
-                DecryptedRopsFile::mock(),
-                EncryptedRopsFile::mock().decrypt::<YamlFileFormat>().unwrap()
-            )
+            assert_eq!(DecryptedRopsFile::mock(), EncryptedRopsFile::mock().decrypt().unwrap())
+        }
+
+        #[test]
+        fn disallows_mac_mismatch() {
+            IntegrationsHelper::set_private_keys();
+
+            let rops_file = RopsFile {
+                map: RopsFileFormatMap::mock_other(),
+                metadata: RopsFileMetadata::mock(),
+            };
+
+            assert!(matches!(
+                rops_file.decrypt::<YamlFileFormat>().unwrap_err(),
+                RopsFileDecryptError::MacMismatch(_, _)
+            ))
         }
     }
 }

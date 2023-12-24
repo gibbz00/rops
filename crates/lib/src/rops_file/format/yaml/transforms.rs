@@ -32,79 +32,112 @@ mod tree_traversal {
 mod encrypted {
     use super::*;
 
-    impl<C: Cipher> TryFrom<RopsFileFormatMap<EncryptedMap<C>, YamlFileFormat>> for RopsMap<EncryptedMap<C>> {
-        type Error = FormatToInternalMapError;
+    mod to_internal {
+        use super::*;
 
-        fn try_from(rops_file_map: RopsFileFormatMap<EncryptedMap<C>, YamlFileFormat>) -> Result<Self, Self::Error> {
-            return tree_traversal::recursive_map_call(rops_file_map.into_inner_map(), recursive_value_call);
+        impl<C: Cipher> TryFrom<RopsFileFormatMap<EncryptedMap<C>, YamlFileFormat>> for RopsMap<EncryptedMap<C>> {
+            type Error = FormatToInternalMapError;
 
-            fn recursive_value_call<Ci: Cipher>(yaml_value: YamlValue) -> Result<RopsTree<EncryptedMap<Ci>>, FormatToInternalMapError> {
-                Ok(match yaml_value {
-                    YamlValue::Tagged(tagged) => recursive_value_call(tagged.value)?,
-                    YamlValue::Mapping(map) => RopsTree::Map(tree_traversal::recursive_map_call(map, recursive_value_call)?),
-                    YamlValue::String(encrypted_string) => RopsTree::Leaf(encrypted_string.parse()?),
-                    YamlValue::Sequence(sequence) => {
-                        RopsTree::Sequence(sequence.into_iter().map(recursive_value_call).collect::<Result<Vec<_>, _>>()?)
-                    }
-                    YamlValue::Null => RopsTree::Null,
-                    YamlValue::Bool(_) | YamlValue::Number(_) => {
-                        // TEMP: handle as hard error until partial encryption support is added
-                        return Err(FormatToInternalMapError::InvalidValueTypeForEncrypted(
-                            serde_yaml::to_string(&yaml_value).expect("unable to serialize yaml value"),
-                        ));
-                    }
-                })
+            fn try_from(rops_file_map: RopsFileFormatMap<EncryptedMap<C>, YamlFileFormat>) -> Result<Self, Self::Error> {
+                return tree_traversal::recursive_map_call(rops_file_map.into_inner_map(), recursive_value_call);
+
+                fn recursive_value_call<Ci: Cipher>(yaml_value: YamlValue) -> Result<RopsTree<EncryptedMap<Ci>>, FormatToInternalMapError> {
+                    Ok(match yaml_value {
+                        YamlValue::Tagged(tagged) => recursive_value_call(tagged.value)?,
+                        YamlValue::Mapping(map) => RopsTree::Map(tree_traversal::recursive_map_call(map, recursive_value_call)?),
+                        YamlValue::String(encrypted_string) => RopsTree::Leaf(encrypted_string.parse()?),
+                        YamlValue::Sequence(sequence) => {
+                            RopsTree::Sequence(sequence.into_iter().map(recursive_value_call).collect::<Result<Vec<_>, _>>()?)
+                        }
+                        YamlValue::Null => RopsTree::Null,
+                        YamlValue::Bool(_) | YamlValue::Number(_) => {
+                            // TEMP: handle as hard error until partial encryption support is added
+                            return Err(FormatToInternalMapError::InvalidValueTypeForEncrypted(
+                                serde_yaml::to_string(&yaml_value).expect("unable to serialize yaml value"),
+                            ));
+                        }
+                    })
+                }
+            }
+        }
+
+        #[cfg(test)]
+        mod tests {
+            use super::*;
+
+            #[cfg(feature = "aes-gcm")]
+            mod aes_gcm {
+                use super::*;
+
+                #[test]
+                fn transforms_encrypted_yaml_map() {
+                    assert_eq!(
+                        RopsMap::mock(),
+                        RopsFileFormatMap::<EncryptedMap<AES256GCM>, YamlFileFormat>::mock()
+                            .try_into()
+                            .unwrap()
+                    )
+                }
+            }
+
+            #[test]
+            fn dissallows_non_string_keys() {
+                let file_map = RopsFileFormatMap::from_inner_map(serde_yaml::from_str::<YamlMap>("true: xxx").unwrap());
+                assert!(matches!(
+                    RopsMap::<EncryptedMap<StubCipher>>::try_from(file_map).unwrap_err(),
+                    FormatToInternalMapError::NonStringKey(_)
+                ))
+            }
+
+            /*
+                TEMP(NOTE): Not necassarily true once partial encryption arrives:
+            */
+            fn assert_disallowed_value_helper(key_value_str: &str) {
+                let file_map = RopsFileFormatMap::from_inner_map(serde_yaml::from_str::<YamlMap>(key_value_str).unwrap());
+                assert!(matches!(
+                    RopsMap::<EncryptedMap<StubCipher>>::try_from(file_map).unwrap_err(),
+                    FormatToInternalMapError::InvalidValueTypeForEncrypted(_)
+                ))
+            }
+
+            #[test]
+            fn dissallows_boolean_values() {
+                assert_disallowed_value_helper("disallowed_boolean: true")
+            }
+
+            #[test]
+            fn dissallows_integer_values() {
+                assert_disallowed_value_helper("disallowed_integer: 1")
             }
         }
     }
 
-    #[cfg(test)]
-    mod tests {
+    mod from_internal {
         use super::*;
 
-        #[cfg(feature = "aes-gcm")]
-        mod aes_gcm {
-            use super::*;
+        impl<C: Cipher> From<RopsMap<EncryptedMap<C>>> for YamlMap {
+            fn from(internal_map: RopsMap<EncryptedMap<C>>) -> Self {
+                return recursive_map(internal_map);
 
-            #[test]
-            fn transforms_encrypted_yaml_map() {
-                assert_eq!(
-                    RopsMap::mock(),
-                    RopsFileFormatMap::<EncryptedMap<AES256GCM>, YamlFileFormat>::mock()
-                        .try_into()
-                        .unwrap()
-                )
+                fn recursive_map<Ci: Cipher>(internal_map: RopsMap<EncryptedMap<Ci>>) -> YamlMap {
+                    let mut yaml_map = YamlMap::with_capacity(internal_map.len());
+
+                    for (key, tree) in internal_map.0 {
+                        yaml_map.insert(YamlValue::String(key), recursive_tree(tree));
+                    }
+
+                    yaml_map
+                }
+
+                fn recursive_tree<Ci: Cipher>(internal_tree: RopsTree<EncryptedMap<Ci>>) -> YamlValue {
+                    match internal_tree {
+                        RopsTree::Sequence(sequence) => YamlValue::Sequence(sequence.into_iter().map(recursive_tree).collect()),
+                        RopsTree::Map(map) => YamlValue::Mapping(recursive_map(map)),
+                        RopsTree::Null => YamlValue::Null,
+                        RopsTree::Leaf(encrypted_value) => YamlValue::String(encrypted_value.to_string()),
+                    }
+                }
             }
-        }
-
-        #[test]
-        fn dissallows_non_string_keys() {
-            let file_map = RopsFileFormatMap::from_inner_map(serde_yaml::from_str::<YamlMap>("true: xxx").unwrap());
-            assert!(matches!(
-                RopsMap::<EncryptedMap<StubCipher>>::try_from(file_map).unwrap_err(),
-                FormatToInternalMapError::NonStringKey(_)
-            ))
-        }
-
-        /*
-            TEMP(NOTE): Not necassarily true once partial encryption arrives:
-        */
-        fn assert_disallowed_value_helper(key_value_str: &str) {
-            let file_map = RopsFileFormatMap::from_inner_map(serde_yaml::from_str::<YamlMap>(key_value_str).unwrap());
-            assert!(matches!(
-                RopsMap::<EncryptedMap<StubCipher>>::try_from(file_map).unwrap_err(),
-                FormatToInternalMapError::InvalidValueTypeForEncrypted(_)
-            ))
-        }
-
-        #[test]
-        fn dissallows_boolean_values() {
-            assert_disallowed_value_helper("disallowed_boolean: true")
-        }
-
-        #[test]
-        fn dissallows_integer_values() {
-            assert_disallowed_value_helper("disallowed_integer: 1")
         }
     }
 }

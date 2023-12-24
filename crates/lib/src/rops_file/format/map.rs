@@ -41,3 +41,18 @@ impl<S: RopsMapState, F: FileFormat> RopsFileFormatMap<S, F> {
         }
     }
 }
+
+#[cfg(feature = "test-utils")]
+mod mock {
+    use super::*;
+
+    impl<S: RopsMapState, F: FileFormat> MockOtherTestUtil for RopsFileFormatMap<S, F>
+    where
+        RopsMap<S>: MockOtherTestUtil,
+        F::Map: From<RopsMap<S>>,
+    {
+        fn mock_other() -> Self {
+            Self::from_inner_map(F::Map::from(RopsMap::mock_other()))
+        }
+    }
+}

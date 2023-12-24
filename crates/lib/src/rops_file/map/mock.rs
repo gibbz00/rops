@@ -29,6 +29,14 @@ impl MockTestUtil for RopsMap<DecryptedMap> {
     }
 }
 
+impl MockOtherTestUtil for RopsMap<DecryptedMap> {
+    fn mock_other() -> Self {
+        Self(indexmap::indexmap! {
+            "mumbo".to_string() => RopsTree::Leaf(RopsValue::String("jumbo".to_string()))
+        })
+    }
+}
+
 impl<C: Cipher> MockTestUtil for SavedRopsMapNonces<C>
 where
     RopsMap<EncryptedMap<C>>: MockTestUtil,
@@ -74,7 +82,7 @@ mod aes_gcm {
 
     impl MockTestUtil for RopsMap<EncryptedMap<AES256GCM>> {
         fn mock() -> Self {
-            return Self(indexmap! {
+            Self(indexmap! {
                 "hello".to_string() => leaf("ENC[AES256_GCM,data:3S1E9am/,iv:WUQoQTrRXw/tUgwpmSG69xWtd5dVMfe8qUly1VB8ucM=,tag:nQUDkuh0OR1cjR5hGC5jOw==,type:str]"),
                 "nested_map".to_string() => RopsTree::Map(Self(indexmap! {
                         "null_key".to_string() => RopsTree::Null,
@@ -95,11 +103,19 @@ mod aes_gcm {
                     leaf("ENC[AES256_GCM,data:bCdz2A==,iv:8kD+h1jClyVHBj9o2WZuAkjk+uD6A2lgNpcGljpQEhk=,tag:u3/fktl5HfFrVLERVvLRGw==,type:bool]"),
                     leaf("ENC[AES256_GCM,data:SgBh7wY=,iv:0s9Q9pQWbsZm2yHsmFalCzX0IqNb6ZqeY6QQYCWc+qU=,tag:OZb76BWCKbDLbcil4c8fYA==,type:bool]")
                 ])
-            });
-
-            fn leaf(encrpyted_value_str: &str) -> RopsTree<EncryptedMap<AES256GCM>> {
-                encrpyted_value_str.parse().map(RopsTree::Leaf).unwrap()
-            }
+            })
         }
+    }
+
+    impl MockOtherTestUtil for RopsMap<EncryptedMap<AES256GCM>> {
+        fn mock_other() -> Self {
+            Self(indexmap! {
+                "mumbo".to_string() => leaf("ENC[AES256_GCM,data:wDdb+6I=,iv:WUQoQTrRXw/tUgwpmSG69xWtd5dVMfe8qUly1VB8ucM=,tag:nrMkveJj0FpDVLdKM5xn7g==,type:str]")
+            })
+        }
+    }
+
+    fn leaf(encrpyted_value_str: &str) -> RopsTree<EncryptedMap<AES256GCM>> {
+        encrpyted_value_str.parse().map(RopsTree::Leaf).unwrap()
     }
 }
