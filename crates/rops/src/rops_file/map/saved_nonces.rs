@@ -3,8 +3,8 @@ use std::{borrow::Cow, collections::HashMap};
 use crate::*;
 
 /// Nonce store that is supposed to only be used when both keypaths and values match.
-#[derive(Debug, PartialEq)]
-#[impl_tools::autoimpl(Default)]
+#[derive(Debug)]
+#[impl_tools::autoimpl(PartialEq, Default)]
 #[allow(clippy::complexity)]
 // WORKAROUND: Non-cow tuple key doesn't allow saved_nounces.get((&key, &value))
 pub struct SavedRopsMapNonces<C: Cipher>(HashMap<(Cow<'static, KeyPath>, Cow<'static, RopsValue>), Nonce<C::NonceSize>>);

@@ -5,9 +5,10 @@ use generic_array::GenericArray;
 
 use crate::*;
 
-#[derive(Debug, PartialEq, AsRef, AsMut, From)]
+#[derive(AsRef, AsMut, From)]
 #[as_mut]
 #[as_ref]
+#[impl_tools::autoimpl(Debug, PartialEq)]
 pub struct AuthorizationTag<C: Cipher>(GenericArray<u8, C::AuthorizationTagSize>);
 
 impl<C: Cipher> FromStr for AuthorizationTag<C> {

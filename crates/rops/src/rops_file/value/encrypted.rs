@@ -5,7 +5,7 @@ use std::{
 
 use crate::*;
 
-#[derive(Debug, PartialEq)]
+#[impl_tools::autoimpl(Debug, PartialEq)]
 pub struct EncryptedRopsValue<C: Cipher> {
     pub data: EncryptedData,
     pub authorization_tag: AuthorizationTag<C>,
