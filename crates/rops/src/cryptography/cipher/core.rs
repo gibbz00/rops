@@ -4,7 +4,7 @@ use generic_array::ArrayLength;
 
 use crate::*;
 
-pub trait Cipher: Sized {
+pub trait Cipher: Sized + private::SealedCipher {
     const NAME: &'static str;
 
     type NonceSize: ArrayLength<u8> + Debug + PartialEq;
@@ -27,4 +27,16 @@ pub trait Cipher: Sized {
         associated_data: &[u8],
         authorization_tag: &AuthorizationTag<Self>,
     ) -> Result<(), Self::Error>;
+}
+
+mod private {
+    use super::*;
+
+    pub trait SealedCipher {}
+
+    #[cfg(feature = "test-utils")]
+    impl SealedCipher for StubCipher {}
+
+    #[cfg(feature = "aes-gcm")]
+    impl SealedCipher for AES256GCM {}
 }
