@@ -18,12 +18,12 @@
 ### File:
 
 - Formats:
-  - [ ] YAML
+  - [X] YAML
   - [ ] JSON
   - [ ] INI
   - [ ] ENV
   - [ ] BINARY
-- Choice:
+- Choice by CLI:
   - [ ] By flag: `--file-format`.
   - [ ] Infer by extension.
 - [Partial encryption](https://github.com/getsops/sops#48encrypting-only-parts-of-a-file)
@@ -49,7 +49,7 @@
 
 ### Integrations:
 
-- [ ] `age`
+- [X] `age`
 - [ ] `pgp`
 - [ ] `aws_kms`
 - [ ] `gcp_kms`
