@@ -107,8 +107,15 @@ mod metadata {
                     metadata_string.push_str(&display_integration_metadata_unit::<AgeIntegration>());
                 }
 
-                metadata_string.push_str(&format!("lastmodified: {}\n", LastModifiedDateTime::mock_display()));
-                metadata_string.push_str(&format!("mac: {}\n", S::Mac::mock_display()));
+                metadata_string.push_str(&indoc::formatdoc! {"
+                    lastmodified: {}
+                    mac: {}
+                    unencrypted_suffix: {}
+                    ",
+                    LastModifiedDateTime::mock_display(),
+                    S::Mac::mock_display(),
+                    PartialEncryption::mock_display()
+                });
 
                 return metadata_string;
 

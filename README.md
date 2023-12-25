@@ -26,19 +26,19 @@
 - Choice by CLI:
   - [ ] By flag: `--file-format`.
   - [ ] Infer by extension.
-- [Partial encryption](https://github.com/getsops/sops#48encrypting-only-parts-of-a-file)
+- [ ] Partial encryption
   - [ ] Either escape encryption:
     - [ ] With a suffix.
       - [ ] Flag: `--unencrypted-suffix`.
       - [ ] `.rops.yaml`: `partial_encryption.escape.suffix`.
-    - [ ] And/or through regex.
+    - [ ] Or through regex.
       - [ ] Flag: `--unencrypted-regex`.
       - [ ] `.rops.yaml`: `partial_encryption.escape.regex`.
   - [ ] Or limit encryption:
     - [ ] With a suffix
       - [ ] Flag: `--encrypted-suffix`.
       - [ ] `.rops.yaml`: `partial_encryption.limit.suffix`.
-    - [ ] And/or through regex.
+    - [ ] Or through regex.
       - [ ] Flag: `--encrypted-regex`.
       - [ ] `.rops.yaml`: `partial_encryption.limit.regex`.
   - [ ] Message authentication code (MAC) for encrypted parts only.

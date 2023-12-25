@@ -25,5 +25,8 @@ pub use mac::{EncryptedMac, Mac, SavedMacNonce};
 mod saved_parameters;
 pub use saved_parameters::SavedParameters;
 
+mod partial_encryption;
+pub use partial_encryption::PartialEncryption;
+
 #[cfg(feature = "test-utils")]
 mod mock;
