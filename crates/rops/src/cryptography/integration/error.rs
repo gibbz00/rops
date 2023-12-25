@@ -11,9 +11,9 @@ pub enum IntegrationError {
     #[error("{0} integration - decryption error: {1}")]
     Decryption(&'static str, String),
     #[error("unable to parse public key string: {0}")]
-    PublicKeyParsing(String),
+    PublicKeyParsing(anyhow::Error),
     #[error("unnable to parse private key string: {0}")]
-    PrivateKeyParsing(String),
+    PrivateKeyParsing(anyhow::Error),
     #[error("io error during encryption/decryption: {0}")]
     Io(#[from] std::io::Error),
     #[error("unable to convert bytes into a UTF-8 string")]

@@ -23,14 +23,14 @@ impl Integration for AgeIntegration {
     fn parse_public_key(public_key_str: &str) -> IntegrationResult<Self::PublicKey> {
         public_key_str
             .parse()
-            .map_err(|err: &str| IntegrationError::PublicKeyParsing(err.to_string()))
+            .map_err(|err: &str| IntegrationError::PublicKeyParsing(anyhow::anyhow!(err)))
     }
 
     fn parse_private_key(private_key_str: impl AsRef<str>) -> IntegrationResult<Self::PrivateKey> {
         private_key_str
             .as_ref()
             .parse()
-            .map_err(|err: &str| IntegrationError::PrivateKeyParsing(err.to_string()))
+            .map_err(|err: &str| IntegrationError::PrivateKeyParsing(anyhow::anyhow!(err)))
     }
 
     fn encrypt_data_key(public_key: &Self::PublicKey, data_key: &DataKey) -> IntegrationResult<String> {

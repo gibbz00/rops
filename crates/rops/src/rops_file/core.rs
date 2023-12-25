@@ -25,9 +25,9 @@ pub enum RopsFileEncryptError {
     #[error("unable to retrieve data key: {0}")]
     DataKeyRetrieval(#[from] RopsFileMetadataDataKeyRetrievalError),
     #[error("unable to encrypt map: {0}")]
-    MapEncryption(String),
+    MapEncryption(anyhow::Error),
     #[error("unable to encrypt metadata: {0}")]
-    MetadataEncryption(String),
+    MetadataEncryption(anyhow::Error),
 }
 
 #[derive(Debug, Error)]
@@ -84,19 +84,9 @@ impl<H: Hasher, F: FileFormat> RopsFile<DecryptedFile<H>, F> {
         RopsMap<EncryptedMap<C>>: Into<Fo::Map>,
     {
         let data_key = self.metadata.retrieve_data_key()?;
-
-        let encrypted_map = self
-            .map
-            .try_into()?
-            .encrypt::<C>(&data_key)
-            .map_err(|error| RopsFileEncryptError::MapEncryption(error.to_string()))?;
-
-        let encrypted_metadata = self
-            .metadata
-            .encrypt::<C>(&data_key)
-            .map_err(|error| RopsFileEncryptError::MetadataEncryption(error.to_string()))?;
-
-        Ok(RopsFile::new(encrypted_map, encrypted_metadata))
+        let encrypted_map = self.map.try_into()?.encrypt::<C>(&data_key);
+        let encrypted_metadata = self.metadata.encrypt::<C>(&data_key);
+        Self::file_from_parts_results(encrypted_map, encrypted_metadata)
     }
 
     pub fn encrypt_with_saved_parameters<C: Cipher, Fo: FileFormat>(
@@ -110,17 +100,20 @@ impl<H: Hasher, F: FileFormat> RopsFile<DecryptedFile<H>, F> {
         #[rustfmt::skip]
         let SavedParameters { data_key, saved_map_nonces, saved_mac_nonce } = saved_parameters;
 
-        let encrypted_map = self
-            .map
-            .try_into()?
-            .encrypt_with_saved_nonces(&data_key, &saved_map_nonces)
-            .map_err(|error| RopsFileEncryptError::MetadataEncryption(error.to_string()))?;
+        let encrypted_map = self.map.try_into()?.encrypt_with_saved_nonces(&data_key, &saved_map_nonces);
+        let encrypted_metadata = self.metadata.encrypt_with_saved_mac_nonce::<C>(&data_key, saved_mac_nonce);
+        Self::file_from_parts_results(encrypted_map, encrypted_metadata)
+    }
 
-        let encrypted_metadata = self
-            .metadata
-            .encrypt_with_saved_mac_nonce::<C>(&data_key, saved_mac_nonce)
-            .map_err(|error| RopsFileEncryptError::MetadataEncryption(error.to_string()))?;
-
+    fn file_from_parts_results<C: Cipher, Fo: FileFormat>(
+        encrypted_map_result: Result<RopsMap<EncryptedMap<C>>, C::Error>,
+        encrypted_metadata_result: Result<RopsFileMetadata<EncryptedMetadata<C, H>>, C::Error>,
+    ) -> Result<RopsFile<EncryptedFile<C, H>, Fo>, RopsFileEncryptError>
+    where
+        RopsMap<EncryptedMap<C>>: Into<Fo::Map>,
+    {
+        let encrypted_map = encrypted_map_result.map_err(|error| RopsFileEncryptError::MetadataEncryption(error.into()))?;
+        let encrypted_metadata = encrypted_metadata_result.map_err(|error| RopsFileEncryptError::MetadataEncryption(error.into()))?;
         Ok(RopsFile::new(encrypted_map, encrypted_metadata))
     }
 }

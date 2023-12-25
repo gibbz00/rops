@@ -23,7 +23,7 @@ where
 #[derive(Debug, thiserror::Error)]
 pub enum RopsFileMetadataDecryptError {
     #[error("unable to decrypt MAC: {0}")]
-    Mac(String),
+    Mac(anyhow::Error),
     #[error("unable to retrieve data key: {0}")]
     DataKeyRetrieval(#[from] RopsFileMetadataDataKeyRetrievalError),
 }
@@ -55,7 +55,7 @@ impl<C: Cipher, H: Hasher> RopsFileMetadata<EncryptedMetadata<C, H>> {
         let decrypted_map = self
             .mac
             .decrypt(&data_key, &self.last_modified)
-            .map_err(|error| RopsFileMetadataDecryptError::Mac(error.to_string()))?;
+            .map_err(|error| RopsFileMetadataDecryptError::Mac(error.into()))?;
 
         let decrypted_metadata = RopsFileMetadata {
             intregation: self.intregation,
@@ -75,7 +75,7 @@ impl<C: Cipher, H: Hasher> RopsFileMetadata<EncryptedMetadata<C, H>> {
         let (decrypted_map, saved_mac_nonce) = self
             .mac
             .decrypt_and_save_nonce(&data_key, &self.last_modified)
-            .map_err(|error| RopsFileMetadataDecryptError::Mac(error.to_string()))?;
+            .map_err(|error| RopsFileMetadataDecryptError::Mac(error.into()))?;
 
         let decrypted_metadata = RopsFileMetadata {
             intregation: self.intregation,

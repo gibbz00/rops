@@ -16,7 +16,7 @@ pub struct EncryptedRopsValue<C: Cipher> {
 #[derive(Debug, thiserror::Error)]
 pub enum DecryptRopsValueError {
     #[error("encountered cipher error: {0}")]
-    Cipher(String),
+    Cipher(anyhow::Error),
     #[error("unable convert value from decrypted bytes: {0}")]
     FromBytes(#[from] RopsValueFromBytesError),
 }
@@ -44,7 +44,7 @@ impl<C: Cipher> EncryptedRopsValue<C> {
             key_path.as_ref(),
             &self.authorization_tag,
         )
-        .map_err(|error| DecryptRopsValueError::Cipher(error.to_string()))?;
+        .map_err(|error| DecryptRopsValueError::Cipher(error.into()))?;
 
         RopsValue::from_bytes(in_place_buffer.into(), self.value_variant).map_err(Into::into)
     }
