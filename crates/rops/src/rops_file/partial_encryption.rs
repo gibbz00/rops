@@ -45,7 +45,10 @@ impl ResolvedPartialEncrpytion<'_> {
     pub fn escape_encryption(&self) -> bool {
         match self {
             ResolvedPartialEncrpytion::Yes(escape_encryption) => escape_encryption.0,
-            ResolvedPartialEncrpytion::No(_) => false,
+            ResolvedPartialEncrpytion::No(partial_encryption_config) => match partial_encryption_config {
+                PartialEncryptionConfig::EncryptedSuffix(_) | PartialEncryptionConfig::EncryptedRegex(_) => true,
+                PartialEncryptionConfig::UnencryptedSuffix(_) | PartialEncryptionConfig::UencryptedRegex(_) => false,
+            },
         }
     }
 }

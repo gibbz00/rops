@@ -21,8 +21,10 @@ macro_rules! parity_check {
             IntegrationsTestUtils::set_private_keys();
 
             let (decrypted_rops_file, saved_parameters) = sops_file
-                .parse::<RopsFile<EncryptedFile<AES256GCM, SHA512>, YamlFileFormat>>()?
-                .decrypt_and_save_parameters::<YamlFileFormat>()?;
+                .parse::<RopsFile<EncryptedFile<AES256GCM, SHA512>, YamlFileFormat>>()
+                .unwrap()
+                .decrypt_and_save_parameters::<YamlFileFormat>()
+                .unwrap();
 
             pretty_assertions::assert_eq!(sops_file_plaintext, decrypted_rops_file.map.to_string());
 

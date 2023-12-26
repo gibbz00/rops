@@ -45,18 +45,8 @@ mod transforms {
             }
 
             #[test]
-            fn allows_boolean_values_when_escaped() {
-                assert_allowed_value_helper("allowed_boolean: true")
-            }
-
-            #[test]
             fn disallows_integer_values_when_encrypted() {
                 assert_allowed_value_helper("disallowed_integer: 1")
-            }
-
-            #[test]
-            fn allows_integer_values_when_encrypted() {
-                assert_allowed_value_helper("allowed_integer: 1")
             }
 
             #[test]
@@ -72,9 +62,7 @@ mod transforms {
             fn assert_allowed_value_helper(key_value_str: &str) {
                 assert!(matches!(
                     helpers::create_format_map::<EncryptedMap<StubCipher>>(key_value_str)
-                        .to_internal(Some(&PartialEncryptionConfig::EncryptedRegex(
-                            regex::Regex::new("^allowed").unwrap().into()
-                        )))
+                        .to_internal(None)
                         .unwrap_err(),
                     FormatToInternalMapError::PlaintextWhenEncrypted(_)
                 ))
