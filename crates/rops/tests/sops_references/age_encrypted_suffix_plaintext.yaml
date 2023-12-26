@@ -3,4 +3,9 @@ a:
         a: xxx
         b: xxx
     2_plain: aaa
+    3_nested_encrypted:
+        a:
+            i: xxx
+        b:
+            ii: xxx
 b_encrypted: xxx

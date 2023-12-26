@@ -3,6 +3,11 @@ a:
         a: ENC[AES256_GCM,data:0FsM,iv:h1XsxkX+o1NT+D+XcFAODO43wuR8zysdDydI54dAuXo=,tag:EJ9xXVt7sKJUf/FLsiKP6g==,type:str]
         b: ENC[AES256_GCM,data:skTW,iv:bfM7BYJ6+mOnDd7kewCVqU2WW4jVPIRzRMwp2ojVPXw=,tag:mec4u6KOmvQroYJv/hqmeQ==,type:str]
     2_plain: aaa
+    3_nested_encrypted:
+        a:
+            i: ENC[AES256_GCM,data:gvZ5,iv:ARytT7LCYwrDBqdZ/SK4HCtnEmJo3JsATZuy2qcS7mE=,tag:+ekGmUFf9kdQhybUgou+Pg==,type:str]
+        b:
+            ii: ENC[AES256_GCM,data:ReUV,iv:YRASuxlwcayBPxQehJGzMSoKhFP+qL4Db/QqUNy76q4=,tag:2DRbJrykx/Q3L/FnAofLZA==,type:str]
 b_encrypted: ENC[AES256_GCM,data:MGQA,iv:MAMbnmDae/S6I/4HaN5A1xM2pPoUNFbCgr0UrOEnqFc=,tag:dGZBtt5npy+ig2DBbPC6Ug==,type:str]
 sops:
     age:
@@ -15,6 +20,6 @@ sops:
             d29zcGlGNW5NelZFdWxCUjh1QVhvc2MKGnIPvwO1J8JvUOfDJodOC8AcAXEs8FqO
             cO+3ma+lL6B+Is3LOUDVM9WR6zTuOe95fqUlrDiWQJZrCQ4+WD0E4w==
             -----END AGE ENCRYPTED FILE-----
-    lastmodified: "2023-12-26T17:41:36Z"
-    mac: ENC[AES256_GCM,data:Kb3loHQyUQnjwwJTt2twBZtVURqnKw6wrZRiUUD+UbUH56eHjx0YAxEQsFJaASu3ulEAgQO90g9hWky+2yRj7cR7LGy+/DBW6RQVUbVMydHJb9Fd+Mm61KhEXUKfo1J6XF//J3NnCyJv2DKwrz6XsfzsDplH7IvlcItD81FvnLk=,iv:KnFGMSI4jN+00dHv97/oh1WFmBw6N6ywHqQgkh45Krs=,tag:EqTyKl/dGqpMUbe+GC28/g==,type:str]
+    lastmodified: "2023-12-26T20:11:30Z"
+    mac: ENC[AES256_GCM,data:lq5WAFq4ZPA8bYsdk/jM6fCrdmZce6tqtNmAgrU0mX+UkyKLV9QIpUPAg1e7AImgbTQMs/shmVuRYeFmHc+qhZ/pzoxFfRjcyargSwPM9EcvPVpgwAPylhezAwzLR5wteBxEjCZNRjFBnv0/qFrTW6uVoVWf96l3sMtgn9fbOog=,iv:6JhEg0HATLynl8P+dv0+kDY3x2tDdvmp/ZN7L63IX3I=,tag:9p9nbAYFauIpit4N9PapNw==,type:str]
     encrypted_suffix: encrypted

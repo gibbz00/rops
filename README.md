@@ -6,7 +6,7 @@
 ## Goals
 
 * Full `sops` encrypted file compatibility. Decrypt any `sops` file using `rops` and vice versa.
-* Available as a high quality rust library.
+* Available as a rust library.
 
 ## Non-Goals
 
@@ -23,29 +23,42 @@
   - [ ] INI
   - [ ] ENV
   - [ ] BINARY
-- Choice by CLI:
+- [ ] Specify:
   - [ ] By flag: `--file-format`.
   - [ ] Infer by extension.
+  - [X] In library.
 - [ ] Partial encryption
-  - [ ] Either escape encryption:
-    - [ ] With a suffix.
-      - [ ] Flag: `--unencrypted-suffix`.
-      - [ ] `.rops.yaml`: `partial_encryption.escape.suffix`.
-    - [ ] Or through regex.
-      - [ ] Flag: `--unencrypted-regex`.
-      - [ ] `.rops.yaml`: `partial_encryption.escape.regex`.
-  - [ ] Or limit encryption:
-    - [ ] With a suffix
-      - [ ] Flag: `--encrypted-suffix`.
-      - [ ] `.rops.yaml`: `partial_encryption.limit.suffix`.
-    - [ ] Or through regex.
-      - [ ] Flag: `--encrypted-regex`.
-      - [ ] `.rops.yaml`: `partial_encryption.limit.regex`.
-  - [ ] Message authentication code (MAC) for encrypted parts only.
+    - [ ] CLI flag: `--{un,}encrypted-{suffix,regex} <pattern>`.
+    - [ ] `.rops.yaml`: `partial_encryption.{un,}encrypted.{ match: {regex,suffix}, pattern: "<pattern>" }`.
+    - [X] In library.
+  - [ ] MAC encrypted values only.
     - [ ] Flag: `--mac-only-encrypted`.
     - [ ] `.rops.yaml`: `partial_encryption.mac_only_encrypted: true`.
-    - [ ] In library
 - [ ] File comment encryption
+
+#### Partial Encryption
+
+All keys are encrypted by default, unless one of `encrypted_suffix`, `encrypted_regex`, `unencrypted_suffix`, `unencrypted_regex` exists as a metadata setting.
+
+| Variant                     | Encrypt by default | Matched value      |
+| ---                         | ---                | ---                |
+| `encrypted_{suffix,regex}`  | No                 | Is encrypted       |
+| `unncrypted_{suffix,regex}` | Yes                | Escapes encryption |
+
+Note that any matched key "locks" the triggered encryption config for all descendant key-value pairs. I.e. if the metadata contains `encrypted_suffix: "_encrypted"`, then the values for `i` and `ii` become encrypted in the map below:
+
+```yaml
+foo: bar
+nested_encrypted:
+  a:
+      i: xxx
+  b:
+      ii: xxx
+```
+
+##### Compute MAC for encrypted values only
+
+Unauthenticated changes in a plaintext value will still cause subsequent decryption attempts to fail. This is because all values are hashed into a message authentication code (MAC) before any encryption takes place. MAC verification will also fail after any unauthenticated addition, removal or reordering of values, regardless if they have been encrypted or not. The `mac_only_encrypted` metadata boolean can be enabled to allow for such unauthenticated modifications of plaintext key-value pairs, so long as the key paths for encrypted values remain the same.
 
 ### Integrations:
 

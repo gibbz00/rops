@@ -251,11 +251,28 @@ mod mock {
 mod tests {
     #[cfg(feature = "sha2")]
     mod sha2 {
+        use indexmap::indexmap;
+
         use crate::*;
 
         #[test]
         fn computes_mac() {
             assert_eq!(Mac::mock(), Mac::<SHA512>::compute(false, &RopsMap::mock()))
+        }
+
+        #[test]
+        fn protects_against_collection_reordering() {
+            assert_ne!(mac_from_collection(&[1, 2, 3]), mac_from_collection(&[3, 2, 1]));
+
+            fn mac_from_collection(ints: &[i64]) -> Mac<SHA512> {
+                let collection = ints.iter().map(|int| RopsTree::Leaf(RopsValue::Integer(*int))).collect();
+
+                let map = RopsMap(indexmap! {
+                    "collection".to_string() => RopsTree::Sequence(collection)
+                });
+
+                Mac::compute(false, &map)
+            }
         }
 
         #[cfg(feature = "aes-gcm")]
