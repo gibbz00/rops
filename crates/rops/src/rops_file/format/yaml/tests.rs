@@ -18,6 +18,25 @@ mod transforms {
                             .unwrap()
                     )
                 }
+
+                #[test]
+                fn mixes_partial_enryption() {
+                    let escape_suffix = "escaped".to_string();
+                    pretty_assertions::assert_eq!(
+                        RopsMap(indexmap::indexmap! {
+                            escape_suffix.clone() => RopsTree::Leaf(RopsMapEncryptedLeaf::Escaped(RopsValue::String("something".to_string()))),
+                            "encrypted".to_string() => RopsTree::Leaf(RopsMapEncryptedLeaf::Encrypted(EncryptedRopsValue::mock()))
+                        }),
+                        helpers::create_format_map::<EncryptedMap<AES256GCM>>(&indoc::formatdoc! {"
+                        {}: something
+                        encrypted: {}",
+                            escape_suffix,
+                            EncryptedRopsValue::<AES256GCM>::mock_display(),
+                        })
+                        .to_internal(Some(&PartialEncryptionConfig::UnencryptedSuffix("escaped".to_string())))
+                        .unwrap()
+                    )
+                }
             }
 
             #[test]
@@ -43,7 +62,7 @@ mod transforms {
             #[test]
             fn disallows_non_string_keys() {
                 assert!(matches!(
-                    RopsFileFormatMap::<EncryptedMap<StubCipher>, YamlFileFormat>::from_inner_map(helpers::create_yaml_map("123: xxx"))
+                    helpers::create_format_map::<EncryptedMap<StubCipher>>("123: xxx")
                         .to_internal(None)
                         .unwrap_err(),
                     FormatToInternalMapError::NonStringKey(_)
@@ -52,7 +71,7 @@ mod transforms {
 
             fn assert_allowed_value_helper(key_value_str: &str) {
                 assert!(matches!(
-                    RopsFileFormatMap::<EncryptedMap<StubCipher>, YamlFileFormat>::from_inner_map(helpers::create_yaml_map(key_value_str))
+                    helpers::create_format_map::<EncryptedMap<StubCipher>>(key_value_str)
                         .to_internal(Some(&PartialEncryptionConfig::EncryptedRegex(
                             regex::Regex::new("^allowed").unwrap().into()
                         )))
@@ -78,9 +97,7 @@ mod transforms {
             #[test]
             fn disallows_non_string_keys() {
                 assert!(matches!(
-                    RopsFileFormatMap::<DecryptedMap, YamlFileFormat>::from_inner_map(helpers::create_yaml_map("123: xxx"))
-                        .to_internal()
-                        .unwrap_err(),
+                    helpers::create_format_map::<DecryptedMap>("123: xxx").to_internal().unwrap_err(),
                     FormatToInternalMapError::NonStringKey(_)
                 ))
             }
@@ -88,20 +105,19 @@ mod transforms {
             #[test]
             fn dissallows_out_of_range_integers() {
                 assert!(matches!(
-                    RopsFileFormatMap::<DecryptedMap, YamlFileFormat>::from_inner_map(helpers::create_yaml_map(&format!(
-                        "invalid_integer: {}",
-                        u64::MAX
-                    )))
-                    .to_internal()
-                    .unwrap_err(),
+                    helpers::create_format_map::<DecryptedMap>(&format!("invalid_integer: {}", u64::MAX))
+                        .to_internal()
+                        .unwrap_err(),
                     FormatToInternalMapError::IntegerOutOfRange(_)
                 ))
             }
         }
 
         mod helpers {
-            pub fn create_yaml_map(key_value_str: &str) -> serde_yaml::Mapping {
-                serde_yaml::from_str::<serde_yaml::Mapping>(key_value_str).unwrap()
+            use crate::*;
+
+            pub fn create_format_map<S: RopsMapState>(key_value_str: &str) -> RopsFileFormatMap<S, YamlFileFormat> {
+                RopsFileFormatMap::<S, YamlFileFormat>::from_inner_map(serde_yaml::from_str::<serde_yaml::Mapping>(key_value_str).unwrap())
             }
         }
     }
