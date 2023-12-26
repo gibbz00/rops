@@ -41,15 +41,6 @@ pub enum ResolvedPartialEncrpytion<'a> {
     No(&'a PartialEncryptionConfig),
 }
 
-impl<'a> From<Option<&'a PartialEncryptionConfig>> for ResolvedPartialEncrpytion<'a> {
-    fn from(optional_partial_encryption_config: Option<&'a PartialEncryptionConfig>) -> Self {
-        match optional_partial_encryption_config {
-            Some(partial_encryption_config) => ResolvedPartialEncrpytion::No(partial_encryption_config),
-            None => ResolvedPartialEncrpytion::Yes(EscapeEncryption(false)),
-        }
-    }
-}
-
 impl ResolvedPartialEncrpytion<'_> {
     pub fn escape_encryption(&self) -> bool {
         match self {
@@ -59,16 +50,26 @@ impl ResolvedPartialEncrpytion<'_> {
     }
 }
 
+impl<'a> From<Option<&'a PartialEncryptionConfig>> for ResolvedPartialEncrpytion<'a> {
+    fn from(optional_partial_encryption_config: Option<&'a PartialEncryptionConfig>) -> Self {
+        match optional_partial_encryption_config {
+            Some(partial_encryption_config) => ResolvedPartialEncrpytion::No(partial_encryption_config),
+            None => ResolvedPartialEncrpytion::Yes(EscapeEncryption(false)),
+        }
+    }
+}
+
 pub use regex::RopsRegex;
 mod regex {
-    use derive_more::Deref;
+    use derive_more::{Deref, From};
     use regex::Regex;
     use serde::{Deserialize, Serialize};
 
-    #[derive(Debug, Serialize, Deserialize, Deref)]
+    #[derive(Debug, Serialize, Deserialize, Deref, From)]
     #[serde(transparent)]
     pub struct RopsRegex(#[serde(with = "serde_regex")] Regex);
 
+    // Should be OK for most purposes, mostly used for testing.
     impl PartialEq for RopsRegex {
         fn eq(&self, other: &Self) -> bool {
             self.0.as_str() == other.0.as_str()

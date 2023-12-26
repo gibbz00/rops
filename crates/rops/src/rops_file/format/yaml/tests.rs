@@ -21,17 +21,27 @@ mod transforms {
             }
 
             #[test]
-            fn dissallows_boolean_values() {
-                assert_disallowed_value_helper("disallowed_boolean: true")
+            fn disallows_boolean_values_when_encrypted() {
+                assert_allowed_value_helper("disallowed_boolean: true")
             }
 
             #[test]
-            fn dissallows_integer_values() {
-                assert_disallowed_value_helper("disallowed_integer: 1")
+            fn allows_boolean_values_when_escaped() {
+                assert_allowed_value_helper("allowed_boolean: true")
             }
 
             #[test]
-            fn dissallows_non_string_keys() {
+            fn disallows_integer_values_when_encrypted() {
+                assert_allowed_value_helper("disallowed_integer: 1")
+            }
+
+            #[test]
+            fn allows_integer_values_when_encrypted() {
+                assert_allowed_value_helper("allowed_integer: 1")
+            }
+
+            #[test]
+            fn disallows_non_string_keys() {
                 assert!(matches!(
                     RopsFileFormatMap::<EncryptedMap<StubCipher>, YamlFileFormat>::from_inner_map(helpers::create_yaml_map("123: xxx"))
                         .to_internal(None)
@@ -40,10 +50,12 @@ mod transforms {
                 ))
             }
 
-            fn assert_disallowed_value_helper(key_value_str: &str) {
+            fn assert_allowed_value_helper(key_value_str: &str) {
                 assert!(matches!(
                     RopsFileFormatMap::<EncryptedMap<StubCipher>, YamlFileFormat>::from_inner_map(helpers::create_yaml_map(key_value_str))
-                        .to_internal(None)
+                        .to_internal(Some(&PartialEncryptionConfig::EncryptedRegex(
+                            regex::Regex::new("^allowed").unwrap().into()
+                        )))
                         .unwrap_err(),
                     FormatToInternalMapError::PlaintextWhenEncrypted(_)
                 ))
@@ -64,7 +76,7 @@ mod transforms {
             }
 
             #[test]
-            fn dissallows_non_string_keys() {
+            fn disallows_non_string_keys() {
                 assert!(matches!(
                     RopsFileFormatMap::<DecryptedMap, YamlFileFormat>::from_inner_map(helpers::create_yaml_map("123: xxx"))
                         .to_internal()
