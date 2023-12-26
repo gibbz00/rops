@@ -93,8 +93,7 @@ impl RopsMap<DecryptedMap> {
                     true => RopsTree::Leaf(RopsMapEncryptedLeaf::Escaped(value)),
                     false => {
                         let nonce = optional_saved_nonces
-                            .map(|saved_nonces| saved_nonces.get((key_path, &value)).cloned())
-                            .flatten()
+                            .and_then(|saved_nonces| saved_nonces.get((key_path, &value)).cloned())
                             .unwrap_or_else(Nonce::new);
                         RopsTree::Leaf(RopsMapEncryptedLeaf::Encrypted(value.encrypt(nonce, data_key, key_path)?))
                     }

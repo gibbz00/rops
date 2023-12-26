@@ -8,7 +8,7 @@ impl KeyPath {
     }
 
     pub fn last(&self) -> &str {
-        self.0.split(':').last().unwrap_or("")
+        self.0.strip_suffix(':').and_then(|str| str.split(':').last()).unwrap_or("")
     }
 }
 
@@ -34,7 +34,16 @@ mod tests {
     use super::*;
 
     #[test]
-    fn gets_last() {
+    fn gets_last_when_one_level() {
+        let key_path = KeyPath::default().join("one");
+        println!("{:?}", key_path);
+        assert_eq!("one", key_path.last())
+    }
+
+    #[test]
+    fn gets_last_when_multiple_levels() {
+        let key_path = KeyPath::default().join("one").join("two");
+        println!("{:?}", key_path);
         assert_eq!("two", KeyPath::default().join("one").join("two").last())
     }
 
