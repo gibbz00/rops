@@ -1,0 +1,9 @@
+a:
+    b_unencrypted:
+        a: aaa
+        b: aaa
+        c:
+            - 123
+            - 456
+    c_encrypted: xxx
+unencrypted_not: xxx

@@ -1,0 +1,6 @@
+a:
+    1_encrypted:
+        a: xxx
+        b: xxx
+    2_plain: aaa
+b_encrypted: xxx

@@ -1,0 +1,23 @@
+a:
+    b_unencrypted:
+        a: aaa
+        b: aaa
+        c:
+            - 123
+            - 456
+    c_encrypted: ENC[AES256_GCM,data:jJw9,iv:zSVPp6jWfJmAG63pkMyZC5wCSeQXJvJ1AgAPEzaxIGE=,tag:0wLbxHEaJ/VKS0NtwtD94g==,type:str]
+unencrypted_not: ENC[AES256_GCM,data:Bh/l,iv:ofV3kn2chqI58+EAUd8xnhwfc0YOeGTdzdfUOrPySqY=,tag:Mxn9s6H2bdFgmow3cuAVTA==,type:str]
+sops:
+    age:
+        - recipient: age1se5ghfycr4n8kcwc3qwf234ymvmr2lex2a99wh8gpfx97glwt9hqch4569
+          enc: |
+            -----BEGIN AGE ENCRYPTED FILE-----
+            YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBiNnl2dXZWdTM0c1IwTlpy
+            TEp6clBlMkFqMExvU3FnM2gvbXZGTjN4RGxZCmhLWEJIcml5MUtXcHNSWkZOUjdE
+            dE12RUhJMVJTM1didmY1WVJSNXBqQ2sKLS0tIFlzLzh6TjN5ZS9FUk5pY3dwWjc3
+            M0k2WGZ4QXcvdERNczlzWTgrbEZoeE0K4lB0JlB7GSeG6MKjPEmn0abuMWH2m2ck
+            aLJqc9i2pXVqvMh3yHMehpumyrtwwNtWpFC6qzKTUejGA9ZOH26csQ==
+            -----END AGE ENCRYPTED FILE-----
+    lastmodified: "2023-12-26T17:57:37Z"
+    mac: ENC[AES256_GCM,data:lMKBbtVlzwBziw+4hHH6OvxFDrAXfKKhk1n7egJe79JghYCnNjuPt7y3RT7NUGUcI72f6hnZJ7zjOBsNh3y3Uz0zrVH0NeHhCZ/RA4rAf3ohI7IZmZAY7BL2HSXaFlvYu3XmI5q3GUtqCW1gSUB2GmiFRAexSzWUMp8sjidicVU=,iv:6vUN0afSE9HjVQTpVIU7ciMcYFY6ylApcidym3rRKik=,tag:80x4wKw9b0cXv24PAUnakw==,type:str]
+    unencrypted_suffix: unencrypted

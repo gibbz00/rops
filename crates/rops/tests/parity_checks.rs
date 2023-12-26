@@ -1,30 +1,43 @@
 use rops::*;
 
-#[test]
-fn example_without_comment() -> anyhow::Result<()> {
-    let sops_file = include_str!("./sops_references/age_example.yaml");
-    // Normalize to serde_yaml format:
-    let sops_file = serde_yaml::from_str::<serde_yaml::Value>(sops_file).and_then(|value| serde_yaml::to_string(&value))?;
+parity_check!(age_example);
+parity_check!(age_encrypted_suffix);
+parity_check!(age_encrypted_regex);
+parity_check!(age_unencrypted_suffix);
+parity_check!(age_unencrypted_regex);
 
-    let sops_file_plaintext = include_str!("./sops_references/age_example_plaintext.yaml");
-    // Normalize to serde_yaml format:
-    let sops_file_plaintext =
-        serde_yaml::from_str::<serde_yaml::Value>(sops_file_plaintext).and_then(|value| serde_yaml::to_string(&value))?;
+#[macro_export]
+macro_rules! parity_check {
+    ($name:tt) => {
+        #[test]
+        fn $name() -> anyhow::Result<()> {
+            let sops_file = normalize_yaml(include_str!(concat!("./sops_references/", stringify!($name), ".yaml")))?;
+            let sops_file_plaintext = normalize_yaml(include_str!(concat!(
+                "./sops_references/",
+                stringify!($name),
+                "_plaintext.yaml"
+            )))?;
 
-    IntegrationsTestUtils::set_private_keys();
+            IntegrationsTestUtils::set_private_keys();
 
-    let (decrypted_rops_file, saved_parameters) = sops_file
-        .parse::<RopsFile<EncryptedFile<AES256GCM, SHA512>, YamlFileFormat>>()?
-        .decrypt_and_save_parameters::<YamlFileFormat>()?;
+            let (decrypted_rops_file, saved_parameters) = sops_file
+                .parse::<RopsFile<EncryptedFile<AES256GCM, SHA512>, YamlFileFormat>>()?
+                .decrypt_and_save_parameters::<YamlFileFormat>()?;
 
-    pretty_assertions::assert_eq!(sops_file_plaintext, decrypted_rops_file.map.to_string());
+            pretty_assertions::assert_eq!(sops_file_plaintext, decrypted_rops_file.map.to_string());
 
-    pretty_assertions::assert_eq!(
-        sops_file,
-        decrypted_rops_file
-            .encrypt_with_saved_parameters::<AES256GCM, YamlFileFormat>(saved_parameters)?
-            .to_string()
-    );
+            pretty_assertions::assert_eq!(
+                sops_file,
+                decrypted_rops_file
+                    .encrypt_with_saved_parameters::<AES256GCM, YamlFileFormat>(saved_parameters)?
+                    .to_string()
+            );
 
-    Ok(())
+            Ok(())
+        }
+    };
+}
+
+fn normalize_yaml(input_yaml: &str) -> Result<String, serde_yaml::Error> {
+    serde_yaml::from_str::<serde_yaml::Value>(input_yaml).and_then(|value| serde_yaml::to_string(&value))
 }
