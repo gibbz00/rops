@@ -2,7 +2,10 @@ mod core;
 pub use core::{RopsMap, RopsTree};
 
 mod state;
-pub use state::{DecryptedMap, EncryptedMap, RopsMapState};
+pub use state::{DecryptedMap, EncryptedMap, RopsMapEncryptedLeaf, RopsMapState};
+
+mod transforms;
+pub use transforms::ToExternalMap;
 
 mod saved_nonces;
 pub use saved_nonces::SavedRopsMapNonces;

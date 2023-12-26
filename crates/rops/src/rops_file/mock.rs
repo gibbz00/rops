@@ -9,6 +9,9 @@ where
     <<S::MetadataState as RopsMetadataState>::Mac as FromStr>::Err: Display,
 {
     fn mock() -> Self {
-        Self::new(RopsFileFormatMap::mock(), RopsFileMetadata::mock())
+        Self {
+            map: MockTestUtil::mock(),
+            metadata: MockTestUtil::mock(),
+        }
     }
 }

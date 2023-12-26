@@ -2,13 +2,27 @@ use derive_more::{Deref, DerefMut, From, Into};
 
 use crate::*;
 
-#[derive(Debug, PartialEq, From, Into, Deref, DerefMut)]
+#[derive(PartialEq, From, Into, Deref, DerefMut)]
+#[impl_tools::autoimpl(Debug)]
 pub struct RopsMap<S: RopsMapState>(pub(crate) indexmap::IndexMap<String, RopsTree<S>>);
 
-#[derive(Debug, PartialEq)]
+#[derive(PartialEq)]
+#[impl_tools::autoimpl(Debug)]
 pub enum RopsTree<S: RopsMapState> {
     Sequence(Vec<RopsTree<S>>),
     Map(RopsMap<S>),
     Null,
     Leaf(S::RopsTreeLeaf),
+}
+
+impl<C: Cipher> ToExternalMap<EncryptedMap<C>> for RopsMap<EncryptedMap<C>> {
+    fn to_external<F: FileFormat>(self) -> RopsFileFormatMap<EncryptedMap<C>, F> {
+        RopsFileFormatMap::from_inner_map(F::encrypted_from_internal(self))
+    }
+}
+
+impl ToExternalMap<DecryptedMap> for RopsMap<DecryptedMap> {
+    fn to_external<F: FileFormat>(self) -> RopsFileFormatMap<DecryptedMap, F> {
+        RopsFileFormatMap::from_inner_map(F::decrypted_from_internal(self))
+    }
 }

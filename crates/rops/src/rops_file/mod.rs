@@ -26,7 +26,7 @@ mod saved_parameters;
 pub use saved_parameters::SavedParameters;
 
 mod partial_encryption;
-pub use partial_encryption::PartialEncryption;
+pub use partial_encryption::{EscapeEncryption, PartialEncryptionConfig, ResolvedPartialEncrpytion};
 
 #[cfg(feature = "test-utils")]
 mod mock;

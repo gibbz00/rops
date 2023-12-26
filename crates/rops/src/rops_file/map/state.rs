@@ -6,10 +6,17 @@ pub trait RopsMapState: private::SealedRopsMapState {
     type RopsTreeLeaf: Debug + PartialEq;
 }
 
-#[derive(Debug, PartialEq)]
+#[impl_tools::autoimpl(Debug, PartialEq)]
 pub struct EncryptedMap<C: Cipher>(PhantomData<C>);
+
 impl<C: Cipher> RopsMapState for EncryptedMap<C> {
-    type RopsTreeLeaf = EncryptedRopsValue<C>;
+    type RopsTreeLeaf = RopsMapEncryptedLeaf<C>;
+}
+
+#[impl_tools::autoimpl(Debug, PartialEq)]
+pub enum RopsMapEncryptedLeaf<C: Cipher> {
+    Encrypted(EncryptedRopsValue<C>),
+    Escaped(RopsValue),
 }
 
 #[derive(Debug, PartialEq)]

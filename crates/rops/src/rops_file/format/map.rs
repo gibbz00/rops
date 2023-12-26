@@ -24,9 +24,8 @@ pub enum FormatToInternalMapError {
     IntegerOutOfRange(u64),
     #[error("unable to parse encrypted value components: {0}")]
     EncryptedRopsValue(#[from] EncryptedRopsValueFromStrError),
-    // TEMP: Deprecate once partial encryption feature arrives.
-    #[error("invalid value type for an encrypted file")]
-    InvalidValueTypeForEncrypted(String),
+    #[error("encountered plaintext value when it should have been encrypted")]
+    PlaintextWhenEncrypted(String),
 }
 
 impl<S: RopsMapState, F: FileFormat> RopsFileFormatMap<S, F> {
@@ -42,12 +41,18 @@ impl<S: RopsMapState, F: FileFormat> RopsFileFormatMap<S, F> {
     }
 }
 
-impl<S: RopsMapState, F: FileFormat> From<RopsMap<S>> for RopsFileFormatMap<S, F>
-where
-    RopsMap<S>: Into<F::Map>,
-{
-    fn from(internal_map: RopsMap<S>) -> Self {
-        Self::from_inner_map(internal_map.into())
+impl<C: Cipher, F: FileFormat> RopsFileFormatMap<EncryptedMap<C>, F> {
+    pub fn to_internal(
+        self,
+        partial_encryption: Option<&PartialEncryptionConfig>,
+    ) -> Result<RopsMap<EncryptedMap<C>>, FormatToInternalMapError> {
+        F::encrypted_to_internal(self, partial_encryption)
+    }
+}
+
+impl<F: FileFormat> RopsFileFormatMap<DecryptedMap, F> {
+    pub fn to_internal(self) -> Result<RopsMap<DecryptedMap>, FormatToInternalMapError> {
+        F::decrypted_to_internal(self)
     }
 }
 
@@ -64,10 +69,10 @@ mod mock {
     impl<S: RopsMapState, F: FileFormat> MockOtherTestUtil for RopsFileFormatMap<S, F>
     where
         RopsMap<S>: MockOtherTestUtil,
-        F::Map: From<RopsMap<S>>,
+        RopsMap<S>: ToExternalMap<S>,
     {
         fn mock_other() -> Self {
-            Self::from_inner_map(F::Map::from(RopsMap::mock_other()))
+            RopsMap::mock_other().to_external()
         }
     }
 }

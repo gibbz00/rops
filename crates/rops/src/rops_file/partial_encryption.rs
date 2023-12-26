@@ -1,7 +1,8 @@
+use derive_more::AsRef;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
-pub enum PartialEncryption {
+pub enum PartialEncryptionConfig {
     // Limit
     #[serde(rename = "encrypted_suffix")]
     EncryptedSuffix(String),
@@ -15,12 +16,56 @@ pub enum PartialEncryption {
     UencryptedRegex(RopsRegex),
 }
 
+#[derive(Default, Clone, Copy, AsRef)]
+pub struct EscapeEncryption(pub bool);
+
+impl PartialEncryptionConfig {
+    pub fn resolve(&self, key_str: &str) -> ResolvedPartialEncrpytion {
+        let maybe_escape_encryption: Option<EscapeEncryption> = match self {
+            PartialEncryptionConfig::EncryptedSuffix(suffix) => key_str.ends_with(suffix).then_some(EscapeEncryption(false)),
+            PartialEncryptionConfig::EncryptedRegex(regex) => regex.is_match(key_str).then_some(EscapeEncryption(false)),
+            PartialEncryptionConfig::UnencryptedSuffix(suffix) => key_str.ends_with(suffix).then_some(EscapeEncryption(true)),
+            PartialEncryptionConfig::UencryptedRegex(regex) => regex.is_match(key_str).then_some(EscapeEncryption(true)),
+        };
+
+        match maybe_escape_encryption {
+            Some(escape_encryption) => ResolvedPartialEncrpytion::Yes(escape_encryption),
+            None => ResolvedPartialEncrpytion::No(self),
+        }
+    }
+}
+
+#[derive(Clone, Copy)]
+pub enum ResolvedPartialEncrpytion<'a> {
+    Yes(EscapeEncryption),
+    No(&'a PartialEncryptionConfig),
+}
+
+impl<'a> From<Option<&'a PartialEncryptionConfig>> for ResolvedPartialEncrpytion<'a> {
+    fn from(optional_partial_encryption_config: Option<&'a PartialEncryptionConfig>) -> Self {
+        match optional_partial_encryption_config {
+            Some(partial_encryption_config) => ResolvedPartialEncrpytion::No(partial_encryption_config),
+            None => ResolvedPartialEncrpytion::Yes(EscapeEncryption(false)),
+        }
+    }
+}
+
+impl ResolvedPartialEncrpytion<'_> {
+    pub fn escape_encryption(&self) -> bool {
+        match self {
+            ResolvedPartialEncrpytion::Yes(escape_encryption) => escape_encryption.0,
+            ResolvedPartialEncrpytion::No(_) => false,
+        }
+    }
+}
+
 pub use regex::RopsRegex;
 mod regex {
+    use derive_more::Deref;
     use regex::Regex;
     use serde::{Deserialize, Serialize};
 
-    #[derive(Debug, Serialize, Deserialize)]
+    #[derive(Debug, Serialize, Deserialize, Deref)]
     #[serde(transparent)]
     pub struct RopsRegex(#[serde(with = "serde_regex")] Regex);
 
@@ -35,13 +80,13 @@ mod regex {
 mod mock {
     use crate::*;
 
-    impl MockTestUtil for PartialEncryption {
+    impl MockTestUtil for PartialEncryptionConfig {
         fn mock() -> Self {
             Self::UnencryptedSuffix(Self::mock_display())
         }
     }
 
-    impl MockDisplayTestUtil for PartialEncryption {
+    impl MockDisplayTestUtil for PartialEncryptionConfig {
         fn mock_display() -> String {
             "_unencrypted".to_string()
         }

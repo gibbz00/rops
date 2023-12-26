@@ -1,3 +1,100 @@
+mod transforms {
+    mod to_internal {
+        mod encrypted {
+            use crate::*;
+
+            use super::helpers;
+
+            #[cfg(feature = "aes-gcm")]
+            mod aes_gcm {
+                use super::*;
+
+                #[test]
+                fn transforms_encrypted_yaml_map() {
+                    assert_eq!(
+                        RopsMap::mock(),
+                        RopsFileFormatMap::<EncryptedMap<AES256GCM>, YamlFileFormat>::mock()
+                            .to_internal(None)
+                            .unwrap()
+                    )
+                }
+            }
+
+            #[test]
+            fn dissallows_boolean_values() {
+                assert_disallowed_value_helper("disallowed_boolean: true")
+            }
+
+            #[test]
+            fn dissallows_integer_values() {
+                assert_disallowed_value_helper("disallowed_integer: 1")
+            }
+
+            #[test]
+            fn dissallows_non_string_keys() {
+                assert!(matches!(
+                    RopsFileFormatMap::<EncryptedMap<StubCipher>, YamlFileFormat>::from_inner_map(helpers::create_yaml_map("123: xxx"))
+                        .to_internal(None)
+                        .unwrap_err(),
+                    FormatToInternalMapError::NonStringKey(_)
+                ))
+            }
+
+            fn assert_disallowed_value_helper(key_value_str: &str) {
+                assert!(matches!(
+                    RopsFileFormatMap::<EncryptedMap<StubCipher>, YamlFileFormat>::from_inner_map(helpers::create_yaml_map(key_value_str))
+                        .to_internal(None)
+                        .unwrap_err(),
+                    FormatToInternalMapError::PlaintextWhenEncrypted(_)
+                ))
+            }
+        }
+
+        mod decrypted {
+            use crate::*;
+
+            use super::helpers;
+
+            #[test]
+            fn transforms_decrypted_yaml_map() {
+                assert_eq!(
+                    RopsMap::mock(),
+                    RopsFileFormatMap::<DecryptedMap, YamlFileFormat>::mock().to_internal().unwrap()
+                )
+            }
+
+            #[test]
+            fn dissallows_non_string_keys() {
+                assert!(matches!(
+                    RopsFileFormatMap::<DecryptedMap, YamlFileFormat>::from_inner_map(helpers::create_yaml_map("123: xxx"))
+                        .to_internal()
+                        .unwrap_err(),
+                    FormatToInternalMapError::NonStringKey(_)
+                ))
+            }
+
+            #[test]
+            fn dissallows_out_of_range_integers() {
+                assert!(matches!(
+                    RopsFileFormatMap::<DecryptedMap, YamlFileFormat>::from_inner_map(helpers::create_yaml_map(&format!(
+                        "invalid_integer: {}",
+                        u64::MAX
+                    )))
+                    .to_internal()
+                    .unwrap_err(),
+                    FormatToInternalMapError::IntegerOutOfRange(_)
+                ))
+            }
+        }
+
+        mod helpers {
+            pub fn create_yaml_map(key_value_str: &str) -> serde_yaml::Mapping {
+                serde_yaml::from_str::<serde_yaml::Mapping>(key_value_str).unwrap()
+            }
+        }
+    }
+}
+
 mod rops_file {
     use crate::*;
 
@@ -76,9 +173,12 @@ mod rops_file {
             IntegrationsTestUtils::set_private_keys();
 
             assert!(matches!(
-                RopsFile::new(RopsFileFormatMap::mock_other(), RopsFileMetadata::mock())
-                    .decrypt::<YamlFileFormat>()
-                    .unwrap_err(),
+                RopsFile::<_, YamlFileFormat> {
+                    map: RopsFileFormatMap::mock_other(),
+                    metadata: RopsFileMetadata::mock()
+                }
+                .decrypt::<YamlFileFormat>()
+                .unwrap_err(),
                 RopsFileDecryptError::MacMismatch(_, _)
             ))
         }

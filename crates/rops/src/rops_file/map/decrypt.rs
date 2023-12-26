@@ -4,7 +4,7 @@ use crate::*;
 
 impl<C: Cipher> RopsMap<EncryptedMap<C>> {
     pub fn decrypt(self, data_key: &DataKey) -> Result<RopsMap<DecryptedMap>, DecryptRopsValueError> {
-        Self::decrypt_impl(self, data_key, &KeyPath::default(), &mut None)
+        Self::decrypt_impl(self, data_key, &mut None)
     }
 
     pub fn decrypt_and_save_nonces(
@@ -12,16 +12,15 @@ impl<C: Cipher> RopsMap<EncryptedMap<C>> {
         data_key: &DataKey,
     ) -> Result<(RopsMap<DecryptedMap>, SavedRopsMapNonces<C>), DecryptRopsValueError> {
         let mut saved_nonces = SavedRopsMapNonces::default();
-        Self::decrypt_impl(self, data_key, &KeyPath::default(), &mut Some(&mut saved_nonces)).map(|tree| (tree, saved_nonces))
+        Self::decrypt_impl(self, data_key, &mut Some(&mut saved_nonces)).map(|tree| (tree, saved_nonces))
     }
 
     fn decrypt_impl<Ci: Cipher>(
         map: RopsMap<EncryptedMap<Ci>>,
         data_key: &DataKey,
-        key_path: &KeyPath,
         optional_saved_nonces: &mut Option<&mut SavedRopsMapNonces<Ci>>,
     ) -> Result<RopsMap<DecryptedMap>, DecryptRopsValueError> {
-        return decrypt_map_recursive(map, data_key, key_path, optional_saved_nonces);
+        return decrypt_map_recursive(map, data_key, &KeyPath::default(), optional_saved_nonces);
 
         fn decrypt_map_recursive<C: Cipher>(
             map: RopsMap<EncryptedMap<C>>,
@@ -59,14 +58,17 @@ impl<C: Cipher> RopsMap<EncryptedMap<C>> {
                 }
 
                 RopsTree::Null => RopsTree::Null,
-                RopsTree::Leaf(encrypted_value) => RopsTree::Leaf(match optional_saved_nonces {
-                    Some(saved_nonces) => {
-                        let nonce = encrypted_value.nonce.clone();
-                        let decrypted_value = encrypted_value.decrypt(data_key, key_path)?;
-                        saved_nonces.insert((key_path.clone(), decrypted_value.clone()), nonce);
-                        decrypted_value
-                    }
-                    None => encrypted_value.decrypt(data_key, key_path)?,
+                RopsTree::Leaf(maybe_encrypted_value) => RopsTree::Leaf(match maybe_encrypted_value {
+                    RopsMapEncryptedLeaf::Encrypted(encrypted_value) => match optional_saved_nonces {
+                        Some(saved_nonces) => {
+                            let nonce = encrypted_value.nonce.clone();
+                            let decrypted_value = encrypted_value.decrypt(data_key, key_path)?;
+                            saved_nonces.insert((key_path.clone(), decrypted_value.clone()), nonce);
+                            decrypted_value
+                        }
+                        None => encrypted_value.decrypt(data_key, key_path)?,
+                    },
+                    RopsMapEncryptedLeaf::Escaped(escaped_value) => escaped_value,
                 }),
             })
         }

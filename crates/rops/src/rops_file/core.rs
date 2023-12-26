@@ -46,8 +46,11 @@ impl<S: RopsFileState, F: FileFormat> RopsFile<S, F>
 where
     <<S::MetadataState as RopsMetadataState>::Mac as FromStr>::Err: Display,
 {
-    pub fn new(map: impl Into<RopsFileFormatMap<S::MapState, F>>, metadata: RopsFileMetadata<S::MetadataState>) -> Self {
-        Self { map: map.into(), metadata }
+    pub fn new(map: impl ToExternalMap<S::MapState>, metadata: RopsFileMetadata<S::MetadataState>) -> Self {
+        Self {
+            map: map.to_external::<F>(),
+            metadata,
+        }
     }
 }
 
@@ -78,13 +81,12 @@ where
 }
 
 impl<H: Hasher, F: FileFormat> RopsFile<DecryptedFile<H>, F> {
-    pub fn encrypt<C: Cipher, Fo: FileFormat>(self) -> Result<RopsFile<EncryptedFile<C, H>, Fo>, RopsFileEncryptError>
-    where
-        RopsFileFormatMap<DecryptedMap, F>: TryInto<RopsMap<DecryptedMap>, Error = FormatToInternalMapError>,
-        RopsMap<EncryptedMap<C>>: Into<Fo::Map>,
-    {
+    pub fn encrypt<C: Cipher, Fo: FileFormat>(self) -> Result<RopsFile<EncryptedFile<C, H>, Fo>, RopsFileEncryptError> {
         let data_key = self.metadata.retrieve_data_key()?;
-        let encrypted_map = self.map.try_into()?.encrypt::<C>(&data_key);
+        let encrypted_map = self
+            .map
+            .to_internal()?
+            .encrypt::<C>(&data_key, self.metadata.partial_encryption.as_ref());
         let encrypted_metadata = self.metadata.encrypt::<C>(&data_key);
         Self::file_from_parts_results(encrypted_map, encrypted_metadata)
     }
@@ -92,15 +94,15 @@ impl<H: Hasher, F: FileFormat> RopsFile<DecryptedFile<H>, F> {
     pub fn encrypt_with_saved_parameters<C: Cipher, Fo: FileFormat>(
         self,
         saved_parameters: SavedParameters<C, H>,
-    ) -> Result<RopsFile<EncryptedFile<C, H>, Fo>, RopsFileEncryptError>
-    where
-        RopsFileFormatMap<DecryptedMap, F>: TryInto<RopsMap<DecryptedMap>, Error = FormatToInternalMapError>,
-        RopsMap<EncryptedMap<C>>: Into<Fo::Map>,
-    {
+    ) -> Result<RopsFile<EncryptedFile<C, H>, Fo>, RopsFileEncryptError> {
         #[rustfmt::skip]
         let SavedParameters { data_key, saved_map_nonces, saved_mac_nonce } = saved_parameters;
 
-        let encrypted_map = self.map.try_into()?.encrypt_with_saved_nonces(&data_key, &saved_map_nonces);
+        let encrypted_map =
+            self.map
+                .to_internal()?
+                .encrypt_with_saved_nonces(&data_key, self.metadata.partial_encryption.as_ref(), &saved_map_nonces);
+
         let encrypted_metadata = self.metadata.encrypt_with_saved_mac_nonce::<C>(&data_key, saved_mac_nonce);
         Self::file_from_parts_results(encrypted_map, encrypted_metadata)
     }
@@ -108,10 +110,7 @@ impl<H: Hasher, F: FileFormat> RopsFile<DecryptedFile<H>, F> {
     fn file_from_parts_results<C: Cipher, Fo: FileFormat>(
         encrypted_map_result: Result<RopsMap<EncryptedMap<C>>, C::Error>,
         encrypted_metadata_result: Result<RopsFileMetadata<EncryptedMetadata<C, H>>, C::Error>,
-    ) -> Result<RopsFile<EncryptedFile<C, H>, Fo>, RopsFileEncryptError>
-    where
-        RopsMap<EncryptedMap<C>>: Into<Fo::Map>,
-    {
+    ) -> Result<RopsFile<EncryptedFile<C, H>, Fo>, RopsFileEncryptError> {
         let encrypted_map = encrypted_map_result.map_err(|error| RopsFileEncryptError::MetadataEncryption(error.into()))?;
         let encrypted_metadata = encrypted_metadata_result.map_err(|error| RopsFileEncryptError::MetadataEncryption(error.into()))?;
         Ok(RopsFile::new(encrypted_map, encrypted_metadata))
@@ -119,29 +118,25 @@ impl<H: Hasher, F: FileFormat> RopsFile<DecryptedFile<H>, F> {
 }
 
 impl<C: Cipher, F: FileFormat, H: Hasher> RopsFile<EncryptedFile<C, H>, F> {
-    pub fn decrypt<Fo: FileFormat>(self) -> Result<RopsFile<DecryptedFile<H>, Fo>, RopsFileDecryptError>
-    where
-        RopsFileFormatMap<EncryptedMap<C>, F>: TryInto<RopsMap<EncryptedMap<C>>, Error = FormatToInternalMapError>,
-        RopsMap<DecryptedMap>: Into<Fo::Map>,
-    {
+    pub fn decrypt<Fo: FileFormat>(self) -> Result<RopsFile<DecryptedFile<H>, Fo>, RopsFileDecryptError> {
         let (decrypted_metadata, data_key) = self.metadata.decrypt()?;
-        let decrypted_map = self.map.try_into()?.decrypt(&data_key)?;
-
+        let decrypted_map = self
+            .map
+            .to_internal(decrypted_metadata.partial_encryption.as_ref())?
+            .decrypt(&data_key)?;
         Self::validate_mac(&decrypted_map, &decrypted_metadata.mac)?;
-
         Ok(RopsFile::new(decrypted_map, decrypted_metadata))
     }
 
     #[allow(clippy::type_complexity)]
     pub fn decrypt_and_save_parameters<Fo: FileFormat>(
         self,
-    ) -> Result<(RopsFile<DecryptedFile<H>, Fo>, SavedParameters<C, H>), RopsFileDecryptError>
-    where
-        RopsFileFormatMap<EncryptedMap<C>, F>: TryInto<RopsMap<EncryptedMap<C>>, Error = FormatToInternalMapError>,
-        RopsMap<DecryptedMap>: Into<Fo::Map>,
-    {
+    ) -> Result<(RopsFile<DecryptedFile<H>, Fo>, SavedParameters<C, H>), RopsFileDecryptError> {
         let (decrypted_metadata, data_key, saved_mac_nonce) = self.metadata.decrypt_and_save_mac_nonce()?;
-        let (decrypted_map, saved_map_nonces) = self.map.try_into()?.decrypt_and_save_nonces(&data_key)?;
+        let (decrypted_map, saved_map_nonces) = self
+            .map
+            .to_internal(decrypted_metadata.partial_encryption.as_ref())?
+            .decrypt_and_save_nonces(&data_key)?;
 
         Self::validate_mac(&decrypted_map, &decrypted_metadata.mac)?;
 

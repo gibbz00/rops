@@ -19,7 +19,7 @@ where
     #[serde_as(as = "DisplayFromStr")]
     pub mac: S::Mac,
     #[serde(flatten)]
-    pub partial_encryption: Option<PartialEncryption>,
+    pub partial_encryption: Option<PartialEncryptionConfig>,
 }
 
 #[derive(Debug, thiserror::Error)]

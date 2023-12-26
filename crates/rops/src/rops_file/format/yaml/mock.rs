@@ -114,7 +114,7 @@ mod metadata {
                     ",
                     LastModifiedDateTime::mock_display(),
                     S::Mac::mock_display(),
-                    PartialEncryption::mock_display()
+                    PartialEncryptionConfig::mock_display()
                 });
 
                 return metadata_string;
