@@ -1,9 +1,6 @@
 mod core;
 pub use core::{RopsFile, RopsFileDecryptError, RopsFileEncryptError, RopsFileFromStrError};
 
-mod key_path;
-pub use key_path::KeyPath;
-
 mod map;
 pub use map::*;
 
