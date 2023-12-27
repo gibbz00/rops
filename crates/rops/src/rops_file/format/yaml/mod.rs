@@ -1,3 +1,9 @@
+#[cfg(feature = "test-utils")]
+mod mock;
+
+#[cfg(test)]
+mod tests;
+
 use serde::{de::DeserializeOwned, Serialize};
 use serde_yaml::{Mapping as YamlMap, Value as YamlValue};
 
@@ -18,6 +24,19 @@ impl FileFormat for YamlFileFormat {
 
     fn deserialize_from_str<T: DeserializeOwned>(str: &str) -> Result<T, Self::DeserializeError> {
         serde_yaml::from_str(str)
+    }
+}
+
+impl FileFormatMapAdapter for YamlMap {
+    type Key = YamlValue;
+    type Value = YamlValue;
+
+    fn with_capacity(capacity: usize) -> Self {
+        YamlMap::with_capacity(capacity)
+    }
+
+    fn insert(&mut self, key: Self::Key, value: Self::Value) {
+        self.insert(key, value);
     }
 }
 
@@ -46,7 +65,7 @@ impl FileFormatValueAdapter for YamlValue {
             YamlValue::Mapping(map) => RopsTree::Map(YamlMap::decrypted_to_internal(map, Self::decrypted_to_internal)?),
             YamlValue::Bool(boolean) => RopsTree::Leaf(RopsValue::Boolean(boolean)),
             YamlValue::String(string) => RopsTree::Leaf(RopsValue::String(string)),
-            YamlValue::Number(number) => RopsTree::Leaf(tree_traversal::resolve_number(number)?),
+            YamlValue::Number(number) => RopsTree::Leaf(helpers::to_internal_number(number)?),
             YamlValue::Sequence(sequence) => RopsTree::Sequence(
                 sequence
                     .into_iter()
@@ -62,7 +81,7 @@ impl FileFormatValueAdapter for YamlValue {
             RopsTree::Sequence(sequence) => YamlValue::Sequence(sequence.into_iter().map(Self::decrypted_from_internal).collect()),
             RopsTree::Map(map) => YamlValue::Mapping(YamlMap::decrypted_from_internal(map)),
             RopsTree::Null => YamlValue::Null,
-            RopsTree::Leaf(decrypted_value) => tree_traversal::internal_to_yaml_value(decrypted_value),
+            RopsTree::Leaf(decrypted_value) => helpers::from_internal_value(decrypted_value),
         }
     }
 
@@ -89,7 +108,7 @@ impl FileFormatValueAdapter for YamlValue {
                 false => return Err(FormatToInternalMapError::PlaintextWhenEncrypted(bool.to_string())),
             },
             YamlValue::Number(number) => match resolved_partial_encryption.escape_encryption() {
-                true => RopsTree::Leaf(RopsMapEncryptedLeaf::Escaped(tree_traversal::resolve_number(number)?)),
+                true => RopsTree::Leaf(RopsMapEncryptedLeaf::Escaped(helpers::to_internal_number(number)?)),
                 false => return Err(FormatToInternalMapError::PlaintextWhenEncrypted(number.to_string())),
             },
         })
@@ -102,29 +121,16 @@ impl FileFormatValueAdapter for YamlValue {
             RopsTree::Null => YamlValue::Null,
             RopsTree::Leaf(maybe_encrypted_value) => match maybe_encrypted_value {
                 RopsMapEncryptedLeaf::Encrypted(encrypted_value) => YamlValue::String(encrypted_value.to_string()),
-                RopsMapEncryptedLeaf::Escaped(escaped_value) => tree_traversal::internal_to_yaml_value(escaped_value),
+                RopsMapEncryptedLeaf::Escaped(escaped_value) => helpers::from_internal_value(escaped_value),
             },
         }
     }
 }
 
-impl FileFormatMapAdapter for YamlMap {
-    type Key = YamlValue;
-    type Value = YamlValue;
-
-    fn with_capacity(capacity: usize) -> Self {
-        YamlMap::with_capacity(capacity)
-    }
-
-    fn insert(&mut self, key: Self::Key, value: Self::Value) {
-        self.insert(key, value);
-    }
-}
-
-mod tree_traversal {
+mod helpers {
     use super::*;
 
-    pub fn resolve_number(number: serde_yaml::Number) -> Result<RopsValue, FormatToInternalMapError> {
+    pub fn to_internal_number(number: serde_yaml::Number) -> Result<RopsValue, FormatToInternalMapError> {
         Ok(match number.is_f64() {
             true => RopsValue::Float(number.as_f64().expect("number not a f64").into()),
             false => RopsValue::Integer(
@@ -135,7 +141,7 @@ mod tree_traversal {
         })
     }
 
-    pub fn internal_to_yaml_value(value: RopsValue) -> YamlValue {
+    pub fn from_internal_value(value: RopsValue) -> YamlValue {
         match value {
             RopsValue::String(string) => YamlValue::String(string),
             RopsValue::Boolean(bool) => YamlValue::Bool(bool),
@@ -144,9 +150,3 @@ mod tree_traversal {
         }
     }
 }
-
-#[cfg(feature = "test-utils")]
-mod mock;
-
-#[cfg(test)]
-mod tests;

@@ -70,15 +70,15 @@ where
     {
         let mut tree_map = IndexMap::default();
 
-        for (yaml_key, yaml_value) in self {
-            let key_string = yaml_key.validate()?;
+        for (format_key, format_value) in self {
+            let key_string = format_key.validate()?;
             let mut resolved_partial_encryption = resolved_partial_encryption;
 
             if let ResolvedPartialEncrpytion::No(partial_encryption_config) = resolved_partial_encryption {
                 resolved_partial_encryption = partial_encryption_config.resolve(&key_string);
             }
 
-            tree_map.insert(key_string, recursive_value_fn(yaml_value, resolved_partial_encryption)?);
+            tree_map.insert(key_string, recursive_value_fn(format_value, resolved_partial_encryption)?);
         }
 
         Ok(tree_map.into())

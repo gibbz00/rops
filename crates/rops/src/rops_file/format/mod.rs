@@ -15,4 +15,4 @@ pub use yaml::YamlFileFormat;
 #[cfg(feature = "test-utils")]
 mod test_utils;
 #[cfg(feature = "test-utils")]
-pub use test_utils::{FileFormatTestUtils, MockFileFormatUtil};
+pub use test_utils::{FileFormatTestSuiteUtils, FileFormatTestUtils, MockFileFormatUtil};
