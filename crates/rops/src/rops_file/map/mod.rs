@@ -1,6 +1,9 @@
 mod core;
 pub use core::{RopsMap, RopsTree};
 
+mod value;
+pub use value::*;
+
 mod state;
 pub use state::{DecryptedMap, EncryptedMap, RopsMapEncryptedLeaf, RopsMapState};
 
