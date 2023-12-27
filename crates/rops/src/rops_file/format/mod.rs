@@ -2,7 +2,7 @@ mod core;
 pub use core::FileFormat;
 
 mod adapter;
-pub(crate) use adapter::FileFormatMapAdapter;
+pub(crate) use adapter::{FileFormatKeyAdapter, FileFormatMapAdapter};
 
 mod map;
 pub use map::{FormatToInternalMapError, RopsFileFormatMap};

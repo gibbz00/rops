@@ -5,18 +5,19 @@ use serde::{de::DeserializeOwned, Serialize};
 
 use crate::*;
 
-// TODO: pub(crate)
+pub trait FileFormatKeyAdapter {
+    /// Only strings are allowed to be keys.
+    fn validate(self) -> Result<String, FormatToInternalMapError>;
+
+    fn from_internal(key: String) -> Self;
+}
+
 pub trait FileFormatMapAdapter: Sized + Serialize + DeserializeOwned + PartialEq + Debug
 where
     Self: IntoIterator<Item = (Self::Key, Self::Value)>,
 {
-    type Key;
+    type Key: FileFormatKeyAdapter;
     type Value;
-
-    /// Only strings are allowed to be keys (SOPS requirement).
-    fn validate_key(key: Self::Key) -> Result<String, FormatToInternalMapError>;
-
-    fn new_string_key(key_string: String) -> Self::Key;
 
     fn with_capacity(capacity: usize) -> Self;
 
@@ -29,7 +30,7 @@ where
         let mut tree_map = IndexMap::default();
 
         for (format_key, format_value) in self {
-            let key_string = Self::validate_key(format_key)?;
+            let key_string = format_key.validate()?;
             tree_map.insert(key_string, recursive_value_fn(format_value)?);
         }
 
@@ -42,7 +43,7 @@ where
         let mut format_map = Self::with_capacity(rops_map.len());
 
         for (key, value) in rops_map.0 {
-            format_map.insert(Self::new_string_key(key), Self::decrypted_internal_to_format_value(value));
+            format_map.insert(Self::Key::from_internal(key), Self::decrypted_internal_to_format_value(value));
         }
 
         format_map
@@ -61,7 +62,7 @@ where
         let mut tree_map = IndexMap::default();
 
         for (yaml_key, yaml_value) in self {
-            let key_string = Self::validate_key(yaml_key)?;
+            let key_string = yaml_key.validate()?;
             let mut resolved_partial_encryption = resolved_partial_encryption;
 
             if let ResolvedPartialEncrpytion::No(partial_encryption_config) = resolved_partial_encryption {
@@ -83,7 +84,7 @@ where
         let mut format_map = Self::with_capacity(internal_map.len());
 
         for (key, tree) in internal_map.0 {
-            format_map.insert(Self::new_string_key(key), Self::encrypted_internal_to_format_value(tree));
+            format_map.insert(Self::Key::from_internal(key), Self::encrypted_internal_to_format_value(tree));
         }
 
         format_map

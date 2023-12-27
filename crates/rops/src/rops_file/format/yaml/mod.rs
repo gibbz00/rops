@@ -21,12 +21,9 @@ impl FileFormat for YamlFileFormat {
     }
 }
 
-impl FileFormatMapAdapter for YamlMap {
-    type Key = YamlValue;
-    type Value = YamlValue;
-
-    fn validate_key(key: Self::Key) -> Result<String, FormatToInternalMapError> {
-        match key {
+impl FileFormatKeyAdapter for YamlValue {
+    fn validate(self) -> Result<String, FormatToInternalMapError> {
+        match self {
             YamlValue::String(string) => Ok(string),
             other => Err(FormatToInternalMapError::NonStringKey(
                 serde_yaml::to_string(&other).expect("yaml value not serializable"),
@@ -34,9 +31,14 @@ impl FileFormatMapAdapter for YamlMap {
         }
     }
 
-    fn new_string_key(key_string: String) -> Self::Key {
-        YamlValue::String(key_string)
+    fn from_internal(key: String) -> Self {
+        YamlValue::String(key)
     }
+}
+
+impl FileFormatMapAdapter for YamlMap {
+    type Key = YamlValue;
+    type Value = YamlValue;
 
     fn with_capacity(capacity: usize) -> Self {
         YamlMap::with_capacity(capacity)
