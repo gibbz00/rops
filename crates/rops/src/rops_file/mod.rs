@@ -13,9 +13,6 @@ pub use state::{DecryptedFile, EncryptedFile, RopsFileState};
 mod format;
 pub use format::*;
 
-mod mac;
-pub use mac::{EncryptedMac, Mac, SavedMacNonce};
-
 mod saved_parameters;
 pub use saved_parameters::SavedParameters;
 
