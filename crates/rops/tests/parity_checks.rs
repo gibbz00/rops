@@ -5,6 +5,7 @@ parity_check!(age_encrypted_suffix);
 parity_check!(age_encrypted_regex);
 parity_check!(age_unencrypted_suffix);
 parity_check!(age_unencrypted_regex);
+parity_check!(age_mac_only_encrypted);
 
 #[macro_export]
 macro_rules! parity_check {
