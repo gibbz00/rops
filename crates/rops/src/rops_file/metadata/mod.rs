@@ -13,3 +13,5 @@ pub use last_modified::LastModifiedDateTime;
 mod mac;
 pub use mac::{EncryptedMac, Mac, SavedMacNonce};
 
+mod partial_encryption;
+pub use partial_encryption::{EscapeEncryption, PartialEncryptionConfig, ResolvedPartialEncrpytion};
