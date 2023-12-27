@@ -34,6 +34,7 @@
   - [ ] MAC encrypted values only.
     - [ ] Flag: `--mac-only-encrypted`.
     - [ ] `.rops.yaml`: `partial_encryption.mac_only_encrypted: true`.
+    - [X] In library.
 - [ ] File comment encryption
 
 #### Partial Encryption
