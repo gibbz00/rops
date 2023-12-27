@@ -28,7 +28,7 @@ mod mock {
         fn mock() -> Self {
             Self {
                 mac_only_encrypted: false,
-                resolved_partial_encryption: None.into(),
+                resolved_partial_encryption: ResolvedPartialEncrpytion::mock(),
             }
         }
     }

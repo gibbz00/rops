@@ -12,6 +12,16 @@ pub trait FileFormatKeyAdapter {
     fn from_internal(key: String) -> Self;
 }
 
+impl FileFormatKeyAdapter for String {
+    fn validate(self) -> Result<String, FormatToInternalMapError> {
+        Ok(self)
+    }
+
+    fn from_internal(key: String) -> Self {
+        key
+    }
+}
+
 pub trait FileFormatValueAdapter {
     fn decrypted_to_internal(self) -> Result<RopsTree<DecryptedMap>, FormatToInternalMapError>;
 

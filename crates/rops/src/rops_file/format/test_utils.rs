@@ -21,13 +21,15 @@ impl FileFormatTestUtils {
 }
 
 pub trait FileFormatTestSuiteUtils: FileFormat {
-    fn key_value_string(key: impl Display, value: impl Display) -> String;
+    fn simple_map(key: impl Display, value: impl Display) -> String;
 
     fn key_value_map<S: RopsMapState>(key: impl Display, value: impl Display) -> RopsFileFormatMap<S, Self> {
-        Self::create_format_map(&Self::key_value_string(key, value))
+        Self::create_format_map(&Self::simple_map(key, value))
     }
 
-    fn create_format_map<S: RopsMapState>(key_value_str: &str) -> RopsFileFormatMap<S, Self>;
+    fn create_format_map<S: RopsMapState>(key_value_str: &str) -> RopsFileFormatMap<S, Self> {
+        RopsFileFormatMap::from_inner_map(Self::deserialize_from_str::<Self::Map>(key_value_str).unwrap())
+    }
 }
 
 #[macro_export]
@@ -45,30 +47,19 @@ macro_rules! generate_file_format_test_suite {
 
                     #[test]
                     fn adapts_to_internal() {
-                        assert_eq!(
+                        pretty_assertions::assert_eq!(
                             RopsMap::mock(),
                             RopsFileFormatMap::<EncryptedMap<AES256GCM>, $file_format>::mock()
-                                .to_internal(None)
+                                .to_internal(MockTestUtil::mock())
                                 .unwrap()
                         )
                     }
 
                     #[test]
-                    fn mixes_partial_enryption() {
-                        let escape_suffix = "escaped".to_string();
+                    fn adapts_from_internal() {
                         pretty_assertions::assert_eq!(
-                            RopsMap(indexmap::indexmap! {
-                                escape_suffix.clone() => RopsTree::Leaf(RopsMapEncryptedLeaf::Escaped(RopsValue::String("something".to_string()))),
-                                "encrypted".to_string() => RopsTree::Leaf(RopsMapEncryptedLeaf::Encrypted(EncryptedRopsValue::mock()))
-                            }),
-                            $file_format::create_format_map::<EncryptedMap<AES256GCM>>(&indoc::formatdoc! {"
-                                {}
-                                {}",
-                                $file_format::key_value_string("escaped", "something"),
-                                $file_format::key_value_string("encrypted", EncryptedRopsValue::<AES256GCM>::mock_display())
-                            })
-                            .to_internal(Some(&PartialEncryptionConfig::UnencryptedSuffix("escaped".to_string())))
-                            .unwrap()
+                            RopsFileFormatMap::<EncryptedMap<AES256GCM>, $file_format>::mock(),
+                            RopsMap::mock().to_external()
                         )
                     }
                 }
@@ -81,16 +72,6 @@ macro_rules! generate_file_format_test_suite {
                 #[test]
                 fn disallows_integer_values_when_encrypted() {
                     assert_allowed_value_helper("disallowed_integer", 1)
-                }
-
-                #[test]
-                fn disallows_non_string_keys() {
-                    assert!(matches!(
-                        $file_format::key_value_map::<EncryptedMap<StubCipher>>(123, "xxx")
-                            .to_internal(None)
-                            .unwrap_err(),
-                        FormatToInternalMapError::NonStringKey(_)
-                    ))
                 }
 
                 fn assert_allowed_value_helper(key: impl Display, value: impl Display) {
@@ -108,18 +89,18 @@ macro_rules! generate_file_format_test_suite {
 
                 #[test]
                 fn adapts_to_internal() {
-                    assert_eq!(
+                    pretty_assertions::assert_eq!(
                         RopsMap::mock(),
                         RopsFileFormatMap::<DecryptedMap, $file_format>::mock().to_internal().unwrap()
                     )
                 }
 
                 #[test]
-                fn disallows_non_string_keys() {
-                    assert!(matches!(
-                        $file_format::key_value_map::<DecryptedMap>(123, "xxx").to_internal().unwrap_err(),
-                        FormatToInternalMapError::NonStringKey(_)
-                    ))
+                fn adapts_from_internal() {
+                    pretty_assertions::assert_eq!(
+                        RopsFileFormatMap::<DecryptedMap, $file_format>::mock(),
+                        RopsMap::mock().to_external()
+                    )
                 }
 
                 #[test]
@@ -163,64 +144,6 @@ macro_rules! generate_file_format_test_suite {
                 fn deserializes_encrypted_rops_file() {
                     FileFormatTestUtils::assert_deserialization::<$file_format, EncryptedRopsFile>()
                 }
-
-                #[test]
-                fn encrypts_rops_file() {
-                    IntegrationsTestUtils::set_private_keys();
-
-                    assert_eq!(
-                        DecryptedRopsFile::mock(),
-                        DecryptedRopsFile::mock()
-                            .encrypt::<AES256GCM, $file_format>()
-                            .unwrap()
-                            .decrypt()
-                            .unwrap()
-                    )
-                }
-
-                #[test]
-                fn encrypts_rops_file_with_saved_parameters() {
-                    IntegrationsTestUtils::set_private_keys();
-
-                    assert_eq!(
-                        EncryptedRopsFile::mock(),
-                        DecryptedRopsFile::mock()
-                            .encrypt_with_saved_parameters(SavedParameters::mock())
-                            .unwrap()
-                    )
-                }
-
-                #[test]
-                fn decrypts_rops_file() {
-                    IntegrationsTestUtils::set_private_keys();
-
-                    assert_eq!(DecryptedRopsFile::mock(), EncryptedRopsFile::mock().decrypt().unwrap())
-                }
-
-                #[test]
-                fn decrypts_rops_file_and_saves_parameters() {
-                    IntegrationsTestUtils::set_private_keys();
-
-                    assert_eq!(
-                        (DecryptedRopsFile::mock(), SavedParameters::mock()),
-                        EncryptedRopsFile::mock().decrypt_and_save_parameters().unwrap()
-                    )
-                }
-
-                #[test]
-                fn decryption_disallows_mac_mismatch() {
-                    IntegrationsTestUtils::set_private_keys();
-
-                    assert!(matches!(
-                        RopsFile::<_, $file_format> {
-                            map: RopsFileFormatMap::mock_other(),
-                            metadata: RopsFileMetadata::mock()
-                        }
-                        .decrypt::<$file_format>()
-                        .unwrap_err(),
-                        RopsFileDecryptError::MacMismatch(_, _)
-                    ))
-                }
             }
         }
 
@@ -247,7 +170,8 @@ macro_rules! generate_file_format_test_suite {
 
                     #[test]
                     fn deserializes_encrypted_metadata() {
-                        FileFormatTestUtils::assert_deserialization::<$file_format, RopsFileMetadata<EncryptedMetadata<AES256GCM, SHA512>>>()
+                        FileFormatTestUtils::assert_deserialization::<$file_format, RopsFileMetadata<EncryptedMetadata<AES256GCM, SHA512>>>(
+                        )
                     }
                 }
             }

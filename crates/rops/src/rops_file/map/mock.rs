@@ -24,7 +24,8 @@ impl MockTestUtil for RopsMap<DecryptedMap> {
             "booleans".to_string() => RopsTree::Sequence(vec![
                 RopsTree::Leaf(RopsValue::Boolean(true)),
                 RopsTree::Leaf(RopsValue::Boolean(false))
-            ])
+            ]),
+            "escape_unencrypted".to_string() => RopsTree::Leaf(RopsValue::String("plaintext".to_string()))
         })
     }
 }
@@ -104,7 +105,8 @@ mod aes_gcm {
                 "booleans".to_string() => RopsTree::Sequence(vec![
                     encrypted_leaf("ENC[AES256_GCM,data:bCdz2A==,iv:8kD+h1jClyVHBj9o2WZuAkjk+uD6A2lgNpcGljpQEhk=,tag:u3/fktl5HfFrVLERVvLRGw==,type:bool]"),
                     encrypted_leaf("ENC[AES256_GCM,data:SgBh7wY=,iv:0s9Q9pQWbsZm2yHsmFalCzX0IqNb6ZqeY6QQYCWc+qU=,tag:OZb76BWCKbDLbcil4c8fYA==,type:bool]")
-                ])
+                ]),
+                "escape_unencrypted".to_string() => RopsTree::Leaf(RopsMapEncryptedLeaf::Escaped(RopsValue::String("plaintext".to_string())))
             })
         }
     }

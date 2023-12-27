@@ -9,12 +9,13 @@ age = ["dep:age"]
 age-test-utils = ["age", "test-utils", "dep:indoc", "dep:textwrap"]
 # File formats:
 yaml = ["dep:serde_yaml"]
+json = ["dep:serde_json"]
 # Ciphers
 aes-gcm = ["dep:aes-gcm"]
 # Hashers
 sha2 = ["dep:sha2"]
 # Test utils
-test-utils = ["dep:pretty_assertions"]
+test-utils = ["dep:pretty_assertions", "dep:once_cell"]
 
 [dependencies]
 anyhow.workspace = true
@@ -43,6 +44,9 @@ indoc = { workspace = true, optional = true }
 # YAML
 serde_yaml = { workspace = true, optional = true }
 
+# JSON
+serde_json = { workspace = true, features = ["preserve_order"], optional = true }
+
 # AES_GCM
 aes-gcm = { workspace = true, optional = true }
 
@@ -51,3 +55,4 @@ sha2 = { workspace = true, optional = true }
 
 # TEST_UTILS
 pretty_assertions = { workspace = true, optional = true }
+once_cell = { workspace = true, optional = true }

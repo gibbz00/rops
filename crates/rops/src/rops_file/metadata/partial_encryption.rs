@@ -82,6 +82,8 @@ mod regex {
 
 #[cfg(feature = "test-utils")]
 mod mock {
+    use once_cell::sync::Lazy;
+
     use crate::*;
 
     impl MockTestUtil for PartialEncryptionConfig {
@@ -93,6 +95,20 @@ mod mock {
     impl MockDisplayTestUtil for PartialEncryptionConfig {
         fn mock_display() -> String {
             "_unencrypted".to_string()
+        }
+    }
+
+    static LAZY_PARTIAL_ENCRYPTION_CONFIG: Lazy<PartialEncryptionConfig> = Lazy::new(PartialEncryptionConfig::mock);
+
+    impl MockTestUtil for ResolvedPartialEncrpytion<'_> {
+        fn mock() -> Self {
+            Self::No(&LAZY_PARTIAL_ENCRYPTION_CONFIG)
+        }
+    }
+
+    impl MockTestUtil for Option<&PartialEncryptionConfig> {
+        fn mock() -> Self {
+            Some(&LAZY_PARTIAL_ENCRYPTION_CONFIG)
         }
     }
 }

@@ -70,6 +70,15 @@ impl<S: RopsMapState, F: FileFormat> Display for RopsFileFormatMap<S, F> {
 mod mock {
     use super::*;
 
+    impl<S: RopsMapState, F: FileFormat> MockTestUtil for RopsFileFormatMap<S, F>
+    where
+        Self: MockFileFormatUtil<F>,
+    {
+        fn mock() -> Self {
+            F::deserialize_from_str(&Self::mock_format_display()).expect("mock map string not serializable")
+        }
+    }
+
     impl<S: RopsMapState, F: FileFormat> MockOtherTestUtil for RopsFileFormatMap<S, F>
     where
         RopsMap<S>: MockOtherTestUtil,

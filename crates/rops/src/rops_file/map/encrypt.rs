@@ -111,10 +111,10 @@ mod tests {
 
         #[test]
         fn encrypts_map_with_saved_nonces() {
-            assert_eq!(
+            pretty_assertions::assert_eq!(
                 RopsMap::<EncryptedMap<AES256GCM>>::mock(),
                 RopsMap::<DecryptedMap>::mock()
-                    .encrypt_with_saved_nonces(&DataKey::mock(), None, &SavedRopsMapNonces::mock())
+                    .encrypt_with_saved_nonces(&DataKey::mock(), MockTestUtil::mock(), &SavedRopsMapNonces::mock())
                     .unwrap()
             )
         }
@@ -125,8 +125,8 @@ mod tests {
             let data_key = DataKey::mock();
             let encrypted_map = decrypted_map.encrypt(&data_key, None).unwrap();
 
-            assert_ne!(RopsMap::<EncryptedMap<AES256GCM>>::mock(), encrypted_map);
-            assert_eq!(RopsMap::mock(), encrypted_map.decrypt(&data_key).unwrap())
+            pretty_assertions::assert_ne!(RopsMap::<EncryptedMap<AES256GCM>>::mock(), encrypted_map);
+            pretty_assertions::assert_eq!(RopsMap::mock(), encrypted_map.decrypt(&data_key).unwrap())
         }
     }
 }

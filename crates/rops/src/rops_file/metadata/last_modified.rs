@@ -28,13 +28,13 @@ mod mock {
 
     impl MockTestUtil for LastModifiedDateTime {
         fn mock() -> Self {
-            "2023-12-16T22:32:54Z".parse().map(Self).unwrap()
+            Self::mock_display().parse().map(Self).unwrap()
         }
     }
 
     impl MockDisplayTestUtil for LastModifiedDateTime {
         fn mock_display() -> String {
-            "2023-12-16T22:32:54Z".to_string()
+            "2023-12-27T20:37:05Z".to_string()
         }
     }
 }

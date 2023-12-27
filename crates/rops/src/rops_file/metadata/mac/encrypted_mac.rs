@@ -69,7 +69,7 @@ mod mock {
 
         impl MockDisplayTestUtil for EncryptedMac<AES256GCM, SHA512> {
             fn mock_display() -> String {
-                "ENC[AES256_GCM,data:NGQmmmF7MMf3EiG3NY2iew5Ad3QrzoRD6lM4+Z7VbusLhu6yUksN3m410KWQNBYnGpowa3XgjSoajvn3RKmkV04CiU7dK3A0de+lXkX7Uvq2MzqAjI84gNdnIw9Ove4B18ioQHuL4h01E1eIXxhZcQ9qWIt91cNjyhcbEs2BWqQ=,iv:ufPWRTNV2fS3n/T/ptAhsre2S37rH5p8CgBAiK2c8r0=,tag:uHQApLnlF8NB/Gac0xnh+g==,type:str]".to_string()
+                "ENC[AES256_GCM,data:tPxLRxcw3/FFDqza8H5Cie3MTFVI8qBXte8qB0lAO/OQMRjVPPj5UJLC1jMUAlHW1KInxqSRhGkSLL8sJjg4wKeY8/yxaDbYqLKkw7bxk7yoFUktNn+D9Tv44AoroB/2715GhtDSwM80mDb4pnD4aj1k3/mC7E/XH7aArCVsl2s=,iv:1FrAknhJizYRQ588m6Mgn5lRlMxgWBOY3Ka6RvS2vCI=,tag:GiQkczeDmBKIjswzwfeKvA==,type:str]".to_string()
             }
         }
     }

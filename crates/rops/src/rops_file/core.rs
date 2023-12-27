@@ -163,3 +163,71 @@ impl<C: Cipher, F: FileFormat, H: Hasher> RopsFile<EncryptedFile<C, H>, F> {
         }
     }
 }
+
+// Reduntant to test combinations of file formats, ciphers and hashers if the respective trait
+// implementations are well tested.
+#[cfg(all(test, feature = "yaml", feature = "aes-gcm", feature = "sha2"))]
+mod tests {
+    use crate::*;
+
+    type EncryptedRopsFile = RopsFile<EncryptedFile<AES256GCM, SHA512>, YamlFileFormat>;
+    type DecryptedRopsFile = RopsFile<DecryptedFile<SHA512>, YamlFileFormat>;
+
+    #[test]
+    fn encrypts_rops_file() {
+        IntegrationsTestUtils::set_private_keys();
+
+        pretty_assertions::assert_eq!(
+            DecryptedRopsFile::mock(),
+            DecryptedRopsFile::mock()
+                .encrypt::<AES256GCM, YamlFileFormat>()
+                .unwrap()
+                .decrypt()
+                .unwrap()
+        )
+    }
+
+    #[test]
+    fn encrypts_rops_file_with_saved_parameters() {
+        IntegrationsTestUtils::set_private_keys();
+
+        pretty_assertions::assert_eq!(
+            EncryptedRopsFile::mock(),
+            DecryptedRopsFile::mock()
+                .encrypt_with_saved_parameters(SavedParameters::mock())
+                .unwrap()
+        )
+    }
+
+    #[test]
+    fn decrypts_rops_file() {
+        IntegrationsTestUtils::set_private_keys();
+
+        pretty_assertions::assert_eq!(DecryptedRopsFile::mock(), EncryptedRopsFile::mock().decrypt().unwrap())
+    }
+
+    #[test]
+    fn decrypts_rops_file_and_saves_parameters() {
+        IntegrationsTestUtils::set_private_keys();
+
+        pretty_assertions::assert_eq!(
+            (DecryptedRopsFile::mock(), SavedParameters::mock()),
+            EncryptedRopsFile::mock().decrypt_and_save_parameters().unwrap()
+        )
+    }
+
+    #[test]
+    fn decryption_disallows_mac_mismatch() {
+        IntegrationsTestUtils::set_private_keys();
+
+        assert!(matches!(
+            RopsFile::<_, YamlFileFormat> {
+                map: RopsFileFormatMap::mock_other(),
+                metadata: RopsFileMetadata::mock()
+            }
+            .decrypt::<YamlFileFormat>()
+            .unwrap_err(),
+            RopsFileDecryptError::MacMismatch(_, _)
+        ))
+    }
+}

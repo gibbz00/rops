@@ -12,6 +12,11 @@ mod yaml;
 #[cfg(feature = "yaml")]
 pub use yaml::YamlFileFormat;
 
+#[cfg(feature = "json")]
+mod json;
+#[cfg(feature = "json")]
+pub use json::JsonFileFormat;
+
 #[cfg(feature = "test-utils")]
 mod test_utils;
 #[cfg(feature = "test-utils")]
