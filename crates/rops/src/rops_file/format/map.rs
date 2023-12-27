@@ -46,13 +46,15 @@ impl<C: Cipher, F: FileFormat> RopsFileFormatMap<EncryptedMap<C>, F> {
         self,
         partial_encryption: Option<&PartialEncryptionConfig>,
     ) -> Result<RopsMap<EncryptedMap<C>>, FormatToInternalMapError> {
-        F::encrypted_to_internal(self, partial_encryption)
+        self.into_inner_map()
+            .encrypted_format_to_internal(partial_encryption.into(), F::Map::encrypted_fomat_to_internal_value)
     }
 }
 
 impl<F: FileFormat> RopsFileFormatMap<DecryptedMap, F> {
     pub fn to_internal(self) -> Result<RopsMap<DecryptedMap>, FormatToInternalMapError> {
-        F::decrypted_to_internal(self)
+        self.into_inner_map()
+            .decrypted_format_to_internal(F::Map::decrypted_format_to_internal_value)
     }
 }
 

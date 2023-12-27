@@ -1,5 +1,5 @@
 mod core;
-pub use core::FileFormat;
+pub use core::{FileFormat, FileFormatMapAdapter};
 
 mod map;
 pub use map::{FormatToInternalMapError, RopsFileFormatMap};

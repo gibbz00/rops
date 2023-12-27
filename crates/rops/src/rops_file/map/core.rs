@@ -17,12 +17,12 @@ pub enum RopsTree<S: RopsMapState> {
 
 impl<C: Cipher> ToExternalMap<EncryptedMap<C>> for RopsMap<EncryptedMap<C>> {
     fn to_external<F: FileFormat>(self) -> RopsFileFormatMap<EncryptedMap<C>, F> {
-        RopsFileFormatMap::from_inner_map(F::encrypted_from_internal(self))
+        RopsFileFormatMap::from_inner_map(F::Map::encrypted_internal_to_format_map(self))
     }
 }
 
 impl ToExternalMap<DecryptedMap> for RopsMap<DecryptedMap> {
     fn to_external<F: FileFormat>(self) -> RopsFileFormatMap<DecryptedMap, F> {
-        RopsFileFormatMap::from_inner_map(F::decrypted_from_internal(self))
+        RopsFileFormatMap::from_inner_map(F::Map::decrypted_internal_to_format(self))
     }
 }

@@ -1,9 +1,11 @@
 mod transforms {
     mod to_internal {
         mod encrypted {
+            use std::fmt::Display;
+
             use crate::*;
 
-            use super::helpers;
+            use super::helpers::KeyValueString;
 
             #[cfg(feature = "aes-gcm")]
             mod aes_gcm {
@@ -27,7 +29,7 @@ mod transforms {
                             escape_suffix.clone() => RopsTree::Leaf(RopsMapEncryptedLeaf::Escaped(RopsValue::String("something".to_string()))),
                             "encrypted".to_string() => RopsTree::Leaf(RopsMapEncryptedLeaf::Encrypted(EncryptedRopsValue::mock()))
                         }),
-                        helpers::create_format_map::<EncryptedMap<AES256GCM>>(&indoc::formatdoc! {"
+                        YamlFileFormat::create_format_map::<EncryptedMap<AES256GCM>>(&indoc::formatdoc! {"
                         {}: something
                         encrypted: {}",
                             escape_suffix,
@@ -41,27 +43,27 @@ mod transforms {
 
             #[test]
             fn disallows_boolean_values_when_encrypted() {
-                assert_allowed_value_helper("disallowed_boolean: true")
+                assert_allowed_value_helper("disallowed_boolean", true)
             }
 
             #[test]
             fn disallows_integer_values_when_encrypted() {
-                assert_allowed_value_helper("disallowed_integer: 1")
+                assert_allowed_value_helper("disallowed_integer", 1)
             }
 
             #[test]
             fn disallows_non_string_keys() {
                 assert!(matches!(
-                    helpers::create_format_map::<EncryptedMap<StubCipher>>("123: xxx")
+                    YamlFileFormat::key_value_map::<EncryptedMap<StubCipher>>(123, "xxx")
                         .to_internal(None)
                         .unwrap_err(),
                     FormatToInternalMapError::NonStringKey(_)
                 ))
             }
 
-            fn assert_allowed_value_helper(key_value_str: &str) {
+            fn assert_allowed_value_helper(key: impl Display, value: impl Display) {
                 assert!(matches!(
-                    helpers::create_format_map::<EncryptedMap<StubCipher>>(key_value_str)
+                    YamlFileFormat::key_value_map::<EncryptedMap<StubCipher>>(key, value)
                         .to_internal(None)
                         .unwrap_err(),
                     FormatToInternalMapError::PlaintextWhenEncrypted(_)
@@ -72,7 +74,7 @@ mod transforms {
         mod decrypted {
             use crate::*;
 
-            use super::helpers;
+            use super::helpers::KeyValueString;
 
             #[test]
             fn transforms_decrypted_yaml_map() {
@@ -85,7 +87,7 @@ mod transforms {
             #[test]
             fn disallows_non_string_keys() {
                 assert!(matches!(
-                    helpers::create_format_map::<DecryptedMap>("123: xxx").to_internal().unwrap_err(),
+                    YamlFileFormat::key_value_map::<DecryptedMap>(123, "xxx").to_internal().unwrap_err(),
                     FormatToInternalMapError::NonStringKey(_)
                 ))
             }
@@ -93,7 +95,7 @@ mod transforms {
             #[test]
             fn dissallows_out_of_range_integers() {
                 assert!(matches!(
-                    helpers::create_format_map::<DecryptedMap>(&format!("invalid_integer: {}", u64::MAX))
+                    YamlFileFormat::key_value_map::<DecryptedMap>("invalid_integer", u64::MAX)
                         .to_internal()
                         .unwrap_err(),
                     FormatToInternalMapError::IntegerOutOfRange(_)
@@ -102,10 +104,28 @@ mod transforms {
         }
 
         mod helpers {
+            use std::fmt::Display;
+
             use crate::*;
 
-            pub fn create_format_map<S: RopsMapState>(key_value_str: &str) -> RopsFileFormatMap<S, YamlFileFormat> {
-                RopsFileFormatMap::<S, YamlFileFormat>::from_inner_map(serde_yaml::from_str::<serde_yaml::Mapping>(key_value_str).unwrap())
+            pub trait KeyValueString: FileFormat {
+                fn key_value_string(key: impl Display, value: impl Display) -> String;
+
+                fn key_value_map<S: RopsMapState>(key: impl Display, value: impl Display) -> RopsFileFormatMap<S, Self> {
+                    Self::create_format_map(&Self::key_value_string(key, value))
+                }
+
+                fn create_format_map<S: RopsMapState>(key_value_str: &str) -> RopsFileFormatMap<S, Self>;
+            }
+
+            impl KeyValueString for YamlFileFormat {
+                fn key_value_string(key: impl Display, value: impl Display) -> String {
+                    format!("{}: {}", key, value)
+                }
+
+                fn create_format_map<S: RopsMapState>(key_value_str: &str) -> RopsFileFormatMap<S, Self> {
+                    RopsFileFormatMap::from_inner_map(serde_yaml::from_str::<serde_yaml::Mapping>(key_value_str).unwrap())
+                }
             }
         }
     }
