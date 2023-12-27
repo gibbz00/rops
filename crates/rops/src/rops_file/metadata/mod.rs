@@ -11,7 +11,7 @@ mod last_modified;
 pub use last_modified::LastModifiedDateTime;
 
 mod mac;
-pub use mac::{EncryptedMac, Mac, MacOnlyEncryptedConfig, SavedMacNonce};
+pub use mac::*;
 
 mod partial_encryption;
 pub use partial_encryption::{EscapeEncryption, PartialEncryptionConfig, ResolvedPartialEncrpytion};
