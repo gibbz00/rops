@@ -124,7 +124,7 @@ impl<C: Cipher, F: FileFormat, H: Hasher> RopsFile<EncryptedFile<C, H>, F> {
             .map
             .to_internal(decrypted_metadata.partial_encryption.as_ref())?
             .decrypt(&data_key)?;
-        Self::validate_mac(&decrypted_map, &decrypted_metadata.mac)?;
+        Self::validate_mac(&decrypted_map, &decrypted_metadata)?;
         Ok(RopsFile::new(decrypted_map, decrypted_metadata))
     }
 
@@ -138,7 +138,7 @@ impl<C: Cipher, F: FileFormat, H: Hasher> RopsFile<EncryptedFile<C, H>, F> {
             .to_internal(decrypted_metadata.partial_encryption.as_ref())?
             .decrypt_and_save_nonces(&data_key)?;
 
-        Self::validate_mac(&decrypted_map, &decrypted_metadata.mac)?;
+        Self::validate_mac(&decrypted_map, &decrypted_metadata)?;
 
         Ok((
             RopsFile::new(decrypted_map, decrypted_metadata),
@@ -150,9 +150,12 @@ impl<C: Cipher, F: FileFormat, H: Hasher> RopsFile<EncryptedFile<C, H>, F> {
         ))
     }
 
-    fn validate_mac(decrypted_map: &RopsMap<DecryptedMap>, stored_mac: &Mac<H>) -> Result<(), RopsFileDecryptError> {
-        // TODO: use metadata.from_encrypted_values_only once partial encryption is added
-        let computed_mac = Mac::<H>::compute(false, decrypted_map);
+    fn validate_mac(
+        decrypted_map: &RopsMap<DecryptedMap>,
+        decrypted_metadata: &RopsFileMetadata<DecryptedMetadata<H>>,
+    ) -> Result<(), RopsFileDecryptError> {
+        let computed_mac = Mac::<H>::compute(MacOnlyEncryptedConfig::new(decrypted_metadata), decrypted_map);
+        let stored_mac = &decrypted_metadata.mac;
 
         match &computed_mac != stored_mac {
             true => Err(RopsFileDecryptError::MacMismatch(computed_mac.to_string(), stored_mac.to_string())),

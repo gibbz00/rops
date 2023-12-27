@@ -41,36 +41,93 @@ impl<H: Hasher> Display for Mac<H> {
     }
 }
 
+pub use mac_only_encrypted::MacOnlyEncryptedConfig;
+mod mac_only_encrypted {
+    use super::*;
+
+    #[derive(Clone, Copy)]
+    pub struct MacOnlyEncryptedConfig<'a> {
+        pub mac_only_encrypted: bool,
+        pub resolved_partial_encryption: ResolvedPartialEncrpytion<'a>,
+    }
+
+    impl MacOnlyEncryptedConfig<'_> {
+        pub fn new<'a, S: RopsMetadataState>(metadata: &'a RopsFileMetadata<S>) -> MacOnlyEncryptedConfig<'a>
+        where
+            <S::Mac as FromStr>::Err: Display,
+        {
+            MacOnlyEncryptedConfig::<'a> {
+                mac_only_encrypted: metadata.mac_only_encrypted.unwrap_or_default(),
+                resolved_partial_encryption: metadata.partial_encryption.as_ref().into(),
+            }
+        }
+    }
+
+    #[cfg(feature = "test-utils")]
+    mod mock {
+        use super::*;
+
+        impl MockTestUtil for MacOnlyEncryptedConfig<'_> {
+            fn mock() -> Self {
+                Self {
+                    mac_only_encrypted: false,
+                    resolved_partial_encryption: None.into(),
+                }
+            }
+        }
+    }
+}
+
 impl<H: Hasher> Mac<H> {
-    pub fn compute(from_encrypted_values_only: bool, decrypted_map: &RopsMap<DecryptedMap>) -> Self {
+    pub fn compute(mac_only_encrypted_config: MacOnlyEncryptedConfig<'_>, decrypted_map: &RopsMap<DecryptedMap>) -> Self {
         let mut hasher = H::new();
-        if from_encrypted_values_only {
+
+        if mac_only_encrypted_config.mac_only_encrypted {
             hasher.update(MAC_ENCRYPTED_ONLY_INIT_BYTES);
         }
 
-        traverse_map(&mut hasher, from_encrypted_values_only, decrypted_map);
+        traverse_map(&mut hasher, mac_only_encrypted_config, decrypted_map);
 
         return Mac(hex::encode_upper(hasher.finalize()).into_bytes(), PhantomData);
 
-        fn traverse_map<Ha: Hasher>(hasher: &mut Ha, hash_encrypted_values_only: bool, map: &RopsMap<DecryptedMap>) {
-            traverse_map_recursive(hasher, hash_encrypted_values_only, map);
+        fn traverse_map<Ha: Hasher>(hasher: &mut Ha, mac_only_encrypted_config: MacOnlyEncryptedConfig<'_>, map: &RopsMap<DecryptedMap>) {
+            traverse_map_recursive(hasher, mac_only_encrypted_config, map);
 
-            fn traverse_map_recursive<H: Hasher>(hasher: &mut H, hash_encrypted_values_only: bool, map: &RopsMap<DecryptedMap>) {
-                for (_, tree) in map.iter() {
-                    traverse_tree_recursive(hasher, hash_encrypted_values_only, tree)
+            fn traverse_map_recursive<H: Hasher>(
+                hasher: &mut H,
+                mac_only_encrypted_config: MacOnlyEncryptedConfig<'_>,
+                map: &RopsMap<DecryptedMap>,
+            ) {
+                for (key, tree) in map.iter() {
+                    let mut mac_only_encrypted_config = mac_only_encrypted_config;
+
+                    if let ResolvedPartialEncrpytion::No(partial_encryption_config) = mac_only_encrypted_config.resolved_partial_encryption
+                    {
+                        mac_only_encrypted_config.resolved_partial_encryption = partial_encryption_config.resolve(key);
+                    }
+
+                    traverse_tree_recursive(hasher, mac_only_encrypted_config, tree)
                 }
             }
 
-            fn traverse_tree_recursive<H: Hasher>(hasher: &mut H, hash_encrypted_values_only: bool, tree: &RopsTree<DecryptedMap>) {
+            fn traverse_tree_recursive<H: Hasher>(
+                hasher: &mut H,
+                mac_only_encrypted_config: MacOnlyEncryptedConfig<'_>,
+                tree: &RopsTree<DecryptedMap>,
+            ) {
                 match tree {
                     RopsTree::Sequence(sequence) => sequence
                         .iter()
-                        .for_each(|sub_tree| traverse_tree_recursive(hasher, hash_encrypted_values_only, sub_tree)),
-                    RopsTree::Map(map) => traverse_map_recursive(hasher, hash_encrypted_values_only, map),
+                        .for_each(|sub_tree| traverse_tree_recursive(hasher, mac_only_encrypted_config, sub_tree)),
+                    RopsTree::Map(map) => traverse_map_recursive(hasher, mac_only_encrypted_config, map),
                     RopsTree::Null => (),
                     RopsTree::Leaf(value) => {
-                        // TODO: use hash_encrypted_only once partial encryption is added
-                        hasher.update(value.as_bytes())
+                        #[rustfmt::skip]
+                        let MacOnlyEncryptedConfig { mac_only_encrypted, resolved_partial_encryption } = mac_only_encrypted_config;
+
+                        if !(resolved_partial_encryption.escape_encryption() && mac_only_encrypted) {
+                            hasher.update(value.as_bytes())
+                        }
                     }
                 }
             }
@@ -257,7 +314,10 @@ mod tests {
 
         #[test]
         fn computes_mac() {
-            assert_eq!(Mac::mock(), Mac::<SHA512>::compute(false, &RopsMap::mock()))
+            assert_eq!(
+                Mac::mock(),
+                Mac::<SHA512>::compute(MacOnlyEncryptedConfig::mock(), &RopsMap::mock())
+            )
         }
 
         #[test]
@@ -271,7 +331,7 @@ mod tests {
                     "collection".to_string() => RopsTree::Sequence(collection)
                 });
 
-                Mac::compute(false, &map)
+                Mac::compute(MacOnlyEncryptedConfig::mock(), &map)
             }
         }
 
@@ -331,7 +391,10 @@ mod tests {
                     .encrypt_with_saved_nonce::<AES256GCM>(&data_key, &last_modified, SavedMacNonce::mock())
                     .unwrap();
 
-                let other_saved_nonce = SavedMacNonce::<AES256GCM, SHA512>::new(Mac::compute(false, &RopsMap::mock_other()), Nonce::mock());
+                let other_saved_nonce = SavedMacNonce::<AES256GCM, SHA512>::new(
+                    Mac::compute(MacOnlyEncryptedConfig::mock(), &RopsMap::mock_other()),
+                    Nonce::mock(),
+                );
 
                 let encrypted_with_other_mac = mac.encrypt_with_saved_nonce(&data_key, &last_modified, other_saved_nonce).unwrap();
 
