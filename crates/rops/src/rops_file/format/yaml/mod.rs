@@ -36,61 +36,43 @@ impl FileFormatKeyAdapter for YamlValue {
     }
 }
 
-impl FileFormatMapAdapter for YamlMap {
-    type Key = YamlValue;
-    type Value = YamlValue;
-
-    fn with_capacity(capacity: usize) -> Self {
-        YamlMap::with_capacity(capacity)
-    }
-
-    fn insert(&mut self, key: Self::Key, value: Self::Value) {
-        self.insert(key, value);
-    }
-
-    fn decrypted_format_to_internal_value(yaml_value: Self::Value) -> Result<RopsTree<DecryptedMap>, FormatToInternalMapError> {
-        Ok(match yaml_value {
+impl FileFormatValueAdapter for YamlValue {
+    fn decrypted_to_internal(self) -> Result<RopsTree<DecryptedMap>, FormatToInternalMapError> {
+        Ok(match self {
             // SOPS simply throws away tags, so do we for now.
             // It can, however, deserialize manually added tags to encrypted documents,
             // so we could in theory keep the tags somewhere without breaking SOPS compatability.
-            YamlValue::Tagged(tagged) => Self::decrypted_format_to_internal_value(tagged.value)?,
-            YamlValue::Mapping(map) => RopsTree::Map(YamlMap::decrypted_format_to_internal(
-                map,
-                Self::decrypted_format_to_internal_value,
-            )?),
+            YamlValue::Tagged(tagged) => tagged.value.decrypted_to_internal()?,
+            YamlValue::Mapping(map) => RopsTree::Map(YamlMap::decrypted_to_internal(map, Self::decrypted_to_internal)?),
             YamlValue::Bool(boolean) => RopsTree::Leaf(RopsValue::Boolean(boolean)),
             YamlValue::String(string) => RopsTree::Leaf(RopsValue::String(string)),
             YamlValue::Number(number) => RopsTree::Leaf(tree_traversal::resolve_number(number)?),
             YamlValue::Sequence(sequence) => RopsTree::Sequence(
                 sequence
                     .into_iter()
-                    .map(Self::decrypted_format_to_internal_value)
+                    .map(Self::decrypted_to_internal)
                     .collect::<Result<Vec<_>, _>>()?,
             ),
             YamlValue::Null => RopsTree::Null,
         })
     }
 
-    fn decrypted_internal_to_format_value(rops_tree: RopsTree<DecryptedMap>) -> Self::Value {
+    fn decrypted_from_internal(rops_tree: RopsTree<DecryptedMap>) -> Self {
         match rops_tree {
-            RopsTree::Sequence(sequence) => {
-                YamlValue::Sequence(sequence.into_iter().map(Self::decrypted_internal_to_format_value).collect())
-            }
-            RopsTree::Map(map) => YamlValue::Mapping(Self::decrypted_internal_to_format(map)),
+            RopsTree::Sequence(sequence) => YamlValue::Sequence(sequence.into_iter().map(Self::decrypted_from_internal).collect()),
+            RopsTree::Map(map) => YamlValue::Mapping(YamlMap::decrypted_from_internal(map)),
             RopsTree::Null => YamlValue::Null,
             RopsTree::Leaf(decrypted_value) => tree_traversal::internal_to_yaml_value(decrypted_value),
         }
     }
 
-    fn encrypted_fomat_to_internal_value<C: Cipher>(
-        yaml_value: Self::Value,
+    fn encrypted_to_internal<C: Cipher>(
+        self,
         resolved_partial_encryption: ResolvedPartialEncrpytion,
     ) -> Result<RopsTree<EncryptedMap<C>>, FormatToInternalMapError> {
-        Ok(match yaml_value {
-            YamlValue::Tagged(tagged) => Self::encrypted_fomat_to_internal_value(tagged.value, resolved_partial_encryption)?,
-            YamlValue::Mapping(map) => {
-                RopsTree::Map(map.encrypted_format_to_internal(resolved_partial_encryption, Self::encrypted_fomat_to_internal_value)?)
-            }
+        Ok(match self {
+            YamlValue::Tagged(tagged) => tagged.value.encrypted_to_internal(resolved_partial_encryption)?,
+            YamlValue::Mapping(map) => RopsTree::Map(map.encrypted_to_internal(resolved_partial_encryption, Self::encrypted_to_internal)?),
             YamlValue::String(string) => match resolved_partial_encryption.escape_encryption() {
                 true => RopsTree::Leaf(RopsMapEncryptedLeaf::Escaped(RopsValue::String(string))),
                 false => RopsTree::Leaf(RopsMapEncryptedLeaf::Encrypted(string.parse()?)),
@@ -98,7 +80,7 @@ impl FileFormatMapAdapter for YamlMap {
             YamlValue::Sequence(sequence) => RopsTree::Sequence(
                 sequence
                     .into_iter()
-                    .map(|value| Self::encrypted_fomat_to_internal_value(value, resolved_partial_encryption))
+                    .map(|value| value.encrypted_to_internal(resolved_partial_encryption))
                     .collect::<Result<Vec<_>, _>>()?,
             ),
             YamlValue::Null => RopsTree::Null,
@@ -113,18 +95,29 @@ impl FileFormatMapAdapter for YamlMap {
         })
     }
 
-    fn encrypted_internal_to_format_value<C: Cipher>(internal_tree: RopsTree<EncryptedMap<C>>) -> Self::Value {
+    fn encrypted_from_internal<C: Cipher>(internal_tree: RopsTree<EncryptedMap<C>>) -> Self {
         match internal_tree {
-            RopsTree::Sequence(sequence) => {
-                YamlValue::Sequence(sequence.into_iter().map(Self::encrypted_internal_to_format_value).collect())
-            }
-            RopsTree::Map(map) => YamlValue::Mapping(Self::encrypted_internal_to_format_map(map)),
+            RopsTree::Sequence(sequence) => YamlValue::Sequence(sequence.into_iter().map(Self::encrypted_from_internal).collect()),
+            RopsTree::Map(map) => YamlValue::Mapping(YamlMap::encrypted_from_internal(map)),
             RopsTree::Null => YamlValue::Null,
             RopsTree::Leaf(maybe_encrypted_value) => match maybe_encrypted_value {
                 RopsMapEncryptedLeaf::Encrypted(encrypted_value) => YamlValue::String(encrypted_value.to_string()),
                 RopsMapEncryptedLeaf::Escaped(escaped_value) => tree_traversal::internal_to_yaml_value(escaped_value),
             },
         }
+    }
+}
+
+impl FileFormatMapAdapter for YamlMap {
+    type Key = YamlValue;
+    type Value = YamlValue;
+
+    fn with_capacity(capacity: usize) -> Self {
+        YamlMap::with_capacity(capacity)
+    }
+
+    fn insert(&mut self, key: Self::Key, value: Self::Value) {
+        self.insert(key, value);
     }
 }
 

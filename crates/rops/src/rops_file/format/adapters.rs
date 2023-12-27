@@ -12,18 +12,31 @@ pub trait FileFormatKeyAdapter {
     fn from_internal(key: String) -> Self;
 }
 
+pub trait FileFormatValueAdapter {
+    fn decrypted_to_internal(self) -> Result<RopsTree<DecryptedMap>, FormatToInternalMapError>;
+
+    fn decrypted_from_internal(rops_tree: RopsTree<DecryptedMap>) -> Self;
+
+    fn encrypted_to_internal<C: Cipher>(
+        self,
+        resolved_partial_encryption: ResolvedPartialEncrpytion,
+    ) -> Result<RopsTree<EncryptedMap<C>>, FormatToInternalMapError>;
+
+    fn encrypted_from_internal<C: Cipher>(internal_tree: RopsTree<EncryptedMap<C>>) -> Self;
+}
+
 pub trait FileFormatMapAdapter: Sized + Serialize + DeserializeOwned + PartialEq + Debug
 where
     Self: IntoIterator<Item = (Self::Key, Self::Value)>,
 {
     type Key: FileFormatKeyAdapter;
-    type Value;
+    type Value: FileFormatValueAdapter;
 
     fn with_capacity(capacity: usize) -> Self;
 
     fn insert(&mut self, key: Self::Key, value: Self::Value);
 
-    fn decrypted_format_to_internal<F, S: RopsMapState>(self, recursive_value_fn: F) -> Result<RopsMap<S>, FormatToInternalMapError>
+    fn decrypted_to_internal<F, S: RopsMapState>(self, recursive_value_fn: F) -> Result<RopsMap<S>, FormatToInternalMapError>
     where
         F: Fn(Self::Value) -> Result<RopsTree<S>, FormatToInternalMapError>,
     {
@@ -37,21 +50,17 @@ where
         Ok(tree_map.into())
     }
 
-    fn decrypted_format_to_internal_value(format_value: Self::Value) -> Result<RopsTree<DecryptedMap>, FormatToInternalMapError>;
-
-    fn decrypted_internal_to_format(rops_map: RopsMap<DecryptedMap>) -> Self {
+    fn decrypted_from_internal(rops_map: RopsMap<DecryptedMap>) -> Self {
         let mut format_map = Self::with_capacity(rops_map.len());
 
         for (key, value) in rops_map.0 {
-            format_map.insert(Self::Key::from_internal(key), Self::decrypted_internal_to_format_value(value));
+            format_map.insert(Self::Key::from_internal(key), Self::Value::decrypted_from_internal(value));
         }
 
         format_map
     }
 
-    fn decrypted_internal_to_format_value(rops_tree: RopsTree<DecryptedMap>) -> Self::Value;
-
-    fn encrypted_format_to_internal<F, C: Cipher>(
+    fn encrypted_to_internal<F, C: Cipher>(
         self,
         resolved_partial_encryption: ResolvedPartialEncrpytion,
         recursive_value_fn: F,
@@ -75,20 +84,13 @@ where
         Ok(tree_map.into())
     }
 
-    fn encrypted_fomat_to_internal_value<C: Cipher>(
-        format_value: Self::Value,
-        resolved_partial_encryption: ResolvedPartialEncrpytion,
-    ) -> Result<RopsTree<EncryptedMap<C>>, FormatToInternalMapError>;
-
-    fn encrypted_internal_to_format_map<C: Cipher>(internal_map: RopsMap<EncryptedMap<C>>) -> Self {
+    fn encrypted_from_internal<C: Cipher>(internal_map: RopsMap<EncryptedMap<C>>) -> Self {
         let mut format_map = Self::with_capacity(internal_map.len());
 
         for (key, tree) in internal_map.0 {
-            format_map.insert(Self::Key::from_internal(key), Self::encrypted_internal_to_format_value(tree));
+            format_map.insert(Self::Key::from_internal(key), Self::Value::encrypted_from_internal(tree));
         }
 
         format_map
     }
-
-    fn encrypted_internal_to_format_value<C: Cipher>(internal_tree: RopsTree<EncryptedMap<C>>) -> Self::Value;
 }
