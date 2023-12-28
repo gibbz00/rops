@@ -72,6 +72,24 @@ impl Integration for AgeIntegration {
     }
 }
 
+mod error {
+    use super::*;
+
+    impl From<age::EncryptError> for IntegrationError {
+        fn from(encrypt_error: age::EncryptError) -> Self {
+            use crate::*;
+            Self::Encryption(AgeIntegration::NAME, encrypt_error.to_string())
+        }
+    }
+
+    impl From<age::DecryptError> for IntegrationError {
+        fn from(decrypt_error: age::DecryptError) -> Self {
+            use crate::*;
+            Self::Decryption(AgeIntegration::NAME, decrypt_error.to_string())
+        }
+    }
+}
+
 pub use config::AgeConfig;
 mod config {
     use serde::{Deserialize, Serialize};
@@ -154,7 +172,13 @@ mod tests {
     }
 
     #[test]
-    fn decryptst_data_key() {
+    fn decrypts_data_key() {
         <AgeIntegration as IntegrationTestUtils>::assert_decrypts_data_key()
+    }
+
+    #[test]
+    fn retrieves_data_key_by_env() {
+        AgeIntegration::set_mock_private_key_env_var();
+        assert_eq!(DataKey::mock(), IntegrationMetadata::mock().data_key_from_age().unwrap().unwrap())
     }
 }

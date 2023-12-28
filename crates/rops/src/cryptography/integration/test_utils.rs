@@ -2,13 +2,6 @@ use crate::*;
 
 pub struct IntegrationsTestUtils;
 
-impl IntegrationsTestUtils {
-    pub fn set_private_keys() {
-        #[cfg(feature = "age")]
-        AgeIntegration::set_mock_private_key_env_var();
-    }
-}
-
 pub trait IntegrationTestUtils: Integration {
     fn set_mock_private_key_env_var() {
         std::env::set_var(Self::private_key_env_var_name(), Self::mock_private_key_str())

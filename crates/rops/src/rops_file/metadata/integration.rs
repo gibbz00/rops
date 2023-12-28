@@ -49,7 +49,8 @@ impl IntegrationMetadata {
     }
 
     #[cfg(feature = "age")]
-    fn data_key_from_age(&self) -> IntegrationResult<Option<DataKey>> {
+    // pub(crate) to allow centralized integration testing, should otherwise be considered private
+    pub(crate) fn data_key_from_age(&self) -> IntegrationResult<Option<DataKey>> {
         let private_keys = AgeIntegration::retrieve_private_keys()?;
 
         for age_metadata in &self.age {
@@ -88,22 +89,6 @@ mod mock {
                 #[cfg(feature = "age")]
                 age: vec![MockTestUtil::mock()],
             }
-        }
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[cfg(feature = "age")]
-    mod age {
-        use super::*;
-
-        #[test]
-        fn gets_data_key_from_age() {
-            AgeIntegration::set_mock_private_key_env_var();
-            assert_eq!(DataKey::mock(), IntegrationMetadata::mock().data_key_from_age().unwrap().unwrap())
         }
     }
 }

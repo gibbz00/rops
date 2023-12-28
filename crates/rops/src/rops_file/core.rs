@@ -164,9 +164,9 @@ impl<C: Cipher, F: FileFormat, H: Hasher> RopsFile<EncryptedFile<C, H>, F> {
     }
 }
 
-// Reduntant to test combinations of file formats, ciphers and hashers if the respective trait
-// implementations are well tested.
-#[cfg(all(test, feature = "yaml", feature = "aes-gcm", feature = "sha2"))]
+// Reduntant to test combinations of file formats, integrations, ciphers and hashers if the
+// respective trait implementations are well tested.
+#[cfg(all(test, feature = "yaml", feature = "age", feature = "aes-gcm", feature = "sha2"))]
 mod tests {
     use crate::*;
 
@@ -175,7 +175,7 @@ mod tests {
 
     #[test]
     fn encrypts_rops_file() {
-        IntegrationsTestUtils::set_private_keys();
+        AgeIntegration::set_mock_private_key_env_var();
 
         pretty_assertions::assert_eq!(
             DecryptedRopsFile::mock(),
@@ -189,7 +189,7 @@ mod tests {
 
     #[test]
     fn encrypts_rops_file_with_saved_parameters() {
-        IntegrationsTestUtils::set_private_keys();
+        AgeIntegration::set_mock_private_key_env_var();
 
         pretty_assertions::assert_eq!(
             EncryptedRopsFile::mock(),
@@ -201,14 +201,14 @@ mod tests {
 
     #[test]
     fn decrypts_rops_file() {
-        IntegrationsTestUtils::set_private_keys();
+        AgeIntegration::set_mock_private_key_env_var();
 
         pretty_assertions::assert_eq!(DecryptedRopsFile::mock(), EncryptedRopsFile::mock().decrypt().unwrap())
     }
 
     #[test]
     fn decrypts_rops_file_and_saves_parameters() {
-        IntegrationsTestUtils::set_private_keys();
+        AgeIntegration::set_mock_private_key_env_var();
 
         pretty_assertions::assert_eq!(
             (DecryptedRopsFile::mock(), SavedParameters::mock()),
@@ -218,7 +218,7 @@ mod tests {
 
     #[test]
     fn decryption_disallows_mac_mismatch() {
-        IntegrationsTestUtils::set_private_keys();
+        AgeIntegration::set_mock_private_key_env_var();
 
         assert!(matches!(
             RopsFile::<_, YamlFileFormat> {

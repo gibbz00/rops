@@ -19,7 +19,7 @@ macro_rules! parity_check {
                 "_plaintext.yaml"
             )))?;
 
-            IntegrationsTestUtils::set_private_keys();
+            AgeIntegration::set_mock_private_key_env_var();
 
             let (decrypted_rops_file, saved_parameters) = sops_file
                 .parse::<RopsFile<EncryptedFile<AES256GCM, SHA512>, YamlFileFormat>>()

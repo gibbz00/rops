@@ -21,19 +21,3 @@ pub enum IntegrationError {
     #[error("matched environment variable not valid UTF-8: {0:?}")]
     EnvVarNotUnicode(OsString),
 }
-
-#[cfg(feature = "age")]
-impl From<age::EncryptError> for IntegrationError {
-    fn from(encrypt_error: age::EncryptError) -> Self {
-        use crate::*;
-        Self::Encryption(AgeIntegration::NAME, encrypt_error.to_string())
-    }
-}
-
-#[cfg(feature = "age")]
-impl From<age::DecryptError> for IntegrationError {
-    fn from(decrypt_error: age::DecryptError) -> Self {
-        use crate::*;
-        Self::Decryption(AgeIntegration::NAME, decrypt_error.to_string())
-    }
-}
