@@ -18,6 +18,3 @@ pub use cipher::*;
 
 mod hasher;
 pub use hasher::*;
-
-mod integration;
-pub use integration::*;

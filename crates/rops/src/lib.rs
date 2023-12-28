@@ -4,6 +4,9 @@ pub use cryptography::*;
 mod rops_file;
 pub use rops_file::*;
 
+mod integration;
+pub use integration::*;
+
 mod base64utils;
 pub(crate) use base64utils::*;
 
