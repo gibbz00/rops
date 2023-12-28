@@ -64,7 +64,7 @@ Unauthenticated changes in a plaintext value will still cause subsequent decrypt
 ### Integrations:
 
 - [X] `age`
-- [ ] `pgp`
+- [ ] `pgp` - Awaiting status update for: [OpenPGP Crypto Refresh](https://datatracker.ietf.org/doc/draft-ietf-openpgp-crypto-refresh/)
 - [ ] `aws_kms`
 - [ ] `gcp_kms`
 - [ ] `azure_kv`
