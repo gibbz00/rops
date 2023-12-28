@@ -19,7 +19,7 @@ impl FileFormat for JsonFileFormat {
     type DeserializeError = serde_json::Error;
 
     fn serialize_to_string<T: Serialize>(t: &T) -> Result<String, Self::SerializeError> {
-        serde_json::to_string(t)
+        serde_json::to_string_pretty(t)
     }
 
     fn deserialize_from_str<T: DeserializeOwned>(str: &str) -> Result<T, Self::DeserializeError> {

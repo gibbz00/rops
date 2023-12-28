@@ -10,9 +10,15 @@ mod rops_file {
         <<S::MetadataState as RopsMetadataState>::Mac as FromStr>::Err: Display,
     {
         fn mock_format_display() -> String {
-            format! {"{{{},\"sops\":{}}}",
-                RopsFileFormatMap::mock_format_display().strip_prefix('{').unwrap().strip_suffix('}').unwrap(),
-                &RopsFileMetadata::mock_format_display(),
+            indoc::formatdoc! {"
+                {{
+                  {},
+                  \"sops\": {{
+                    {}
+                  }}
+                }}",
+                super::strip_curly(&RopsFileFormatMap::mock_format_display()),
+                super::strip_curly(&textwrap::indent(&RopsFileMetadata::mock_format_display(), "  ")),
             }
         }
     }
@@ -23,7 +29,7 @@ mod map {
 
     impl MockFileFormatUtil<JsonFileFormat> for RopsFileFormatMap<DecryptedMap, JsonFileFormat> {
         fn mock_format_display() -> String {
-            serde_json::json!({
+            JsonFileFormat::serialize_to_string(&serde_json::json!({
                 "hello": "world!",
                 "nested_map": {
                     "null_key": null,
@@ -39,15 +45,15 @@ mod map {
                 },
                 "booleans": [true, false],
                 "escape_unencrypted": "plaintext"
-            })
-            .to_string()
+            }))
+            .unwrap()
         }
     }
 
     #[cfg(feature = "aes-gcm")]
     impl MockFileFormatUtil<JsonFileFormat> for RopsFileFormatMap<EncryptedMap<AES256GCM>, JsonFileFormat> {
         fn mock_format_display() -> String {
-            serde_json::json!({
+            JsonFileFormat::serialize_to_string(&serde_json::json!({
                 "hello": "ENC[AES256_GCM,data:3S1E9am/,iv:WUQoQTrRXw/tUgwpmSG69xWtd5dVMfe8qUly1VB8ucM=,tag:nQUDkuh0OR1cjR5hGC5jOw==,type:str]",
                 "nested_map": {
                     "null_key": null,
@@ -66,7 +72,7 @@ mod map {
                     "ENC[AES256_GCM,data:SgBh7wY=,iv:0s9Q9pQWbsZm2yHsmFalCzX0IqNb6ZqeY6QQYCWc+qU=,tag:OZb76BWCKbDLbcil4c8fYA==,type:bool]",
                 ],
                 "escape_unencrypted": "plaintext"
-            }).to_string()
+            })).unwrap()
         }
     }
 }
@@ -83,19 +89,27 @@ mod metadata {
             <S::Mac as FromStr>::Err: Display,
         {
             fn mock_format_display() -> String {
-                let mut metadata_string = "{".to_string();
+                let mut metadata_string = "{\n".to_string();
 
                 #[cfg(feature = "age")]
                 {
-                    metadata_string.push_str(&display_integration_metadata_unit::<AgeIntegration>());
+                    metadata_string.push_str(&textwrap::indent(&display_integration_metadata_unit::<AgeIntegration>(), "  "));
                 }
 
-                metadata_string.push_str(&format!(
-                    "\"lastmodified\":\"{}\",\"mac\":\"{}\",\"unencrypted_suffix\":\"{}\"}}",
-                    LastModifiedDateTime::mock_display(),
-                    S::Mac::mock_display(),
-                    PartialEncryptionConfig::mock_display()
+                metadata_string.push_str(&textwrap::indent(
+                    &indoc::formatdoc! {"
+                    \"lastmodified\": \"{}\",
+                    \"mac\": \"{}\",
+                    \"unencrypted_suffix\": \"{}\"
+                    ",
+                        LastModifiedDateTime::mock_display(),
+                        S::Mac::mock_display(),
+                        PartialEncryptionConfig::mock_display()
+                    },
+                    "  ",
                 ));
+
+                metadata_string.push('}');
 
                 return metadata_string;
 
@@ -104,7 +118,21 @@ mod metadata {
                     IntegrationMetadataUnit<I>: MockFileFormatUtil<JsonFileFormat>,
                     for<'a> &'a I::PublicKey: From<&'a I::Config>,
                 {
-                    format!("\"{}\":[{}],", I::NAME, IntegrationMetadataUnit::<I>::mock_format_display())
+                    let integration_metadata = IntegrationMetadataUnit::<I>::mock_format_display();
+                    let (first_metadata_line, remaning_metata_lines) = integration_metadata
+                        .split_once('\n')
+                        .expect("no newline delimeter in integration metadata");
+
+                    indoc::formatdoc!(
+                        "\"{}\": [
+                          {}
+                        {}
+                        ],
+                        ",
+                        I::NAME,
+                        first_metadata_line,
+                        textwrap::indent(remaning_metata_lines, "  ")
+                    )
                 }
             }
         }
@@ -115,8 +143,12 @@ mod metadata {
             for<'a> &'a I::PublicKey: From<&'a I::Config>,
         {
             fn mock_format_display() -> String {
-                format! {"{{{},\"enc\":\"{}\"}}",
-                    I::Config::mock_format_display().strip_prefix('{').unwrap().strip_suffix('}').unwrap(), I::mock_encrypted_data_key_str().replace('\n', "\\n")
+                indoc::formatdoc! {"
+                    {{
+                      {},
+                      \"enc\": \"{}\"
+                    }}",
+                    super::super::strip_curly(&I::Config::mock_format_display()), I::mock_encrypted_data_key_str().replace('\n', "\\n")
                 }
             }
         }
@@ -128,8 +160,17 @@ mod metadata {
 
         impl MockFileFormatUtil<JsonFileFormat> for AgeConfig {
             fn mock_format_display() -> String {
-                format!("{{\"recipient\":\"{}\"}}", AgeIntegration::mock_public_key_str())
+                indoc::formatdoc! {"
+                    {{
+                      \"recipient\": \"{}\"
+                    }}",
+                    AgeIntegration::mock_public_key_str()
+                }
             }
         }
     }
+}
+
+fn strip_curly(str: &str) -> &str {
+    str.trim_matches(|c| c == ' ' || c == '\n' || c == '{' || c == '}')
 }
