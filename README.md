@@ -19,7 +19,7 @@
 
 - Formats:
   - [X] YAML
-  - [ ] JSON
+  - [X] JSON
   - [ ] INI
   - [ ] ENV
   - [ ] BINARY
