@@ -155,20 +155,18 @@ mod mock {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-
-    #[test]
-    fn disallows_cipher_name_mismatch() {
-        let parse_error = EncryptedRopsValue::<StubCipher>::mock_display()
-            .replace(StubCipher::NAME, "gibberish")
-            .parse::<EncryptedRopsValue<StubCipher>>()
-            .unwrap_err();
-        assert!(matches!(parse_error, EncryptedRopsValueFromStrError::InvalidCipher(_, _)))
-    }
-
     #[cfg(feature = "aes-gcm")]
     mod aes {
-        use super::*;
+        use crate::*;
+
+        #[test]
+        fn disallows_cipher_name_mismatch() {
+            let parse_error = EncryptedRopsValue::<AES256GCM>::mock_display()
+                .replace(StubCipher::NAME, "gibberish")
+                .parse::<EncryptedRopsValue<AES256GCM>>()
+                .unwrap_err();
+            assert!(matches!(parse_error, EncryptedRopsValueFromStrError::InvalidCipher(_, _)))
+        }
 
         #[test]
         fn displays_value() {

@@ -32,7 +32,7 @@ mod mock {
             }
         }
 
-        impl<C: Cipher> MockDisplayTestUtil for AuthorizationTag<C> {
+        impl MockDisplayTestUtil for AuthorizationTag<AES256GCM> {
             fn mock_display() -> String {
                 "nQUDkuh0OR1cjR5hGC5jOw==".to_string()
             }
