@@ -156,29 +156,5 @@ mod mock {
 mod tests {
     use super::*;
 
-    #[test]
-    fn parses_private_key() {
-        <AgeIntegration as IntegrationTestUtils>::assert_parses_private_key()
-    }
-
-    #[test]
-    fn parses_public_key() {
-        <AgeIntegration as IntegrationTestUtils>::assert_parses_public_key()
-    }
-
-    #[test]
-    fn encrypts_data_key() {
-        <AgeIntegration as IntegrationTestUtils>::assert_encrypts_data_key()
-    }
-
-    #[test]
-    fn decrypts_data_key() {
-        <AgeIntegration as IntegrationTestUtils>::assert_decrypts_data_key()
-    }
-
-    #[test]
-    fn retrieves_data_key_by_env() {
-        AgeIntegration::set_mock_private_key_env_var();
-        assert_eq!(DataKey::mock(), IntegrationMetadata::mock().data_key_from_age().unwrap().unwrap())
-    }
+    generate_integration_test_suite!(AgeIntegration);
 }

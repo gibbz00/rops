@@ -46,38 +46,6 @@ pub trait Integration {
     fn decrypt_data_key(private_key: &Self::PrivateKey, encrypted_data_key: &str) -> IntegrationResult<DataKey>;
 }
 
-#[cfg(feature = "test-utils")]
-pub use stub_integration::StubIntegration;
-#[cfg(feature = "test-utils")]
-mod stub_integration {
-    use super::*;
-
-    pub struct StubIntegration;
-
-    impl Integration for StubIntegration {
-        const NAME: &'static str = "stub";
-        type PublicKey = String;
-        type PrivateKey = ();
-        type Config = ();
-
-        fn parse_public_key(_public_key_str: &str) -> IntegrationResult<Self::PublicKey> {
-            unimplemented!()
-        }
-
-        fn parse_private_key(_private_key_str: impl AsRef<str>) -> IntegrationResult<Self::PrivateKey> {
-            unimplemented!()
-        }
-
-        fn encrypt_data_key(_public_key: &Self::PublicKey, _data_key: &DataKey) -> IntegrationResult<String> {
-            unimplemented!()
-        }
-
-        fn decrypt_data_key(_private_key: &Self::PrivateKey, _encrypted_data_key: &str) -> IntegrationResult<DataKey> {
-            unimplemented!()
-        }
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
