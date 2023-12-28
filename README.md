@@ -7,6 +7,7 @@
 
 * Full `sops` encrypted file compatibility. Decrypt any `sops` file using `rops` and vice versa.
 * Available as a rust library.
+* Be consistent in how credentials are used set and retrieved across integrations.
 
 ## Non-Goals
 
@@ -64,8 +65,8 @@ Unauthenticated changes in a plaintext value will still cause subsequent decrypt
 ### Integrations:
 
 - [X] `age`
-- [ ] `pgp` - Awaiting status update for: [OpenPGP Crypto Refresh](https://datatracker.ietf.org/doc/draft-ietf-openpgp-crypto-refresh/)
 - [ ] `aws_kms`
+- [ ] `pgp` - Awaiting status update for: [OpenPGP Crypto Refresh](https://datatracker.ietf.org/doc/draft-ietf-openpgp-crypto-refresh/)
 - [ ] `gcp_kms`
 - [ ] `azure_kv`
 - [ ] `hashicorp_kv`
@@ -113,11 +114,11 @@ Unauthenticated changes in a plaintext value will still cause subsequent decrypt
 
 #### Default private key environment variables:
 
-Integration  | Name              | Example                                                                                        |
+Integration  | Name              | Example                                                                                        | Syntax
 ---          | ---               | ---                                                                                            |
 age          | ROPS_AGE          | `ROPS_AGE='AGE-SECRET-KEY-1CZG0RPQJNDZWZMRMJLNYSF6H00WK0ECYAVE83ALFC2KE53WJ2FRSNZ8GCL'`        |
 pgp          | ROPS_PGP          | `ROPS_PGP='85D77543B3D624B63CEA9E6DBC17301B491B3F21,E60892BB9BD89A69F759A1A0A3D652173B763E8F'` |
-aws_kms      | ROPS_AWS_KMS      | `ROPS_AWS_KMS='arn:aws:kms:us-east-1:656532927350:key/920aff2e-c5f1-4040-943a-047fa387b27e'`   |
+aws_kms      | ROPS_AWS_KMS      | `ROPS_AWS_KMS='AKIAXXXXXXXXXXXXXXL2/BRZXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXigu'`                 | <aws_access_key_id>/<aws_secret_access_key>
 gcp_kms      | ROPS_GCP_KMS      | `ROPS_GCP_KMS='projects/my-project/locations/global/keyRings/sops/cryptoKeys/sops-key'`        |
 azure_kv     | ROPS_AZURE_KV     | `ROPS_AZURE_KV='https://sops.vault.azure.net/keys/sops-key/some-string'`                       |
 hashicorp_kv | ROPS_HASHICORP_KV | `ROPS_HASHICORP_KV='http://127.0.0.1:8200/v1/sops/keys/firstkey'`                              |
