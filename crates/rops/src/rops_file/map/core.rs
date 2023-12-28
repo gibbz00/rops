@@ -2,12 +2,11 @@ use derive_more::{Deref, DerefMut, From, Into};
 
 use crate::*;
 
-#[derive(PartialEq, From, Into, Deref, DerefMut)]
-#[impl_tools::autoimpl(Debug)]
+#[derive(From, Into, Deref, DerefMut)]
+#[impl_tools::autoimpl(Debug, PartialEq)]
 pub struct RopsMap<S: RopsMapState>(pub(crate) indexmap::IndexMap<String, RopsTree<S>>);
 
-#[derive(PartialEq)]
-#[impl_tools::autoimpl(Debug)]
+#[impl_tools::autoimpl(Debug, PartialEq)]
 pub enum RopsTree<S: RopsMapState> {
     Sequence(Vec<RopsTree<S>>),
     Map(RopsMap<S>),

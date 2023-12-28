@@ -1,4 +1,4 @@
-use std::{fmt::Debug, marker::PhantomData};
+use std::marker::PhantomData;
 
 use crate::*;
 
@@ -7,14 +7,12 @@ pub trait RopsFileState: private::SealedRopsFileState {
     type MetadataState: RopsMetadataState;
 }
 
-#[derive(Debug)]
 pub struct EncryptedFile<C: Cipher, H: Hasher>(PhantomData<C>, PhantomData<H>);
 impl<C: Cipher, H: Hasher> RopsFileState for EncryptedFile<C, H> {
     type MapState = EncryptedMap<C>;
     type MetadataState = EncryptedMetadata<C, H>;
 }
 
-#[derive(Debug)]
 pub struct DecryptedFile<H: Hasher>(PhantomData<H>);
 impl<H: Hasher> RopsFileState for DecryptedFile<H> {
     type MapState = DecryptedMap;

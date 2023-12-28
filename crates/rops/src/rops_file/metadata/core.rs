@@ -7,8 +7,8 @@ use crate::*;
 
 #[serde_with::serde_as]
 #[serde_with::skip_serializing_none]
-#[derive(Debug, Serialize, Deserialize)]
-#[impl_tools::autoimpl(PartialEq)]
+#[derive(Serialize, Deserialize)]
+#[impl_tools::autoimpl(Debug, PartialEq)]
 pub struct RopsFileMetadata<S: RopsMetadataState>
 where
     <S::Mac as FromStr>::Err: Display,

@@ -10,13 +10,11 @@ pub trait RopsMetadataState {
     type Mac: Debug + PartialEq + FromStr + Display;
 }
 
-#[derive(Debug)]
 pub struct EncryptedMetadata<C: Cipher, H: Hasher>(PhantomData<C>, PhantomData<H>);
 impl<C: Cipher, H: Hasher> RopsMetadataState for EncryptedMetadata<C, H> {
     type Mac = EncryptedMac<C, H>;
 }
 
-#[derive(Debug)]
 pub struct DecryptedMetadata<H: Hasher>(PhantomData<H>);
 
 impl<H: Hasher> RopsMetadataState for DecryptedMetadata<H> {

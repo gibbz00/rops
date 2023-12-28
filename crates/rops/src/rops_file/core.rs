@@ -5,9 +5,9 @@ use thiserror::Error;
 
 use crate::*;
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 #[serde(bound = "F: FileFormat")]
-#[impl_tools::autoimpl(PartialEq)]
+#[impl_tools::autoimpl(Debug, PartialEq)]
 pub struct RopsFile<S: RopsFileState, F: FileFormat>
 where
     <<S::MetadataState as RopsMetadataState>::Mac as FromStr>::Err: Display,

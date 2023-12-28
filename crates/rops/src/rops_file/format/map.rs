@@ -4,8 +4,8 @@ use serde::{Deserialize, Serialize};
 
 use crate::*;
 
-#[derive(Debug, Serialize, Deserialize)]
-#[impl_tools::autoimpl(PartialEq)]
+#[derive(Serialize, Deserialize)]
+#[impl_tools::autoimpl(Debug, PartialEq)]
 #[serde(transparent)]
 pub struct RopsFileFormatMap<S: RopsMapState, F: FileFormat> {
     #[serde(flatten)]
