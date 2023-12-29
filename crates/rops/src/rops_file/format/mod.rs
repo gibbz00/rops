@@ -21,3 +21,8 @@ pub use json::JsonFileFormat;
 mod test_utils;
 #[cfg(feature = "test-utils")]
 pub use test_utils::{FileFormatTestSuiteUtils, FileFormatTestUtils, MockFileFormatUtil};
+
+#[cfg(test)]
+pub(crate) use test_suite::{generate_file_format_test_suite, generate_integration_metadata_test_suite};
+#[cfg(test)]
+mod test_suite;

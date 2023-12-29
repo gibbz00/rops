@@ -17,8 +17,8 @@ mod rops_file {
                     {}
                   }}
                 }}",
-                super::strip_curly(&RopsFileFormatMap::mock_format_display()),
-                super::strip_curly(&textwrap::indent(&RopsFileMetadata::mock_format_display(), "  ")),
+                super::strip_curly_and_dedent(&RopsFileFormatMap::mock_format_display()),
+                super::strip_curly_and_dedent(&textwrap::indent(&RopsFileMetadata::mock_format_display(), "  ")),
             }
         }
     }
@@ -91,10 +91,17 @@ mod metadata {
             fn mock_format_display() -> String {
                 let mut metadata_string = "{\n".to_string();
 
+                #[cfg(feature = "aws-kms")]
+                metadata_string.push_str(&textwrap::indent(
+                    &display_integration_metadata_unit::<AwsKmsIntegration>("kms"),
+                    "  ",
+                ));
+
                 #[cfg(feature = "age")]
-                {
-                    metadata_string.push_str(&textwrap::indent(&display_integration_metadata_unit::<AgeIntegration>(), "  "));
-                }
+                metadata_string.push_str(&textwrap::indent(
+                    &display_integration_metadata_unit::<AgeIntegration>(AgeIntegration::NAME),
+                    "  ",
+                ));
 
                 metadata_string.push_str(&textwrap::indent(
                     &indoc::formatdoc! {"
@@ -113,10 +120,9 @@ mod metadata {
 
                 return metadata_string;
 
-                fn display_integration_metadata_unit<I: IntegrationTestUtils>() -> String
+                fn display_integration_metadata_unit<I: IntegrationTestUtils>(metadata_field_name: &str) -> String
                 where
                     IntegrationMetadataUnit<I>: MockFileFormatUtil<JsonFileFormat>,
-                    for<'a> &'a I::PublicKey: From<&'a I::Config>,
                 {
                     let integration_metadata = IntegrationMetadataUnit::<I>::mock_format_display();
                     let (first_metadata_line, remaning_metata_lines) = integration_metadata
@@ -129,7 +135,7 @@ mod metadata {
                         {}
                         ],
                         ",
-                        I::NAME,
+                        metadata_field_name,
                         first_metadata_line,
                         textwrap::indent(remaning_metata_lines, "  ")
                     )
@@ -140,37 +146,65 @@ mod metadata {
         impl<I: IntegrationTestUtils> MockFileFormatUtil<JsonFileFormat> for IntegrationMetadataUnit<I>
         where
             I::Config: MockFileFormatUtil<JsonFileFormat>,
-            for<'a> &'a I::PublicKey: From<&'a I::Config>,
         {
             fn mock_format_display() -> String {
+                let proto_config = I::Config::mock_format_display();
+                let config = super::super::strip_curly_and_dedent(&proto_config);
+
+                let config_display = match <I::Config as IntegrationConfig<I>>::INCLUDE_DATA_KEY_CREATED_AT {
+                    true => indoc::formatdoc! {"
+                        {},
+                        \"created_at\": \"{}\"",
+                        config, IntegrationCreatedAt::mock_display()
+                    },
+                    false => config.to_string(),
+                };
+
                 indoc::formatdoc! {"
                     {{
-                      {},
+                    {},
                       \"enc\": \"{}\"
                     }}",
-                    super::super::strip_curly(&I::Config::mock_format_display()), I::mock_encrypted_data_key_str().replace('\n', "\\n")
+                    textwrap::indent(&super::super::dedent_max(&config_display), "  "), I::mock_encrypted_data_key_str().replace('\n', "\\n")
                 }
             }
         }
     }
 
-    #[cfg(feature = "age")]
-    mod age {
+    mod integration_configs {
         use crate::*;
 
+        #[cfg(feature = "age")]
         impl MockFileFormatUtil<JsonFileFormat> for AgeConfig {
             fn mock_format_display() -> String {
                 indoc::formatdoc! {"
                     {{
                       \"recipient\": \"{}\"
                     }}",
-                    AgeIntegration::mock_public_key_str()
+                    AgeIntegration::mock_key_id_str().as_ref()
                 }
+            }
+        }
+
+        #[cfg(feature = "aws-kms")]
+        impl MockFileFormatUtil<JsonFileFormat> for AwsKmsConfig {
+            fn mock_format_display() -> String {
+                let AwsKeyId { profile, key_arn } = AwsKeyId::mock();
+                indoc::formatdoc! {"
+                    {{
+                        \"aws_profile\": \"{}\",
+                        \"arn\": \"{}\"
+                    }}
+                ", profile, key_arn }
             }
         }
     }
 }
 
-fn strip_curly(str: &str) -> &str {
+fn strip_curly_and_dedent(str: &str) -> &str {
     str.trim_matches(|c| c == ' ' || c == '\n' || c == '{' || c == '}')
+}
+
+fn dedent_max(str: &str) -> String {
+    str.lines().map(|line| line.trim()).collect::<Vec<_>>().join("\n")
 }

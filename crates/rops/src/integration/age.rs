@@ -16,14 +16,14 @@ impl AgeIntegration {
 
 impl Integration for AgeIntegration {
     const NAME: &'static str = "age";
-    type PublicKey = age::x25519::Recipient;
+    type KeyId = age::x25519::Recipient;
     type PrivateKey = age::x25519::Identity;
     type Config = AgeConfig;
 
-    fn parse_public_key(public_key_str: &str) -> IntegrationResult<Self::PublicKey> {
-        public_key_str
+    fn parse_key_id(key_id_str: &str) -> IntegrationResult<Self::KeyId> {
+        key_id_str
             .parse()
-            .map_err(|err: &str| IntegrationError::PublicKeyParsing(anyhow::anyhow!(err)))
+            .map_err(|err: &str| IntegrationError::KeyIdParsing(anyhow::anyhow!(err)))
     }
 
     fn parse_private_key(private_key_str: impl AsRef<str>) -> IntegrationResult<Self::PrivateKey> {
@@ -33,11 +33,11 @@ impl Integration for AgeIntegration {
             .map_err(|err: &str| IntegrationError::PrivateKeyParsing(anyhow::anyhow!(err)))
     }
 
-    fn encrypt_data_key(public_key: &Self::PublicKey, data_key: &DataKey) -> IntegrationResult<String> {
+    fn encrypt_data_key(key_id: &Self::KeyId, data_key: &DataKey) -> IntegrationResult<String> {
         let unarmored_buffer = {
             // IMPROVEMENT: avoid vec box allocation
             let encryptor =
-                age::Encryptor::with_recipients(vec![Box::new(public_key.clone())]).expect("provided recipients should be non-empty");
+                age::Encryptor::with_recipients(vec![Box::new(key_id.clone())]).expect("provided recipients should be non-empty");
 
             let mut unarmored_encypted_buffer = Vec::with_capacity(DataKey::byte_size());
             let mut encryption_writer = encryptor.wrap_output(&mut unarmored_encypted_buffer)?;
@@ -54,7 +54,13 @@ impl Integration for AgeIntegration {
         Ok(String::from_utf8(armored_buffer)?)
     }
 
-    fn decrypt_data_key(private_key: &Self::PrivateKey, encrypted_data_key: &str) -> IntegrationResult<DataKey> {
+    fn decrypt_data_key(key_id: &Self::KeyId, encrypted_data_key: &str) -> IntegrationResult<Option<DataKey>> {
+        let private_keys = Self::retrieve_private_keys()?;
+
+        let Some(matched_private_key) = private_keys.into_iter().find(|private_key| &private_key.to_public() == key_id) else {
+            return Ok(None);
+        };
+
         let mut unarmored_encrypted_buffer = Vec::with_capacity(Self::APPROX_MAX_ARMORED_DATA_KEY_LENGTH);
 
         ArmoredReader::new(encrypted_data_key.as_bytes()).read_to_end(&mut unarmored_encrypted_buffer)?;
@@ -65,10 +71,10 @@ impl Integration for AgeIntegration {
         };
 
         let mut decrypted_data_key_buffer = DataKey::empty();
-        let mut reader = decryptor.decrypt(std::iter::once(private_key as &dyn age::Identity)).unwrap();
-        reader.read_exact(decrypted_data_key_buffer.as_mut()).unwrap();
+        let mut reader = decryptor.decrypt(std::iter::once(&matched_private_key as &dyn age::Identity))?;
+        reader.read_exact(decrypted_data_key_buffer.as_mut())?;
 
-        Ok(decrypted_data_key_buffer)
+        Ok(Some(decrypted_data_key_buffer))
     }
 }
 
@@ -77,15 +83,13 @@ mod error {
 
     impl From<age::EncryptError> for IntegrationError {
         fn from(encrypt_error: age::EncryptError) -> Self {
-            use crate::*;
-            Self::Encryption(AgeIntegration::NAME, encrypt_error.to_string())
+            Self::Encryption(encrypt_error.into())
         }
     }
 
     impl From<age::DecryptError> for IntegrationError {
         fn from(decrypt_error: age::DecryptError) -> Self {
-            use crate::*;
-            Self::Decryption(AgeIntegration::NAME, decrypt_error.to_string())
+            Self::Decryption(decrypt_error.into())
         }
     }
 }
@@ -102,12 +106,14 @@ mod config {
     pub struct AgeConfig {
         #[serde_as(as = "DisplayFromStr")]
         #[serde(rename = "recipient")]
-        pub public_key: <AgeIntegration as Integration>::PublicKey,
+        pub key_id: <AgeIntegration as Integration>::KeyId,
     }
 
-    impl<'a> From<&'a AgeConfig> for &'a <AgeIntegration as Integration>::PublicKey {
-        fn from(config: &'a AgeConfig) -> Self {
-            &config.public_key
+    impl IntegrationConfig<AgeIntegration> for AgeConfig {
+        const INCLUDE_DATA_KEY_CREATED_AT: bool = false;
+
+        fn key_id(&self) -> &<AgeIntegration as Integration>::KeyId {
+            &self.key_id
         }
     }
 
@@ -118,7 +124,7 @@ mod config {
         impl MockTestUtil for AgeConfig {
             fn mock() -> Self {
                 Self {
-                    public_key: AgeIntegration::mock_public_key(),
+                    key_id: AgeIntegration::mock_key_id(),
                 }
             }
         }
@@ -130,11 +136,11 @@ mod mock {
     use super::*;
 
     impl IntegrationTestUtils for AgeIntegration {
-        fn mock_public_key_str() -> &'static str {
+        fn mock_key_id_str() -> impl AsRef<str> {
             "age1se5ghfycr4n8kcwc3qwf234ymvmr2lex2a99wh8gpfx97glwt9hqch4569"
         }
 
-        fn mock_private_key_str() -> &'static str {
+        fn mock_private_key_str() -> impl AsRef<str> {
             "AGE-SECRET-KEY-1EQUCGFZH8UZKSZ0Z5N5T234YRNDT4U9H7QNYXWRRNJYDDVXE6FWSCPGNJ7"
         }
 

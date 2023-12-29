@@ -36,15 +36,13 @@ mod tests {
     #[test]
     fn gets_last_when_one_level() {
         let key_path = KeyPath::default().join("one");
-        println!("{:?}", key_path);
         assert_eq!("one", key_path.last())
     }
 
     #[test]
     fn gets_last_when_multiple_levels() {
         let key_path = KeyPath::default().join("one").join("two");
-        println!("{:?}", key_path);
-        assert_eq!("two", KeyPath::default().join("one").join("two").last())
+        assert_eq!("two", key_path.last())
     }
 
     #[test]

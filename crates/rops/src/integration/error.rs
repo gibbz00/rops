@@ -4,14 +4,15 @@ use thiserror::Error;
 
 pub type IntegrationResult<T> = Result<T, IntegrationError>;
 
+// TODO: place as inner error in an error type that always includes integration name
 #[derive(Debug, Error)]
 pub enum IntegrationError {
-    #[error("{0} integration - encryption error: {1}")]
-    Encryption(&'static str, String),
-    #[error("{0} integration - decryption error: {1}")]
-    Decryption(&'static str, String),
-    #[error("unable to parse public key string: {0}")]
-    PublicKeyParsing(anyhow::Error),
+    #[error("encryption error: {0}")]
+    Encryption(anyhow::Error),
+    #[error("decryption error: {0}")]
+    Decryption(anyhow::Error),
+    #[error("unable to parse key id string: {0}")]
+    KeyIdParsing(anyhow::Error),
     #[error("unnable to parse private key string: {0}")]
     PrivateKeyParsing(anyhow::Error),
     #[error("io error during encryption/decryption: {0}")]

@@ -2,20 +2,20 @@ use crate::*;
 
 pub trait IntegrationTestUtils: Integration {
     fn set_mock_private_key_env_var() {
-        std::env::set_var(Self::private_key_env_var_name(), Self::mock_private_key_str())
+        std::env::set_var(Self::private_key_env_var_name(), Self::mock_private_key_str().as_ref())
     }
 
-    fn mock_public_key_str() -> &'static str;
+    fn mock_key_id_str() -> impl AsRef<str>;
 
-    fn mock_public_key() -> Self::PublicKey {
-        Self::parse_public_key(Self::mock_public_key_str()).unwrap()
+    fn mock_key_id() -> Self::KeyId {
+        Self::parse_key_id(Self::mock_key_id_str().as_ref()).unwrap()
     }
 
-    fn assert_parses_public_key() {
-        Self::mock_public_key();
+    fn assert_parses_key_id() {
+        Self::mock_key_id();
     }
 
-    fn mock_private_key_str() -> &'static str;
+    fn mock_private_key_str() -> impl AsRef<str>;
 
     fn mock_private_key() -> Self::PrivateKey {
         Self::parse_private_key(Self::mock_private_key_str()).unwrap()
@@ -28,16 +28,22 @@ pub trait IntegrationTestUtils: Integration {
     fn mock_encrypted_data_key_str() -> &'static str;
 
     fn assert_encrypts_data_key() {
+        Self::set_mock_private_key_env_var();
+
         let expected_data_key = DataKey::mock();
-        let encrypted_data_key = Self::encrypt_data_key(&Self::mock_public_key(), &expected_data_key).unwrap();
-        let found_data_key = Self::decrypt_data_key(&Self::mock_private_key(), &encrypted_data_key).unwrap();
+        let encrypted_data_key = Self::encrypt_data_key(&Self::mock_key_id(), &expected_data_key).unwrap();
+        let found_data_key = Self::decrypt_data_key(&Self::mock_key_id(), &encrypted_data_key).unwrap().unwrap();
         assert_eq!(expected_data_key, found_data_key);
     }
 
     fn assert_decrypts_data_key() {
+        Self::set_mock_private_key_env_var();
+
         assert_eq!(
             DataKey::mock(),
-            Self::decrypt_data_key(&Self::mock_private_key(), Self::mock_encrypted_data_key_str()).unwrap()
+            Self::decrypt_data_key(&Self::mock_key_id(), Self::mock_encrypted_data_key_str())
+                .unwrap()
+                .unwrap()
         )
     }
 }
@@ -51,11 +57,11 @@ mod stub_integration {
 
     impl Integration for StubIntegration {
         const NAME: &'static str = "stub";
-        type PublicKey = String;
+        type KeyId = ();
         type PrivateKey = ();
-        type Config = ();
+        type Config = StubIntegrationConfig;
 
-        fn parse_public_key(_public_key_str: &str) -> IntegrationResult<Self::PublicKey> {
+        fn parse_key_id(_key_id_str: &str) -> IntegrationResult<Self::KeyId> {
             unimplemented!()
         }
 
@@ -63,46 +69,23 @@ mod stub_integration {
             unimplemented!()
         }
 
-        fn encrypt_data_key(_public_key: &Self::PublicKey, _data_key: &DataKey) -> IntegrationResult<String> {
+        fn encrypt_data_key(_key_id: &Self::KeyId, _data_key: &DataKey) -> IntegrationResult<String> {
             unimplemented!()
         }
 
-        fn decrypt_data_key(_private_key: &Self::PrivateKey, _encrypted_data_key: &str) -> IntegrationResult<DataKey> {
+        fn decrypt_data_key(_key_id: &Self::KeyId, _encrypted_data_key: &str) -> IntegrationResult<Option<DataKey>> {
             unimplemented!()
         }
     }
-}
 
-#[macro_export]
-macro_rules! generate_integration_test_suite {
-    ($integration:tt) => {
-        #[test]
-        fn parses_private_key() {
-            <$integration as IntegrationTestUtils>::assert_parses_private_key()
-        }
+    #[derive(Debug, PartialEq)]
+    pub struct StubIntegrationConfig(String);
 
-        #[test]
-        fn parses_public_key() {
-            <$integration as IntegrationTestUtils>::assert_parses_public_key()
-        }
+    impl IntegrationConfig<StubIntegration> for StubIntegrationConfig {
+        const INCLUDE_DATA_KEY_CREATED_AT: bool = false;
 
-        #[test]
-        fn encrypts_data_key() {
-            <$integration as IntegrationTestUtils>::assert_encrypts_data_key()
+        fn key_id(&self) -> &<StubIntegration as Integration>::KeyId {
+            &()
         }
-
-        #[test]
-        fn decrypts_data_key() {
-            <$integration as IntegrationTestUtils>::assert_decrypts_data_key()
-        }
-
-        #[test]
-        fn retrieves_data_key_by_env() {
-            $integration::set_mock_private_key_env_var();
-            assert_eq!(
-                DataKey::mock(),
-                IntegrationMetadata::mock().data_key_from_age().unwrap().unwrap()
-            )
-        }
-    };
+    }
 }

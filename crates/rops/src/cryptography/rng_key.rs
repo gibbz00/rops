@@ -5,7 +5,7 @@ use rand::RngCore;
 // IMPROVEMENT: replace with generic array
 #[derive(Debug, Clone, PartialEq, AsRef, AsMut)]
 #[as_ref(forward)]
-pub struct RngKey<T: ArrayLength<u8>>(GenericArray<u8, T>);
+pub struct RngKey<T: ArrayLength<u8>>(pub(crate) GenericArray<u8, T>);
 
 impl<T: ArrayLength<u8>> RngKey<T> {
     #[allow(clippy::new_without_default)]
@@ -24,17 +24,6 @@ impl<T: ArrayLength<u8>> RngKey<T> {
 
     pub fn empty() -> Self {
         Self(GenericArray::default())
-    }
-}
-
-#[cfg(feature = "test-utils")]
-mod mock {
-    use super::*;
-
-    impl<T: ArrayLength<u8>> From<GenericArray<u8, T>> for RngKey<T> {
-        fn from(array: GenericArray<u8, T>) -> Self {
-            Self(array)
-        }
     }
 }
 

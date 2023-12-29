@@ -1,24 +1,19 @@
-use std::fmt::Display;
-
-use chrono::{DateTime, Utc};
+use derive_more::Display;
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, PartialEq, Serialize, Deserialize)]
-pub struct LastModifiedDateTime(DateTime<Utc>);
+use crate::*;
+
+#[derive(Debug, PartialEq, Serialize, Deserialize, Display)]
+#[serde(transparent)]
+pub struct LastModifiedDateTime(Timestamp);
 
 impl LastModifiedDateTime {
     pub fn now() -> Self {
-        Self(Utc::now())
+        Self(Timestamp::now())
     }
 
     pub fn to_bytes(&self) -> Vec<u8> {
         self.to_string().into_bytes()
-    }
-}
-
-impl Display for LastModifiedDateTime {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", self.0.format("%Y-%m-%dT%H:%M:%SZ"))
     }
 }
 
@@ -36,23 +31,5 @@ mod mock {
         fn mock_display() -> String {
             "2023-12-27T20:37:05Z".to_string()
         }
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use crate::*;
-
-    #[test]
-    fn displays_date_time_correctly() {
-        DisplayTestUtils::assert_display::<LastModifiedDateTime>();
-    }
-
-    #[test]
-    fn skips_nanosecond_display() {
-        assert_eq!(
-            LastModifiedDateTime::mock_display().len(),
-            LastModifiedDateTime::now().to_string().len()
-        )
     }
 }

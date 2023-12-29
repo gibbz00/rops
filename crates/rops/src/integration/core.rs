@@ -1,15 +1,12 @@
-use std::{
-    env::VarError,
-    fmt::{Debug, Display},
-};
+use std::{env::VarError, fmt::Debug};
 
 use crate::*;
 
-pub trait Integration {
+pub trait Integration: Sized {
     const NAME: &'static str;
-    type PublicKey: Display;
+    type KeyId;
     type PrivateKey;
-    type Config: Debug + PartialEq;
+    type Config: IntegrationConfig<Self>;
 
     fn private_key_env_var_name() -> String {
         format!("ROPS_{}", Self::NAME.to_uppercase())
@@ -37,13 +34,19 @@ pub trait Integration {
             .collect::<Result<Vec<_>, _>>()
     }
 
-    fn parse_public_key(public_key_str: &str) -> IntegrationResult<Self::PublicKey>;
+    fn parse_key_id(key_id_str: &str) -> IntegrationResult<Self::KeyId>;
 
     fn parse_private_key(private_key_str: impl AsRef<str>) -> IntegrationResult<Self::PrivateKey>;
 
-    fn encrypt_data_key(public_key: &Self::PublicKey, data_key: &DataKey) -> IntegrationResult<String>;
+    fn encrypt_data_key(key_id: &Self::KeyId, data_key: &DataKey) -> IntegrationResult<String>;
 
-    fn decrypt_data_key(private_key: &Self::PrivateKey, encrypted_data_key: &str) -> IntegrationResult<DataKey>;
+    fn decrypt_data_key(key_id: &Self::KeyId, encrypted_data_key: &str) -> IntegrationResult<Option<DataKey>>;
+}
+
+pub trait IntegrationConfig<I: Integration>: Debug + PartialEq {
+    const INCLUDE_DATA_KEY_CREATED_AT: bool;
+
+    fn key_id(&self) -> &I::KeyId;
 }
 
 #[cfg(test)]

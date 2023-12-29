@@ -9,6 +9,6 @@ impl FromStrTestUtils {
     where
         T::Err: Debug,
     {
-        assert_eq!(T::mock(), T::mock_display().parse().unwrap())
+        pretty_assertions::assert_eq!(T::mock(), T::mock_display().parse().unwrap())
     }
 }

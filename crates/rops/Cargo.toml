@@ -6,6 +6,7 @@ edition = "2021"
 [features]
 # Integrations:
 age = ["dep:age"]
+aws-kms = ["dep:aws-arn", "dep:aws-sdk-kms", "dep:tokio"]
 # File formats:
 yaml = ["dep:serde_yaml"]
 json = ["dep:serde_json"]
@@ -35,6 +36,11 @@ thiserror.workspace = true
 
 # AGE
 age = { workspace = true, features = ["armor"], optional = true }
+
+# AWS_KMS
+aws-arn = { workspace = true, optional = true }
+aws-sdk-kms = { workspace = true, optional = true }
+tokio = { workspace = true, features = ["full"], optional = true }
 
 # YAML
 serde_yaml = { workspace = true, optional = true }

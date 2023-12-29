@@ -4,6 +4,8 @@ members = [ "crates/*" ]
 
 [workspace.dependencies]
 age = "0.9"
+aws-sdk-kms = { version = "1.9", features = ["behavior-version-latest"] }
+aws-arn = "0.3"
 anyhow = "1"
 aes-gcm = { version = "0.10", features = ["std"] }
 base64 = "0.21"
@@ -26,6 +28,7 @@ serde_json = "1"
 sha2 = "0.10"
 strum = { version = "0.25", features = ["derive"] }
 textwrap = "0.16"
+tokio = "1"
 thiserror = "1"
 
 [patch.crates-io]

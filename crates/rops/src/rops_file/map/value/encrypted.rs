@@ -162,7 +162,7 @@ mod tests {
         #[test]
         fn disallows_cipher_name_mismatch() {
             let parse_error = EncryptedRopsValue::<AES256GCM>::mock_display()
-                .replace(StubCipher::NAME, "gibberish")
+                .replace(AES256GCM::NAME, "gibberish")
                 .parse::<EncryptedRopsValue<AES256GCM>>()
                 .unwrap_err();
             assert!(matches!(parse_error, EncryptedRopsValueFromStrError::InvalidCipher(_, _)))

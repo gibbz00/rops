@@ -10,6 +10,6 @@ pub struct DisplayTestUtils;
 
 impl DisplayTestUtils {
     pub fn assert_display<T: MockTestUtil + Display + MockDisplayTestUtil + PartialEq>() {
-        assert_eq!(T::mock_display(), T::mock().to_string())
+        pretty_assertions::assert_eq!(T::mock_display(), T::mock().to_string())
     }
 }
