@@ -75,7 +75,7 @@ The `mac_only_encrypted` metadata boolean can be enabled to allow for such unaut
 - [ ] `azure_kv`
 - [ ] `hashicorp_kv`
 
-Asymmetric encryption schemes require only the key id (i.e. public key) for the first encryption whilst symmetric require both key id and private key up front.
+Asymmetric encryption schemes require only the key id (i.e. public key) for the first encryption whilst symmetric schemes require both key id and private key up front.
 
 [^1]: AWS KMS effectively becomes a symmetric encryption scheme when it requires private credentials to a remote encryption service, even if that service uses asymmetric encryption internally.
 
@@ -97,10 +97,17 @@ All integrations also support providing multiple keys through a comma separated 
 
 #### Default key file locations
 
-| Integration  | Windows                       | MacOS                                                 | Linux                              | Format                     |
-| ---          | ---                           | ---                                                   | ---                                | ---                        |
-| age          | `%AppData%\rops\age\keys.txt` | `$HOME/Library/Application Support/rops/age/keys.txt` | $XDG_CONFIG_HOME/rops/age/keys.txt | Per newline, `# Comments`. |
-| aws_kms      | `X`                           | `X`                                                   | `X`                                | `X`                        |
+| Integration  | Windows                          | MacOS                                                 | Linux                                | Format                                                                                                                    |
+| ---          | ---                              | ---                                                   | ---                                  | ---                                                                                                                       |
+| age          | `%AppData%\rops\age\keys.txt`    | `$HOME/Library/Application Support/rops/age/keys.txt` | `$XDG_CONFIG_HOME/rops/age/keys.txt` | Per newline, `# Comments`.                                                                                                |
+| aws_kms      | `%UserProfile%\.aws\credentials` | `$HOME/.aws/credentials`                              | `$HOME/.aws/credentials`             | [Reference](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-files.html#cli-configure-files-format-profile) |
+
+#### Key file location environment variable overrides
+
+| Integration  | Rops                    | Fallback                      |
+| ---          | ---                     | ---                           |
+| age          | `ROPS_AGE_KEY_FILE`     | `AWS_SHARED_CREDENTIALS_FILE` |
+| aws_kms      | `ROPS_AWS_KMS_KEY_FILE` | None                          |
 
 #### Integration sub-features
 
@@ -119,6 +126,7 @@ All integrations also support providing multiple keys through a comma separated 
   - [ ] By key file location.
     - [ ] Specify with a `--key-file INTEGRATION PATH` flag.
     - [ ] Specify with a `$ROPS_INTEGRATION_KEY_FILE` environment variable.
+      - [ ] Official as fallback.
     - [ ] Specified in the `.rops.yaml` config.
     - [ ] Built-in default location.
   - [ ] In the `.rops.yaml` config.
