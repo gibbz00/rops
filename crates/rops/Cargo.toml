@@ -15,7 +15,12 @@ aes-gcm = ["dep:aes-gcm"]
 # Hashers
 sha2 = ["dep:sha2"]
 # Test utils
-test-utils = ["dep:pretty_assertions", "dep:once_cell", "dep:indoc", "dep:textwrap"]
+test-utils = [
+  "dep:pretty_assertions",
+  "dep:once_cell",
+  "dep:indoc",
+  "dep:textwrap",
+]
 
 [dependencies]
 anyhow.workspace = true

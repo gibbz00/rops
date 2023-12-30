@@ -8,8 +8,8 @@ env:
   CARGO_TERM_COLOR: always
   RUST_BACKTRACE: full
 jobs:
-  format:
-    name: Format
+  cargo_fmt:
+    name: Cargo format
     runs-on: ubuntu-latest
     steps:
       - name: Checkout sources
@@ -18,6 +18,18 @@ jobs:
         uses: ./.github/actions/build_setup
       - name: cargo fmt
         run: cargo fmt --all -- --check
+  toml_validation:
+    name: Toml validation
+    runs-on: ubuntu-latest
+    container:
+      image: tamasfe/taplo:0.8.0
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v4
+      - name: taplo lint
+        run: taplo lint
+      - name: taplo fmt
+        run: taplo fmt --check --diff
   test:
     name: Test
     runs-on: ubuntu-latest
