@@ -81,26 +81,26 @@ Asymmetric encryption schemes require only the key id (i.e. public key) for the 
 
 #### Integration key id string:
 
-Integration  | Syntax                    | Example                                                                                |
----          |                           | ---                                                                                    |
-age          | <age_recipient>           | `age1se5ghfycr4n8kcwc3qwf234ymvmr2lex2a99wh8gpfx97glwt9hqch4569`                       |
-aws_kms      | `<profile>.<aws_key_arn>` | `default.arn:aws:kms:eu-north-1:822284028627:key/029dba6d-60de-4364-ac5c-cbdd284acd0a` |
+| Integration  | Syntax                    | Example                                                                                |
+| ---          | ---                       | ---                                                                                    |
+| age          | <age_recipient>           | `age1se5ghfycr4n8kcwc3qwf234ymvmr2lex2a99wh8gpfx97glwt9hqch4569`                       |
+| aws_kms      | `<profile>.<aws_key_arn>` | `default.arn:aws:kms:eu-north-1:822284028627:key/029dba6d-60de-4364-ac5c-cbdd284acd0a` |
 
 #### Integration private key environment variables:
 
-Integration  | Name              | Value syntax                                            | Example                                                                                 |
----          | ---               |                                                         | ---                                                                                     |
-age          | ROPS_AGE          | <age_secret_key>                                        | `ROPS_AGE='AGE-SECRET-KEY-1CZG0RPQJNDZWZMRMJLNYSF6H00WK0ECYAVE83ALFC2KE53WJ2FRSNZ8GCL'` |
-aws_kms      | ROPS_AWS_KMS      | `<profile>.<aws_access_key_id>.<aws_secret_access_key>` | `ROPS_AWS_KMS='default.AKIAXXXXXXXXXXXXXXL2.BRZXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXigu'`  |
+| Integration  | Name              | Value syntax                                            | Example                                                                                 |
+| ---          | ---               | ---                                                     | ---                                                                                     |
+| age          | ROPS_AGE          | <age_secret_key>                                        | `ROPS_AGE='AGE-SECRET-KEY-1CZG0RPQJNDZWZMRMJLNYSF6H00WK0ECYAVE83ALFC2KE53WJ2FRSNZ8GCL'` |
+| aws_kms      | ROPS_AWS_KMS      | `<profile>.<aws_access_key_id>.<aws_secret_access_key>` | `ROPS_AWS_KMS='default.AKIAXXXXXXXXXXXXXXL2.BRZXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXigu'`  |
 
 All integrations also support providing multiple keys through a comma separated list, e.g. `ROPS_INTEGRATION='key1,key2'`.
 
 #### Default key file locations
 
-Integration  | Windows                       | MacOS                                                 | Linux                              | Format                     |
----          | ---                           | ---                                                   | ---                                | ---                        |
-age          | `%AppData%\rops\age\keys.txt` | `$HOME/Library/Application Support/rops/age/keys.txt` | $XDG_CONFIG_HOME/rops/age/keys.txt | Per newline, `# Comments`. |
-aws_kms      | `X`                           | `X`                                                   | `X`                                | `X`                        |
+| Integration  | Windows                       | MacOS                                                 | Linux                              | Format                     |
+| ---          | ---                           | ---                                                   | ---                                | ---                        |
+| age          | `%AppData%\rops\age\keys.txt` | `$HOME/Library/Application Support/rops/age/keys.txt` | $XDG_CONFIG_HOME/rops/age/keys.txt | Per newline, `# Comments`. |
+| aws_kms      | `X`                           | `X`                                                   | `X`                                | `X`                        |
 
 #### Integration sub-features
 
