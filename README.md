@@ -69,7 +69,7 @@ The `mac_only_encrypted` metadata boolean can be enabled to allow for such unaut
 ### Integrations:
 
 - [X] `age` - Asymmetric
-- [ ] `aws_kms` - Symmetric [^1]
+- [X] `aws_kms` - Symmetric [^1]
 - [ ] `pgp` - Awaiting status update for: [OpenPGP Crypto Refresh](https://datatracker.ietf.org/doc/draft-ietf-openpgp-crypto-refresh/)
 - [ ] `gcp_kms`
 - [ ] `azure_kv`
@@ -85,10 +85,6 @@ Integration  | Syntax                    | Example                              
 ---          |                           | ---                                                                                    |
 age          | <age_recipient>           | `age1se5ghfycr4n8kcwc3qwf234ymvmr2lex2a99wh8gpfx97glwt9hqch4569`                       |
 aws_kms      | `<profile>.<aws_key_arn>` | `default.arn:aws:kms:eu-north-1:822284028627:key/029dba6d-60de-4364-ac5c-cbdd284acd0a` |
-pgp          |                           | `TODO`                                                                                 |
-gcp_kms      |                           | `TODO`                                                                                 |
-azure_kv     |                           | `TODO`                                                                                 |
-hashicorp_kv |                           | `TODO`                                                                                 |
 
 #### Integration private key environment variables:
 
@@ -96,10 +92,6 @@ Integration  | Name              | Value syntax                                 
 ---          | ---               |                                                         | ---                                                                                     |
 age          | ROPS_AGE          | <age_secret_key>                                        | `ROPS_AGE='AGE-SECRET-KEY-1CZG0RPQJNDZWZMRMJLNYSF6H00WK0ECYAVE83ALFC2KE53WJ2FRSNZ8GCL'` |
 aws_kms      | ROPS_AWS_KMS      | `<profile>.<aws_access_key_id>.<aws_secret_access_key>` | `ROPS_AWS_KMS='default.AKIAXXXXXXXXXXXXXXL2.BRZXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXigu'`  |
-pgp          | ROPS_PGP          |                                                         | `ROPS_PGP='85D77543B3D624B63CEA9E6DBC17301B491B3F21'`                                   |
-gcp_kms      | ROPS_GCP_KMS      |                                                         | `ROPS_GCP_KMS='projects/my-project/locations/global/keyRings/sops/cryptoKeys/sops-key'` |
-azure_kv     | ROPS_AZURE_KV     |                                                         | `ROPS_AZURE_KV='https://sops.vault.azure.net/keys/sops-key/some-string'`                |
-hashicorp_kv | ROPS_HASHICORP_KV |                                                         | `ROPS_HASHICORP_KV='http://127.0.0.1:8200/v1/sops/keys/firstkey'`                       |
 
 All integrations also support providing multiple keys through a comma separated list, e.g. `ROPS_INTEGRATION='key1,key2'`.
 
@@ -108,11 +100,7 @@ All integrations also support providing multiple keys through a comma separated 
 Integration  | Windows                       | MacOS                                                 | Linux                              | Format                     |
 ---          | ---                           | ---                                                   | ---                                | ---                        |
 age          | `%AppData%\rops\age\keys.txt` | `$HOME/Library/Application Support/rops/age/keys.txt` | $XDG_CONFIG_HOME/rops/age/keys.txt | Per newline, `# Comments`. |
-pgp          | `X`                           | `X`                                                   | `X`                                | `X`                        |
 aws_kms      | `X`                           | `X`                                                   | `X`                                | `X`                        |
-gcp_kms      | `X`                           | `X`                                                   | `X`                                | `X`                        |
-azure_kv     | `X`                           | `X`                                                   | `X`                                | `X`                        |
-hashicorp_kv | `X`                           | `X`                                                   | `X`                                | `X`                        |
 
 #### Integration sub-features
 
@@ -121,13 +109,6 @@ hashicorp_kv | `X`                           | `X`                              
 - [ ] [Profiles](https://github.com/getsops/sops#27kms-aws-profiles)
 - [ ] [Roles](https://github.com/getsops/sops#28assuming-roles-and-using-kms-in-various-aws-accounts)
 - [ ] [Context](https://github.com/getsops/sops#29aws-kms-encryption-context)
-
-##### PGP
-
-- [ ] [Alternative executable](https://github.com/getsops/sops#212specify-a-different-gpg-executable)
-  - [ ] By flag.
-  - [ ] By env.
-  - [ ] By config.
 
 ### Key management
 
@@ -168,7 +149,7 @@ hashicorp_kv | `X`                           | `X`                              
 
 ### Misc
 
-  - [ ] [Sub-process secret passing](https://github.com/getsops/sops#218passing-secrets-to-other-processes)
+- [ ] [Sub-process secret passing](https://github.com/getsops/sops#218passing-secrets-to-other-processes)
 
 ### Preliminary non-goals
 
