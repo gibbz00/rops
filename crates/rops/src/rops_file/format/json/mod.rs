@@ -43,7 +43,7 @@ impl FileFormatMapAdapter for JsonMap<String, JsonValue> {
 impl FileFormatValueAdapter for JsonValue {
     fn decrypted_to_internal(self) -> Result<RopsTree<DecryptedMap>, FormatToInternalMapError> {
         Ok(match self {
-            JsonValue::Object(map) => RopsTree::Map(JsonMap::decrypted_to_internal(map, Self::decrypted_to_internal)?),
+            JsonValue::Object(map) => RopsTree::Map(JsonMap::decrypted_to_internal(map)?),
             JsonValue::Bool(boolean) => RopsTree::Leaf(RopsValue::Boolean(boolean)),
             JsonValue::String(string) => RopsTree::Leaf(RopsValue::String(string)),
             JsonValue::Number(number) => RopsTree::Leaf(helpers::to_internal_number(number)?),

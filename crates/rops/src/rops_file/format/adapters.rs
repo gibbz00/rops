@@ -46,15 +46,12 @@ where
 
     fn insert(&mut self, key: Self::Key, value: Self::Value);
 
-    fn decrypted_to_internal<F, S: RopsMapState>(self, recursive_value_fn: F) -> Result<RopsMap<S>, FormatToInternalMapError>
-    where
-        F: Fn(Self::Value) -> Result<RopsTree<S>, FormatToInternalMapError>,
-    {
+    fn decrypted_to_internal(self) -> Result<RopsMap<DecryptedMap>, FormatToInternalMapError> {
         let mut tree_map = IndexMap::default();
 
         for (format_key, format_value) in self {
             let key_string = format_key.validate()?;
-            tree_map.insert(key_string, recursive_value_fn(format_value)?);
+            tree_map.insert(key_string, Self::Value::decrypted_to_internal(format_value)?);
         }
 
         Ok(tree_map.into())

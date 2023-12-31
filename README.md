@@ -7,7 +7,7 @@
 
 * Full `sops` encrypted file compatibility. Decrypt any `sops` file using `rops` and vice versa.
 * Available as a rust library.
-* Be consistent in how credentials are used set and retrieved across integrations.
+* Be consistent in how credentials are used, set and retrieved across integrations.
 
 ### Non-Goals
 

@@ -62,7 +62,7 @@ impl FileFormatValueAdapter for YamlValue {
             // It can, however, deserialize manually added tags to encrypted documents,
             // so we could in theory keep the tags somewhere without breaking SOPS compatability.
             YamlValue::Tagged(tagged) => tagged.value.decrypted_to_internal()?,
-            YamlValue::Mapping(map) => RopsTree::Map(YamlMap::decrypted_to_internal(map, Self::decrypted_to_internal)?),
+            YamlValue::Mapping(map) => RopsTree::Map(YamlMap::decrypted_to_internal(map)?),
             YamlValue::Bool(boolean) => RopsTree::Leaf(RopsValue::Boolean(boolean)),
             YamlValue::String(string) => RopsTree::Leaf(RopsValue::String(string)),
             YamlValue::Number(number) => RopsTree::Leaf(helpers::to_internal_number(number)?),

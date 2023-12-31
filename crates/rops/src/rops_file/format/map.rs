@@ -55,8 +55,7 @@ impl<C: Cipher, F: FileFormat> RopsFileFormatMap<EncryptedMap<C>, F> {
 
 impl<F: FileFormat> RopsFileFormatMap<DecryptedMap, F> {
     pub fn to_internal(self) -> Result<RopsMap<DecryptedMap>, FormatToInternalMapError> {
-        self.into_inner_map()
-            .decrypted_to_internal(<F::Map as FileFormatMapAdapter>::Value::decrypted_to_internal)
+        self.into_inner_map().decrypted_to_internal()
     }
 }
 
