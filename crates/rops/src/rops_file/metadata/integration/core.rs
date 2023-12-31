@@ -15,7 +15,7 @@ pub struct IntegrationMetadata {
 }
 
 impl IntegrationMetadata {
-    pub fn add_integration_keys<I: Integration>(&mut self, key_ids: Vec<I::KeyId>, data_key: &DataKey) -> IntegrationResult<()> {
+    pub fn add_keys<I: Integration>(&mut self, key_ids: Vec<I::KeyId>, data_key: &DataKey) -> IntegrationResult<()> {
         key_ids
             .into_iter()
             .map(|key_id| I::Config::new(key_id))

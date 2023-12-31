@@ -53,9 +53,9 @@ impl<F: FileFormat> RopsFileBuilder<F> {
 
         let mut integration_metadata = IntegrationMetadata::default();
         #[cfg(feature = "age")]
-        integration_metadata.add_integration_keys::<AgeIntegration>(age_key_ids, &data_key)?;
+        integration_metadata.add_keys::<AgeIntegration>(age_key_ids, &data_key)?;
         #[cfg(feature = "aws-kms")]
-        integration_metadata.add_integration_keys::<AwsKmsIntegration>(aws_kms_key_ids, &data_key)?;
+        integration_metadata.add_keys::<AwsKmsIntegration>(aws_kms_key_ids, &data_key)?;
 
         let encrypted_metadata_result = RopsFileMetadata {
             intregation: integration_metadata,

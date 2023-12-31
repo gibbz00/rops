@@ -90,7 +90,7 @@ Asymmetric encryption schemes require only the key id (i.e. public key) for the 
 
 #### Integration private key string:
 
-| Integration  | Value format                                            | Example                                                                     |
+| Integration  | Syntax                                                  | Example                                                                     |
 | ---          | ---                                                     | ---                                                                         |
 | age          | <age_secret_key>                                        | `AGE-SECRET-KEY-1CZG0RPQJNDZWZMRMJLNYSF6H00WK0ECYAVE83ALFC2KE53WJ2FRSNZ8GC` |
 | aws_kms      | `<profile>.<aws_access_key_id>.<aws_secret_access_key>` | `default.AKIAXXXXXXXXXXXXXXL2.BRZXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXigu`     |
@@ -99,7 +99,7 @@ Private keys are retrieved by first checking the existence of their respective e
 
 ##### Supplying private keys by environment variables.
 
-Syntax is `ROPS_<INTEGRATION>='key1,key2'` where keys follow the aforementioned value format. For example:
+Syntax is `ROPS_<INTEGRATION>='key1,key2'` where keys follow the above syntax. For example:
 ```
 export ROPS_AWS_KMS='default.AKIAXXXXXXXXXXXXXXL2.BRZXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXigu'
 ```
