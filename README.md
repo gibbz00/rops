@@ -86,28 +86,51 @@ Asymmetric encryption schemes require only the key id (i.e. public key) for the 
 | age          | <age_recipient>           | `age1se5ghfycr4n8kcwc3qwf234ymvmr2lex2a99wh8gpfx97glwt9hqch4569`                       |
 | aws_kms      | `<profile>.<aws_key_arn>` | `default.arn:aws:kms:eu-north-1:822284028627:key/029dba6d-60de-4364-ac5c-cbdd284acd0a` |
 
-#### Integration private key environment variables:
+<!-- TODO: key-id specied in cli by --<integration> <key-id> or by creation rules -->
 
-| Integration  | Name              | Value syntax                                            | Example                                                                                 |
-| ---          | ---               | ---                                                     | ---                                                                                     |
-| age          | ROPS_AGE          | <age_secret_key>                                        | `ROPS_AGE='AGE-SECRET-KEY-1CZG0RPQJNDZWZMRMJLNYSF6H00WK0ECYAVE83ALFC2KE53WJ2FRSNZ8GCL'` |
-| aws_kms      | ROPS_AWS_KMS      | `<profile>.<aws_access_key_id>.<aws_secret_access_key>` | `ROPS_AWS_KMS='default.AKIAXXXXXXXXXXXXXXL2.BRZXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXigu'`  |
+#### Integration private key string:
 
-All integrations also support providing multiple keys through a comma separated list, e.g. `ROPS_INTEGRATION='key1,key2'`.
+| Integration  | Value format                                            | Example                                                                     |
+| ---          | ---                                                     | ---                                                                         |
+| age          | <age_secret_key>                                        | `AGE-SECRET-KEY-1CZG0RPQJNDZWZMRMJLNYSF6H00WK0ECYAVE83ALFC2KE53WJ2FRSNZ8GC` |
+| aws_kms      | `<profile>.<aws_access_key_id>.<aws_secret_access_key>` | `default.AKIAXXXXXXXXXXXXXXL2.BRZXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXigu`     |
 
-#### Default key file locations
+Private keys are retrieved by first checking the existence of their respective environment variables, and then by attempting to read their respective key files.
 
-| Integration  | Windows                          | MacOS                                                 | Linux                                | Format                                                                                                                    |
-| ---          | ---                              | ---                                                   | ---                                  | ---                                                                                                                       |
-| age          | `%AppData%\rops\age\keys.txt`    | `$HOME/Library/Application Support/rops/age/keys.txt` | `$XDG_CONFIG_HOME/rops/age/keys.txt` | Per newline, `# Comments`.                                                                                                |
-| aws_kms      | `%UserProfile%\.aws\credentials` | `$HOME/.aws/credentials`                              | `$HOME/.aws/credentials`             | [Reference](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-files.html#cli-configure-files-format-profile) |
+##### Supplying private keys by environment variables.
 
-#### Key file location environment variable overrides
+Syntax is `ROPS_<INTEGRATION>='key1,key2'` where keys follow the aforementioned value format. For example:
+```
+export ROPS_AWS_KMS='default.AKIAXXXXXXXXXXXXXXL2.BRZXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXigu'
+```
 
-| Integration  | Rops                    | Fallback                      |
-| ---          | ---                     | ---                           |
-| age          | `ROPS_AGE_KEY_FILE`     | `AWS_SHARED_CREDENTIALS_FILE` |
-| aws_kms      | `ROPS_AWS_KMS_KEY_FILE` | None                          |
+##### Supplying private key by default key files.
+
+Private keys can also be read from files, these reside by default in `<local_config_dir>/rops/<integration>_keys`. Each containing a *new-line* separated list of private keys following their respective formats.
+
+`<local_config_dir>` varies by platform and defaults to:
+
+| Platform | Value                                 | Example                                    |
+| ---      | ---                                   | ---                                        |
+| Linux    | `$XDG_CONFIG_HOME` or `$HOME/.config` | `/home/alice/.config`                      |
+| macOS    | `$HOME/Library/Application Support`   | `/Users/Alice/Library/Application Support` |
+| Windows  | `{FOLDERID_LocalAppData}`             | `C:\Users\Alice\AppData\Local`             |
+
+Linux users wishing to use Age could for example save a file in `$HOME/.config/rops/age_keys` containing:
+```
+AGE-SECRET-KEY-1VR0S4...KD8D
+AGE-SECRET-KEY-1GQ6XJ...DZ5W
+```
+(As opposed to setting `$ROPS_AGE=AGE-SECRET-KEY-1VR0S4...KD8D,AGE-SECRET-KEY-1GQ6XJ...DZ5W`.)
+
+##### TODO: Supplying private keys by integration key files.
+
+Many integrations already store their keys in a dedicated location. `rops` does not parse these files, but aims to so in the future:
+
+| Integration  | Windows                          | MacOS                    | Linux                    | Fallback                      | Format                                                                                                                    |
+| ---          | ---                              | ---                      | ---                      | ---                           | ---                                                                                                                       |
+| age          | N/A                              | N/A                      | N/A                      | N/A                           | N/A
+| aws_kms      | `%UserProfile%\.aws\credentials` | `$HOME/.aws/credentials` | `$HOME/.aws/credentials` | `AWS_SHARED_CREDENTIALS_FILE` | [Reference](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-files.html#cli-configure-files-format-profile) |
 
 #### Integration sub-features
 
@@ -119,20 +142,18 @@ All integrations also support providing multiple keys through a comma separated 
 
 ### Key management
 
-- Retrieval
-  - [ ] As an CLI argument.
+- Key id retrieval
+  - [ ] As a CLI argument.
+  - [ ] In the `.rops.yaml` config.
+    - [ ] Specify with a `--config/-c` flag.
+    - [ ] Specify with a `$ROPS_CONFIG` environment variable.
+- Private key retrieval
   - [X] By an environment variable.
     - [X] Multiple keys per variable.
   - [ ] By key file location.
     - [ ] Specify with a `--key-file INTEGRATION PATH` flag.
     - [ ] Specify with a `$ROPS_INTEGRATION_KEY_FILE` environment variable.
       - [ ] Official as fallback.
-    - [ ] Specified in the `.rops.yaml` config.
-    - [ ] Built-in default location.
-  - [ ] In the `.rops.yaml` config.
-    - [ ] Specify with a `--config/-c` flag.
-    - [ ] Specify with a `$ROPS_CONFIG` environment variable.
-    - [ ] Recursive directory traversal.
     - [ ] Built-in default location.
 - Changes
   - [ ] Rotate keys
@@ -146,6 +167,9 @@ All integrations also support providing multiple keys through a comma separated 
 
 ### `.rops.yaml` configuration
 
+- Find by: recursive directory traversal.
+  - [ ] Recursive directory traversal.
+  - [ ] Env variable directory traversal.
 - [ ] Regex based creation rules.
 - [ ] Available keys per rule.
 
@@ -175,6 +199,6 @@ All integrations also support providing multiple keys through a comma separated 
 
 - [Integrated secrets publishing](https://github.com/getsops/sops#219using-the-publish-command)
 
-- [Access logging](https://github.com/getsops/sops#216auditing) Better handled by the integrations?
+- [Remote key service](https://github.com/getsops/sops#215key-service) Possibly as a separate crate+binary conforming to [KMIP 2.1](https://en.wikipedia.org/wiki/Key_Management_Interoperability_Protocol) or higher.
 
-- [Remote key service](https://github.com/getsops/sops#215key-service)
+- [Access logging](https://github.com/getsops/sops#216auditing) Better handled by the respective integrations for now. Might become relevant if a `rops` key service is developed.
