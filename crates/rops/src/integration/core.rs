@@ -12,9 +12,9 @@ pub trait Integration: Sized {
         format!("ROPS_{}", Self::NAME.to_uppercase())
     }
 
-    fn private_key_strings_from_env() -> IntegrationResult<Vec<String>> {
+    fn retrieve_private_keys_from_env() -> IntegrationResult<Vec<Self::PrivateKey>> {
         match std::env::var(Self::private_key_env_var_name()) {
-            Ok(found_string) => Ok(found_string.split(',').map(ToString::to_string).collect()),
+            Ok(found_string) => found_string.split(',').map(Self::parse_private_key).collect::<Result<Vec<_>, _>>(),
             Err(env_var_error) => match env_var_error {
                 VarError::NotPresent => Ok(Vec::default()),
                 VarError::NotUnicode(os_str) => Err(IntegrationError::EnvVarNotUnicode(os_str)),
@@ -23,15 +23,12 @@ pub trait Integration: Sized {
     }
 
     fn retrieve_private_keys() -> IntegrationResult<Vec<Self::PrivateKey>> {
-        let mut private_key_strings = Vec::<String>::new();
+        let mut private_key_strings = Vec::<Self::PrivateKey>::new();
 
         // TODO: Expand key retrieval methods, see README.md
-        private_key_strings.append(&mut Self::private_key_strings_from_env()?);
+        private_key_strings.append(&mut Self::retrieve_private_keys_from_env()?);
 
-        private_key_strings
-            .into_iter()
-            .map(Self::parse_private_key)
-            .collect::<Result<Vec<_>, _>>()
+        Ok(private_key_strings)
     }
 
     fn parse_key_id(key_id_str: &str) -> IntegrationResult<Self::KeyId>;
@@ -65,7 +62,7 @@ mod tests {
 
         assert_eq!(
             &["key1", "key2"],
-            StubIntegration::private_key_strings_from_env().unwrap().as_slice()
+            StubIntegration::retrieve_private_keys_from_env().unwrap().as_slice()
         );
 
         std::env::remove_var(&var_name);

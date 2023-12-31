@@ -30,7 +30,7 @@ mod stub_integration {
     impl Integration for StubIntegration {
         const NAME: &'static str = "stub";
         type KeyId = ();
-        type PrivateKey = ();
+        type PrivateKey = String;
         type Config = StubIntegrationConfig;
 
         fn parse_key_id(_key_id_str: &str) -> IntegrationResult<Self::KeyId> {
