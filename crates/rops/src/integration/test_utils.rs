@@ -37,8 +37,8 @@ mod stub_integration {
             unimplemented!()
         }
 
-        fn parse_private_key(_private_key_str: impl AsRef<str>) -> IntegrationResult<Self::PrivateKey> {
-            unimplemented!()
+        fn parse_private_key(private_key_str: impl AsRef<str>) -> IntegrationResult<Self::PrivateKey> {
+            Ok(private_key_str.as_ref().to_string())
         }
 
         fn encrypt_data_key(_key_id: &Self::KeyId, _data_key: &DataKey) -> IntegrationResult<String> {

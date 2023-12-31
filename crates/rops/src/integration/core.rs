@@ -12,9 +12,9 @@ pub trait Integration: Sized {
         format!("ROPS_{}", Self::NAME.to_uppercase())
     }
 
-    fn retrieve_private_keys_from_env() -> IntegrationResult<Vec<Self::PrivateKey>> {
+    fn private_keys_from_env() -> IntegrationResult<Vec<Self::PrivateKey>> {
         match std::env::var(Self::private_key_env_var_name()) {
-            Ok(found_string) => found_string.split(',').map(Self::parse_private_key).collect::<Result<Vec<_>, _>>(),
+            Ok(found_string) => found_string.split(',').map(Self::parse_private_key).collect(),
             Err(env_var_error) => match env_var_error {
                 VarError::NotPresent => Ok(Vec::default()),
                 VarError::NotUnicode(os_str) => Err(IntegrationError::EnvVarNotUnicode(os_str)),
@@ -22,11 +22,31 @@ pub trait Integration: Sized {
         }
     }
 
+    fn private_keys_from_default_key_file() -> IntegrationResult<Vec<Self::PrivateKey>> {
+        // TODO: check if env override is set
+        let integration_key_file = directories::BaseDirs::new()
+            .ok_or(IntegrationError::NoHomeDir)?
+            .config_local_dir()
+            .join("rops")
+            .join(format!("{}_keys", Self::NAME));
+
+        match integration_key_file.exists() {
+            true => std::fs::read_to_string(integration_key_file)?
+                .lines()
+                .map(|line| line.trim())
+                .filter(|line| !line.is_empty())
+                .map(Self::parse_private_key)
+                .collect(),
+            false => Ok(Vec::new()),
+        }
+    }
+
     fn retrieve_private_keys() -> IntegrationResult<Vec<Self::PrivateKey>> {
         let mut private_key_strings = Vec::<Self::PrivateKey>::new();
 
         // TODO: Expand key retrieval methods, see README.md
-        private_key_strings.append(&mut Self::retrieve_private_keys_from_env()?);
+        private_key_strings.append(&mut Self::private_keys_from_env()?);
+        private_key_strings.append(&mut Self::private_keys_from_default_key_file()?);
 
         Ok(private_key_strings)
     }
@@ -60,11 +80,40 @@ mod tests {
         let var_name = StubIntegration::private_key_env_var_name();
         std::env::set_var(&var_name, "key1,key2");
 
-        assert_eq!(
-            &["key1", "key2"],
-            StubIntegration::retrieve_private_keys_from_env().unwrap().as_slice()
-        );
+        assert_eq!(&["key1", "key2"], StubIntegration::private_keys_from_env().unwrap().as_slice());
 
         std::env::remove_var(&var_name);
+    }
+
+    #[test]
+    fn gets_private_key_from_default_key_file() {
+        let rops_config_dir = directories::BaseDirs::new().unwrap().config_local_dir().join("rops");
+
+        let created_config_dir = match rops_config_dir.is_dir() {
+            true => false,
+            false => {
+                std::fs::create_dir_all(&rops_config_dir).unwrap();
+                true
+            }
+        };
+
+        let stub_keys_path = rops_config_dir.join("stub_keys");
+
+        let contents = "
+            key1
+            key2
+        ";
+
+        std::fs::write(&stub_keys_path, contents).unwrap();
+
+        assert_eq!(
+            &["key1", "key2"],
+            StubIntegration::private_keys_from_default_key_file().unwrap().as_slice()
+        );
+
+        match created_config_dir {
+            true => std::fs::remove_dir_all(rops_config_dir).unwrap(),
+            false => std::fs::remove_file(stub_keys_path).unwrap(),
+        }
     }
 }

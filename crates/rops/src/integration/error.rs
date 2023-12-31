@@ -21,4 +21,6 @@ pub enum IntegrationError {
     Utf8Error(#[from] std::string::FromUtf8Error),
     #[error("matched environment variable not valid UTF-8: {0:?}")]
     EnvVarNotUnicode(OsString),
+    #[error("unable to retrieve any home directory from the operating system")]
+    NoHomeDir,
 }

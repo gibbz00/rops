@@ -11,6 +11,7 @@ aes-gcm = { version = "0.10", features = ["std"] }
 base64 = "0.21"
 chrono = { version = "0.4", features = ["serde"] }
 derive_more = "0.99"
+directories = "5"
 generic-array = "0.14"
 hex = "0.4"
 impl-tools = "0.10"
