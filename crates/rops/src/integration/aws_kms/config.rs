@@ -11,6 +11,10 @@ pub struct AwsKmsConfig {
 impl IntegrationConfig<AwsKmsIntegration> for AwsKmsConfig {
     const INCLUDE_DATA_KEY_CREATED_AT: bool = true;
 
+    fn new(key_id: <AwsKmsIntegration as Integration>::KeyId) -> Self {
+        Self { key_id }
+    }
+
     fn key_id(&self) -> &<AwsKmsIntegration as Integration>::KeyId {
         &self.key_id
     }

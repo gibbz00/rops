@@ -19,6 +19,10 @@ impl DataKey {
         DataKeySize::USIZE
     }
 
+    pub fn new() -> Self {
+        DataKey(RngKey::new())
+    }
+
     pub fn empty() -> Self {
         Self(RngKey::empty())
     }

@@ -1,5 +1,3 @@
-use std::{fmt::Display, str::FromStr};
-
 use crate::*;
 
 #[derive(Clone, Copy)]
@@ -9,13 +7,13 @@ pub struct MacOnlyEncryptedConfig<'a> {
 }
 
 impl MacOnlyEncryptedConfig<'_> {
-    pub fn new<'a, S: RopsMetadataState>(metadata: &'a RopsFileMetadata<S>) -> MacOnlyEncryptedConfig<'a>
-    where
-        <S::Mac as FromStr>::Err: Display,
-    {
+    pub fn new<'a>(
+        mac_only_encrypted: Option<bool>,
+        partial_encryption: Option<&'a PartialEncryptionConfig>,
+    ) -> MacOnlyEncryptedConfig<'a> {
         MacOnlyEncryptedConfig::<'a> {
-            mac_only_encrypted: metadata.mac_only_encrypted.unwrap_or_default(),
-            resolved_partial_encryption: metadata.partial_encryption.as_ref().into(),
+            mac_only_encrypted: mac_only_encrypted.unwrap_or_default(),
+            resolved_partial_encryption: partial_encryption.into(),
         }
     }
 }

@@ -35,6 +35,12 @@ impl FromStr for AwsKeyId {
     }
 }
 
+impl IntegrationKeyId<AwsKmsIntegration> for AwsKeyId {
+    fn append_to_builder<F: FileFormat>(self, rops_file_builder: &mut RopsFileBuilder<F>) {
+        rops_file_builder.aws_kms_key_ids.push(self)
+    }
+}
+
 #[cfg(feature = "test-utils")]
 mod mock {
     use super::*;

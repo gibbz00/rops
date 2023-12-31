@@ -18,30 +18,6 @@ where
     pub metadata: RopsFileMetadata<S::MetadataState>,
 }
 
-#[derive(Debug, Error)]
-pub enum RopsFileEncryptError {
-    #[error("invalid decrypted map format: {0}")]
-    FormatToIntenrnalMap(#[from] FormatToInternalMapError),
-    #[error("unable to retrieve data key: {0}")]
-    DataKeyRetrieval(#[from] RopsFileMetadataDataKeyRetrievalError),
-    #[error("unable to encrypt map: {0}")]
-    MapEncryption(anyhow::Error),
-    #[error("unable to encrypt metadata: {0}")]
-    MetadataEncryption(anyhow::Error),
-}
-
-#[derive(Debug, Error)]
-pub enum RopsFileDecryptError {
-    #[error("invalid encrypted map format; {0}")]
-    FormatToIntenrnalMap(#[from] FormatToInternalMapError),
-    #[error("unable to decrypt map value: {0}")]
-    DecryptValue(#[from] DecryptRopsValueError),
-    #[error("unable to decrypt file metadata")]
-    Metadata(#[from] RopsFileMetadataDecryptError),
-    #[error("invalid MAC, computed {0}, stored {0}")]
-    MacMismatch(String, String),
-}
-
 impl<S: RopsFileState, F: FileFormat> RopsFile<S, F>
 where
     <<S::MetadataState as RopsMetadataState>::Mac as FromStr>::Err: Display,
@@ -88,7 +64,7 @@ impl<H: Hasher, F: FileFormat> RopsFile<DecryptedFile<H>, F> {
             .to_internal()?
             .encrypt::<C>(&data_key, self.metadata.partial_encryption.as_ref());
         let encrypted_metadata = self.metadata.encrypt::<C>(&data_key);
-        Self::file_from_parts_results(encrypted_map, encrypted_metadata)
+        RopsFile::from_parts_results(encrypted_map, encrypted_metadata)
     }
 
     pub fn encrypt_with_saved_parameters<C: Cipher, Fo: FileFormat>(
@@ -104,16 +80,7 @@ impl<H: Hasher, F: FileFormat> RopsFile<DecryptedFile<H>, F> {
                 .encrypt_with_saved_nonces(&data_key, self.metadata.partial_encryption.as_ref(), &saved_map_nonces);
 
         let encrypted_metadata = self.metadata.encrypt_with_saved_mac_nonce::<C>(&data_key, saved_mac_nonce);
-        Self::file_from_parts_results(encrypted_map, encrypted_metadata)
-    }
-
-    fn file_from_parts_results<C: Cipher, Fo: FileFormat>(
-        encrypted_map_result: Result<RopsMap<EncryptedMap<C>>, C::Error>,
-        encrypted_metadata_result: Result<RopsFileMetadata<EncryptedMetadata<C, H>>, C::Error>,
-    ) -> Result<RopsFile<EncryptedFile<C, H>, Fo>, RopsFileEncryptError> {
-        let encrypted_map = encrypted_map_result.map_err(|error| RopsFileEncryptError::MetadataEncryption(error.into()))?;
-        let encrypted_metadata = encrypted_metadata_result.map_err(|error| RopsFileEncryptError::MetadataEncryption(error.into()))?;
-        Ok(RopsFile::new(encrypted_map, encrypted_metadata))
+        RopsFile::from_parts_results(encrypted_map, encrypted_metadata)
     }
 }
 
@@ -154,7 +121,13 @@ impl<C: Cipher, F: FileFormat, H: Hasher> RopsFile<EncryptedFile<C, H>, F> {
         decrypted_map: &RopsMap<DecryptedMap>,
         decrypted_metadata: &RopsFileMetadata<DecryptedMetadata<H>>,
     ) -> Result<(), RopsFileDecryptError> {
-        let computed_mac = Mac::<H>::compute(MacOnlyEncryptedConfig::new(decrypted_metadata), decrypted_map);
+        let computed_mac = Mac::<H>::compute(
+            MacOnlyEncryptedConfig::new(
+                decrypted_metadata.mac_only_encrypted,
+                decrypted_metadata.partial_encryption.as_ref(),
+            ),
+            decrypted_map,
+        );
         let stored_mac = &decrypted_metadata.mac;
 
         match &computed_mac != stored_mac {
@@ -162,9 +135,18 @@ impl<C: Cipher, F: FileFormat, H: Hasher> RopsFile<EncryptedFile<C, H>, F> {
             false => Ok(()),
         }
     }
+
+    pub(crate) fn from_parts_results(
+        encrypted_map_result: Result<RopsMap<EncryptedMap<C>>, C::Error>,
+        encrypted_metadata_result: Result<RopsFileMetadata<EncryptedMetadata<C, H>>, C::Error>,
+    ) -> Result<Self, RopsFileEncryptError> {
+        let encrypted_map = encrypted_map_result.map_err(|error| RopsFileEncryptError::MetadataEncryption(error.into()))?;
+        let encrypted_metadata = encrypted_metadata_result.map_err(|error| RopsFileEncryptError::MetadataEncryption(error.into()))?;
+        Ok(RopsFile::new(encrypted_map, encrypted_metadata))
+    }
 }
 
-// Reduntant to test combinations of file formats, integrations, ciphers and hashers if the
+// Redundant to test combinations of file formats, integrations, ciphers and hashers if the
 // respective trait implementations are well tested.
 #[cfg(all(test, feature = "yaml", feature = "age", feature = "aes-gcm", feature = "sha2"))]
 mod tests {

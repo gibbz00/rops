@@ -29,7 +29,7 @@ mod stub_integration {
 
     impl Integration for StubIntegration {
         const NAME: &'static str = "stub";
-        type KeyId = ();
+        type KeyId = String;
         type PrivateKey = String;
         type Config = StubIntegrationConfig;
 
@@ -48,6 +48,16 @@ mod stub_integration {
         fn decrypt_data_key(_key_id: &Self::KeyId, _encrypted_data_key: &str) -> IntegrationResult<Option<DataKey>> {
             unimplemented!()
         }
+
+        fn append_to_metadata(_integration_metadata: &mut IntegrationMetadata, _integration_metadata_unit: IntegrationMetadataUnit<Self>) {
+            unimplemented!()
+        }
+    }
+
+    impl IntegrationKeyId<StubIntegration> for String {
+        fn append_to_builder<F: FileFormat>(self, _rops_file_builder: &mut RopsFileBuilder<F>) {
+            unimplemented!()
+        }
     }
 
     #[derive(Debug, PartialEq)]
@@ -56,8 +66,12 @@ mod stub_integration {
     impl IntegrationConfig<StubIntegration> for StubIntegrationConfig {
         const INCLUDE_DATA_KEY_CREATED_AT: bool = false;
 
+        fn new(key_id: <StubIntegration as Integration>::KeyId) -> Self {
+            Self(key_id)
+        }
+
         fn key_id(&self) -> &<StubIntegration as Integration>::KeyId {
-            &()
+            &self.0
         }
     }
 }

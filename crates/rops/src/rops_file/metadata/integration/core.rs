@@ -15,6 +15,16 @@ pub struct IntegrationMetadata {
 }
 
 impl IntegrationMetadata {
+    pub fn add_integration_keys<I: Integration>(&mut self, key_ids: Vec<I::KeyId>, data_key: &DataKey) -> IntegrationResult<()> {
+        key_ids
+            .into_iter()
+            .map(|key_id| I::Config::new(key_id))
+            .map(|integration_config| IntegrationMetadataUnit::<I>::new(integration_config, data_key))
+            .try_for_each(|integation_metada_unit_result| {
+                integation_metada_unit_result.map(|integration_metadata| I::append_to_metadata(self, integration_metadata))
+            })
+    }
+
     pub fn find_data_key(&self) -> IntegrationResult<Option<DataKey>> {
         // In order of what is assumed to be quickest:
 

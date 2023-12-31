@@ -1,6 +1,9 @@
 mod core;
 pub use core::{Integration, IntegrationConfig};
 
+mod key_id;
+pub use key_id::IntegrationKeyId;
+
 mod error;
 pub use error::{IntegrationError, IntegrationResult};
 

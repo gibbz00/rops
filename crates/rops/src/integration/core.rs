@@ -6,7 +6,7 @@ const ROPS_APPLICATION_NAME: &str = "rops";
 
 pub trait Integration: Sized {
     const NAME: &'static str;
-    type KeyId;
+    type KeyId: IntegrationKeyId<Self>;
     type PrivateKey;
     type Config: IntegrationConfig<Self>;
 
@@ -66,10 +66,14 @@ pub trait Integration: Sized {
     fn encrypt_data_key(key_id: &Self::KeyId, data_key: &DataKey) -> IntegrationResult<String>;
 
     fn decrypt_data_key(key_id: &Self::KeyId, encrypted_data_key: &str) -> IntegrationResult<Option<DataKey>>;
+
+    fn append_to_metadata(integration_metadata: &mut IntegrationMetadata, integration_metadata_unit: IntegrationMetadataUnit<Self>);
 }
 
 pub trait IntegrationConfig<I: Integration>: Debug + PartialEq {
     const INCLUDE_DATA_KEY_CREATED_AT: bool;
+
+    fn new(key_id: I::KeyId) -> Self;
 
     fn key_id(&self) -> &I::KeyId;
 }

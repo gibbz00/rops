@@ -71,6 +71,10 @@ impl Integration for AwsKmsIntegration {
             .map(Some)
             .map_err(|error| IntegrationError::Decryption(error.into()))
     }
+
+    fn append_to_metadata(integration_metadata: &mut IntegrationMetadata, integration_metadata_unit: IntegrationMetadataUnit<Self>) {
+        integration_metadata.kms.push(integration_metadata_unit)
+    }
 }
 
 fn tokio_blocking<O>(future: impl Future<Output = O>) -> O {

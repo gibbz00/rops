@@ -76,6 +76,10 @@ impl Integration for AgeIntegration {
 
         Ok(Some(decrypted_data_key_buffer))
     }
+
+    fn append_to_metadata(integration_metadata: &mut IntegrationMetadata, integration_metadata_unit: IntegrationMetadataUnit<Self>) {
+        integration_metadata.age.push(integration_metadata_unit)
+    }
 }
 
 mod error {
@@ -90,6 +94,16 @@ mod error {
     impl From<age::DecryptError> for IntegrationError {
         fn from(decrypt_error: age::DecryptError) -> Self {
             Self::Decryption(decrypt_error.into())
+        }
+    }
+}
+
+mod key_id {
+    use super::*;
+
+    impl IntegrationKeyId<AgeIntegration> for age::x25519::Recipient {
+        fn append_to_builder<F: FileFormat>(self, rops_file_builder: &mut RopsFileBuilder<F>) {
+            rops_file_builder.age_key_ids.push(self)
         }
     }
 }
@@ -111,6 +125,10 @@ mod config {
 
     impl IntegrationConfig<AgeIntegration> for AgeConfig {
         const INCLUDE_DATA_KEY_CREATED_AT: bool = false;
+
+        fn new(key_id: <AgeIntegration as Integration>::KeyId) -> Self {
+            Self { key_id }
+        }
 
         fn key_id(&self) -> &<AgeIntegration as Integration>::KeyId {
             &self.key_id
