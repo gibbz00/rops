@@ -65,3 +65,7 @@ pretty_assertions = { workspace = true, optional = true }
 once_cell = { workspace = true, optional = true }
 textwrap = { workspace = true, optional = true }
 indoc = { workspace = true, optional = true }
+
+[dev-dependencies]
+serial_test.workspace = true
+tempfile.workspace = true

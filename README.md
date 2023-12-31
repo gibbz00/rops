@@ -123,6 +123,10 @@ AGE-SECRET-KEY-1GQ6XJ...DZ5W
 ```
 (As opposed to setting `$ROPS_AGE=AGE-SECRET-KEY-1VR0S4...KD8D,AGE-SECRET-KEY-1GQ6XJ...DZ5W`.)
 
+###### Overriding default key file location.
+
+Default key file location can be overridden by setting a `$ROPS_<INTEGRATION>_KEY_FILE=<path>` environment variable, say `$ROPS_AGE_KEY_FILE=/tmp/temp_age_keys`.
+
 ##### TODO: Supplying private keys by integration key files.
 
 Many integrations already store their keys in a dedicated location. `rops` does not parse these files, but aims to so in the future:
