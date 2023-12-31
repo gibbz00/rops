@@ -181,7 +181,7 @@ mod metadata {
                     {{
                       \"recipient\": \"{}\"
                     }}",
-                    AgeIntegration::mock_key_id_str().as_ref()
+                    <AgeIntegration as Integration>::KeyId::mock_display()
                 }
             }
         }

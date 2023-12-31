@@ -106,6 +106,23 @@ mod key_id {
             rops_file_builder.age_key_ids.push(self)
         }
     }
+
+    #[cfg(feature = "test-utils")]
+    mod mock {
+        use super::*;
+
+        impl MockDisplayTestUtil for age::x25519::Recipient {
+            fn mock_display() -> String {
+                "age1se5ghfycr4n8kcwc3qwf234ymvmr2lex2a99wh8gpfx97glwt9hqch4569".to_string()
+            }
+        }
+
+        impl MockTestUtil for age::x25519::Recipient {
+            fn mock() -> Self {
+                Self::mock_display().parse().unwrap()
+            }
+        }
+    }
 }
 
 pub use config::AgeConfig;
@@ -142,7 +159,7 @@ mod config {
         impl MockTestUtil for AgeConfig {
             fn mock() -> Self {
                 Self {
-                    key_id: AgeIntegration::mock_key_id(),
+                    key_id: MockTestUtil::mock(),
                 }
             }
         }
@@ -154,10 +171,6 @@ mod mock {
     use super::*;
 
     impl IntegrationTestUtils for AgeIntegration {
-        fn mock_key_id_str() -> impl AsRef<str> {
-            "age1se5ghfycr4n8kcwc3qwf234ymvmr2lex2a99wh8gpfx97glwt9hqch4569"
-        }
-
         fn mock_private_key_str() -> impl AsRef<str> {
             "AGE-SECRET-KEY-1EQUCGFZH8UZKSZ0Z5N5T234YRNDT4U9H7QNYXWRRNJYDDVXE6FWSCPGNJ7"
         }

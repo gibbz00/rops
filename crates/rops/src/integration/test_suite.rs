@@ -7,7 +7,7 @@ macro_rules! generate_integration_test_suite {
 
         #[test]
         fn parses_key_id() {
-            $integration::parse_key_id($integration::mock_key_id_str().as_ref()).unwrap();
+            $integration::parse_key_id(&<$integration as Integration>::KeyId::mock_display()).unwrap();
         }
 
         #[test]
@@ -15,8 +15,9 @@ macro_rules! generate_integration_test_suite {
             $integration::set_mock_private_key_env_var();
 
             let expected_data_key = DataKey::mock();
-            let encrypted_data_key = $integration::encrypt_data_key(&$integration::mock_key_id(), &expected_data_key).unwrap();
-            let found_data_key = $integration::decrypt_data_key(&$integration::mock_key_id(), &encrypted_data_key)
+            let encrypted_data_key =
+                $integration::encrypt_data_key(&<$integration as Integration>::KeyId::mock(), &expected_data_key).unwrap();
+            let found_data_key = $integration::decrypt_data_key(&<$integration as Integration>::KeyId::mock(), &encrypted_data_key)
                 .unwrap()
                 .unwrap();
 
@@ -29,9 +30,12 @@ macro_rules! generate_integration_test_suite {
 
             assert_eq!(
                 DataKey::mock(),
-                $integration::decrypt_data_key(&$integration::mock_key_id(), $integration::mock_encrypted_data_key_str())
-                    .unwrap()
-                    .unwrap()
+                $integration::decrypt_data_key(
+                    &<$integration as Integration>::KeyId::mock(),
+                    $integration::mock_encrypted_data_key_str()
+                )
+                .unwrap()
+                .unwrap()
             );
         }
 

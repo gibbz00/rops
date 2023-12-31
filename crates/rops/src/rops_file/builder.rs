@@ -84,7 +84,7 @@ mod tests {
             RopsFileBuilder::<YamlFileFormat>::new(RopsFileFormatMap::<DecryptedMap, YamlFileFormat>::mock().into_inner_map())
                 .with_partial_encryption(MockTestUtil::mock())
                 .mac_only_encrypted()
-                .add_integration_key::<AgeIntegration>(AgeIntegration::mock_key_id())
+                .add_integration_key::<AgeIntegration>(MockTestUtil::mock())
                 .encrypt::<AES256GCM, SHA512>()
                 .unwrap()
                 .decrypt::<YamlFileFormat>()

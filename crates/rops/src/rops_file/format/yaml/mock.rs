@@ -166,7 +166,7 @@ mod metadata {
         #[cfg(feature = "age")]
         impl MockFileFormatUtil<YamlFileFormat> for AgeConfig {
             fn mock_format_display() -> String {
-                format!("recipient: {}", AgeIntegration::mock_key_id_str().as_ref())
+                format!("recipient: {}", <AgeIntegration as Integration>::KeyId::mock_display())
             }
         }
 

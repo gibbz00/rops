@@ -109,10 +109,6 @@ mod mock {
     use super::*;
 
     impl IntegrationTestUtils for AwsKmsIntegration {
-        fn mock_key_id_str() -> impl AsRef<str> {
-            AwsKeyId::mock_display()
-        }
-
         fn mock_private_key_str() -> impl AsRef<str> {
             AwsPrivateKey::mock_display()
         }
