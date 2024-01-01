@@ -71,7 +71,7 @@ mod yaml_aes_gcm_sha2_parity_check {
                     .decrypt_and_save_parameters::<YamlFileFormat>()
                     .unwrap();
 
-                pretty_assertions::assert_eq!(sops_file_plaintext, decrypted_rops_file.map.to_string());
+                pretty_assertions::assert_eq!(sops_file_plaintext, decrypted_rops_file.map().to_string());
 
                 pretty_assertions::assert_eq!(
                     sops_file,

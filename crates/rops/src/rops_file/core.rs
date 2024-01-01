@@ -13,9 +13,9 @@ where
     <<S::MetadataState as RopsMetadataState>::Mac as FromStr>::Err: Display,
 {
     #[serde(flatten)]
-    pub map: RopsFileFormatMap<S::MapState, F>,
+    map: RopsFileFormatMap<S::MapState, F>,
     #[serde(rename = "sops")]
-    pub metadata: RopsFileMetadata<S::MetadataState>,
+    metadata: RopsFileMetadata<S::MetadataState>,
 }
 
 impl<S: RopsFileState, F: FileFormat> RopsFile<S, F>
@@ -27,6 +27,14 @@ where
             map: map.to_external::<F>(),
             metadata,
         }
+    }
+
+    pub fn map(&self) -> &RopsFileFormatMap<S::MapState, F> {
+        &self.map
+    }
+
+    pub fn metadata(&self) -> &RopsFileMetadata<S::MetadataState> {
+        &self.metadata
     }
 }
 
@@ -143,6 +151,25 @@ impl<C: Cipher, F: FileFormat, H: Hasher> RopsFile<EncryptedFile<C, H>, F> {
         let encrypted_map = encrypted_map_result.map_err(|error| RopsFileEncryptError::MetadataEncryption(error.into()))?;
         let encrypted_metadata = encrypted_metadata_result.map_err(|error| RopsFileEncryptError::MetadataEncryption(error.into()))?;
         Ok(RopsFile::new(encrypted_map, encrypted_metadata))
+    }
+}
+
+#[cfg(feature = "test-utils")]
+mod mock {
+    use super::*;
+
+    impl<S: RopsFileState, F: FileFormat> MockTestUtil for RopsFile<S, F>
+    where
+        RopsFileFormatMap<S::MapState, F>: MockTestUtil,
+        RopsFileMetadata<S::MetadataState>: MockTestUtil,
+        <<S::MetadataState as RopsMetadataState>::Mac as FromStr>::Err: Display,
+    {
+        fn mock() -> Self {
+            Self {
+                map: MockTestUtil::mock(),
+                metadata: MockTestUtil::mock(),
+            }
+        }
     }
 }
 

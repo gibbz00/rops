@@ -90,7 +90,7 @@ mod tests {
                 .decrypt::<YamlFileFormat>()
                 .unwrap();
 
-        assert_eq!(RopsFileFormatMap::mock(), builder_rops_file.map);
-        assert_ne!(RopsFileMetadata::mock(), builder_rops_file.metadata);
+        assert_eq!(&RopsFileFormatMap::mock(), builder_rops_file.map());
+        assert_ne!(&RopsFileMetadata::mock(), builder_rops_file.metadata());
     }
 }
