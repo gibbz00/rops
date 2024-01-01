@@ -43,7 +43,7 @@ mod stub_integration {
             unimplemented!()
         }
 
-        fn append_to_metadata(_integration_metadata: &mut IntegrationMetadata, _integration_metadata_unit: IntegrationMetadataUnit<Self>) {
+        fn select_metadata_units_field(_integration_metadata: &mut IntegrationMetadata) -> &mut Vec<IntegrationMetadataUnit<Self>> {
             unimplemented!()
         }
     }

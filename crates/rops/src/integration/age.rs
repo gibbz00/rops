@@ -77,8 +77,8 @@ impl Integration for AgeIntegration {
         Ok(Some(decrypted_data_key_buffer))
     }
 
-    fn append_to_metadata(integration_metadata: &mut IntegrationMetadata, integration_metadata_unit: IntegrationMetadataUnit<Self>) {
-        integration_metadata.age.push(integration_metadata_unit)
+    fn select_metadata_units_field(integration_metadata: &mut IntegrationMetadata) -> &mut Vec<IntegrationMetadataUnit<Self>> {
+        &mut integration_metadata.age
     }
 }
 

@@ -45,7 +45,7 @@ where
     <S::Mac as FromStr>::Err: Display,
 {
     pub(crate) fn retrieve_data_key(&self) -> Result<DataKey, RopsFileMetadataDataKeyRetrievalError> {
-        match self.intregation.find_data_key()? {
+        match self.intregation.decrypt_data_key()? {
             Some(data_key) => Ok(data_key),
             None => Err(RopsFileMetadataDataKeyRetrievalError::MissingDataKey),
         }

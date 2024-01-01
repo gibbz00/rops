@@ -21,11 +21,12 @@ impl IntegrationMetadata {
             .map(|key_id| I::Config::new(key_id))
             .map(|integration_config| IntegrationMetadataUnit::<I>::new(integration_config, data_key))
             .try_for_each(|integation_metada_unit_result| {
-                integation_metada_unit_result.map(|integration_metadata| I::append_to_metadata(self, integration_metadata))
+                I::select_metadata_units_field(self).push(integation_metada_unit_result?);
+                Ok(())
             })
     }
 
-    pub fn find_data_key(&self) -> IntegrationResult<Option<DataKey>> {
+    pub fn decrypt_data_key(&self) -> IntegrationResult<Option<DataKey>> {
         // In order of what is assumed to be quickest:
 
         #[cfg(feature = "age")]
@@ -59,5 +60,24 @@ mod mock {
                 age: vec![MockTestUtil::mock()],
             }
         }
+    }
+}
+
+// Using age keys rather than stub integration to avoid setting adding test fields in
+// `IntegrationMetadata`.
+#[cfg(all(test, feature = "age"))]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn adds_keys() {
+        let mut integation_metadata = IntegrationMetadata::default();
+        assert!(integation_metadata.age.is_empty());
+
+        integation_metadata
+            .add_keys::<AgeIntegration>(vec![<AgeIntegration as Integration>::KeyId::mock()], &DataKey::mock())
+            .unwrap();
+
+        assert!(!integation_metadata.age.is_empty())
     }
 }

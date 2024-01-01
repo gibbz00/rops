@@ -67,7 +67,7 @@ pub trait Integration: Sized {
 
     fn decrypt_data_key(key_id: &Self::KeyId, encrypted_data_key: &str) -> IntegrationResult<Option<DataKey>>;
 
-    fn append_to_metadata(integration_metadata: &mut IntegrationMetadata, integration_metadata_unit: IntegrationMetadataUnit<Self>);
+    fn select_metadata_units_field(integration_metadata: &mut IntegrationMetadata) -> &mut Vec<IntegrationMetadataUnit<Self>>;
 }
 
 pub trait IntegrationConfig<I: Integration>: Debug + PartialEq {
