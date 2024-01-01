@@ -129,6 +129,39 @@ impl<H: Hasher> RopsFileMetadata<DecryptedMetadata<H>> {
             mac_only_encrypted,
         })
     }
+
+    /// Returns the removed integration medata unit , if any.
+    // NOTE: Assumes sync of encrypted/decrypted state between map and metadata in `RopsFile`.
+    // (We don't want to update the data key when the map is encrypted.)
+    // WORKAROUND: Handling done here to avoid adding type state parameters to IntegrationMetadata
+    // E.g IntegrationMetadata<DecryptedIntegrationMetadata>::remove_integration_key()
+    pub fn remove_integration_key<I: Integration>(&mut self, key_id: &I::KeyId) -> IntegrationResult<Option<IntegrationMetadataUnit<I>>> {
+        let integration_keys = I::select_metadata_units(&mut self.intregation);
+
+        let Some(removed_key) = integration_keys.remove(key_id) else {
+            return Ok(None);
+        };
+
+        let new_data_key = DataKey::new();
+
+        #[cfg(feature = "age")]
+        update_data_key::<AgeIntegration>(&mut self.intregation, &new_data_key)?;
+
+        #[cfg(feature = "aws-kms")]
+        update_data_key::<AwsKmsIntegration>(&mut self.intregation, &new_data_key)?;
+
+        return Ok(Some(removed_key));
+
+        fn update_data_key<I: Integration>(
+            integration_metadata: &mut IntegrationMetadata,
+            new_data_key: &DataKey,
+        ) -> IntegrationResult<()> {
+            I::select_metadata_units(integration_metadata).values_mut().try_for_each(|unit| {
+                I::encrypt_data_key(unit.config.key_id(), new_data_key)
+                    .map(|encrypted_data_key| unit.encrypted_data_key = encrypted_data_key)
+            })
+        }
+    }
 }
 
 #[cfg(feature = "test-utils")]
@@ -200,6 +233,43 @@ mod tests {
 
             assert_eq!(RopsFileMetadata::mock(), decrypted_metadata);
             assert_eq!(SavedMacNonce::mock(), saved_mac_nonce);
+        }
+    }
+
+    #[cfg(all(feature = "age", feature = "aws-kms", feature = "sha2"))]
+    mod key_removal {
+        use crate::*;
+
+        #[test]
+        fn removes_key() {
+            let mut metadata = RopsFileMetadata::<DecryptedMetadata<SHA512>>::mock();
+
+            let new_age_key_id = "age18e57g4yp3anhs0xpssgmy7x0u23tryqzpew0t3x2h4yzqx029yfqu7xfgg"
+                .parse::<<AgeIntegration as Integration>::KeyId>()
+                .unwrap();
+
+            let new_age_identity = "AGE-SECRET-KEY-1RQHTSUKPA93KMCUJ0LDZ5DWW3VMVJRHAWGK5ZM6835FU9KEYQ90SVQ46JQ";
+
+            AwsKmsIntegration::set_mock_private_key_env_var();
+            std::env::set_var(AgeIntegration::private_key_env_var_name(), new_age_identity);
+
+            metadata
+                .intregation
+                .add_keys::<AgeIntegration>(Some(new_age_key_id.clone()), &DataKey::mock())
+                .unwrap();
+
+            assert_eq!(metadata.intregation.age.len(), 2);
+
+            metadata.remove_integration_key::<AgeIntegration>(&MockTestUtil::mock()).unwrap();
+
+            assert_eq!(metadata.intregation.age.len(), 1);
+
+            assert_ne!(
+                DataKey::mock(),
+                AgeIntegration::decrypt_data_key(&new_age_key_id, &metadata.intregation.age.first().unwrap().1.encrypted_data_key)
+                    .unwrap()
+                    .unwrap()
+            )
         }
     }
 }

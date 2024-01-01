@@ -15,7 +15,7 @@ pub struct IntegrationMetadata {
 }
 
 impl IntegrationMetadata {
-    pub fn add_keys<I: Integration>(&mut self, key_ids: Vec<I::KeyId>, data_key: &DataKey) -> IntegrationResult<()>
+    pub fn add_keys<I: Integration>(&mut self, key_ids: impl IntoIterator<Item = I::KeyId>, data_key: &DataKey) -> IntegrationResult<()>
     where
         I::KeyId: Clone,
     {
@@ -32,6 +32,7 @@ impl IntegrationMetadata {
     pub fn decrypt_data_key(&self) -> IntegrationResult<Option<DataKey>> {
         // In order of what is assumed to be quickest:
 
+        // IMPROVEMENT: generialize?
         #[cfg(feature = "age")]
         if let Some(decrypt_result) = self.age.values().find_map(|age_metadata| {
             AgeIntegration::decrypt_data_key(&age_metadata.config.key_id, &age_metadata.encrypted_data_key).transpose()
@@ -78,7 +79,7 @@ mod tests {
         assert!(integation_metadata.age.is_empty());
 
         integation_metadata
-            .add_keys::<AgeIntegration>(vec![<AgeIntegration as Integration>::KeyId::mock()], &DataKey::mock())
+            .add_keys::<AgeIntegration>(Some(<AgeIntegration as Integration>::KeyId::mock()), &DataKey::mock())
             .unwrap();
 
         assert!(!integation_metadata.age.is_empty())
