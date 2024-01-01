@@ -6,13 +6,13 @@
 ### Goals
 
 * Full `sops` encrypted file compatibility. Decrypt any `sops` file using `rops` and vice versa.
-* Available as a rust library.
 * Be consistent in how credentials are used, set and retrieved across integrations.
+* Disincentivize unsecure operations.
+* Available as a rust library.
 
 ### Non-Goals
 
-* Identical CLI to `sops`.
-* Full CLI feature parity with `sops`, see [feature non-goals](#preliminary-non-goals).
+* Identical CLI to `sops` with full feature parity, see [feature non-goals](#preliminary-non-goals).
 
 ## Supported features:
 
@@ -160,13 +160,10 @@ Many integrations already store their keys in a dedicated location. `rops` does 
       - [ ] Official as fallback.
     - [ ] Built-in default location.
 - Changes
-  - [ ] Rotate keys
-    - [ ] Flag: `--rotate/-r`
   - [ ] Update keys
     - [ ] Read `.rops.yaml` with `update-keys` sub-command.
     - [ ] `--add INTEGRATION KEY FILE`
     - [ ] `--remove INTEGRATION KEY FILE`
-    - [ ] `--show-master-keys/-s FILE`
 - [ ] [Grouping](https://github.com/getsops/sops#214key-groups)
 
 ### `.rops.yaml` configuration
@@ -182,10 +179,12 @@ Many integrations already store their keys in a dedicated location. `rops` does 
 - [ ] In place `$EDITOR` support (fallback to `vim`).
 - [ ] Encrypt/Decrypt with `--in-place/-i`
 - [ ] Encrypt/Decrypt with stdin.
+- [ ] Show metadata `--show-metadata/-s`. Note that directly modifying the metadata will most likely break its integrity and prevent future decryption.
 
 ### Misc
 
 - [ ] [Sub-process secret passing](https://github.com/getsops/sops#218passing-secrets-to-other-processes)
+- [ ] Compute an additional MAC over active integration keys to prevent against manual removal without rotating the secret data key.
 
 ### Preliminary non-goals
 
@@ -197,7 +196,9 @@ Many integrations already store their keys in a dedicated location. `rops` does 
 
   (Con: will skip initialization vector reuse for unchanged value.)
 
-- `--ignore-mac` flag. Why?
+- SOPS operations deemed unsecure:
+  - `--ignore-mac`
+  - Manual key rotation (`--rotate/-r`). `rops` will automatically rotate the secret data key upon integration key removal.
 
 - [Integrated formatting configuration](https://github.com/getsops/sops#32json-and-json_binary-indentation)
 
