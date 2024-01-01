@@ -2,7 +2,8 @@ use serde::{Deserialize, Serialize};
 
 use crate::*;
 
-#[derive(Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
+#[impl_tools::autoimpl(Debug, PartialEq)]
 pub struct IntegrationMetadataUnit<I: Integration> {
     #[serde(flatten)]
     pub config: I::Config,

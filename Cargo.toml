@@ -35,5 +35,5 @@ tokio = "1"
 thiserror = "1"
 
 [patch.crates-io]
-# TEMP: https://github.com/str4d/rage/pull/420
-age = { git = "https://github.com/gibbz00/rage", branch = "public_key_partial_eq" }
+# TEMP: https://github.com/str4d/rage/pull/429
+age = { git = "https://github.com/gibbz00/rage", branch = "eq_hash" }

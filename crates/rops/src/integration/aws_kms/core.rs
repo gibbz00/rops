@@ -72,7 +72,7 @@ impl Integration for AwsKmsIntegration {
             .map_err(|error| IntegrationError::Decryption(error.into()))
     }
 
-    fn select_metadata_units_field(integration_metadata: &mut IntegrationMetadata) -> &mut Vec<IntegrationMetadataUnit<Self>> {
+    fn select_metadata_units(integration_metadata: &mut IntegrationMetadata) -> &mut IntegrationMetadataUnits<Self> {
         &mut integration_metadata.kms
     }
 }

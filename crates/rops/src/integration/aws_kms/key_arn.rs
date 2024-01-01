@@ -5,7 +5,7 @@ use aws_sdk_kms::config::Region;
 
 use crate::*;
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct AwsKeyResourceName {
     pub optional_partition: Option<Identifier>,
     pub service: Identifier,

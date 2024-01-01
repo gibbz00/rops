@@ -7,7 +7,7 @@ use serde_with::{serde_as, DisplayFromStr};
 use crate::*;
 
 #[serde_as]
-#[derive(Debug, PartialEq, Display, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Display, Serialize, Deserialize)]
 #[display(fmt = "{}.{}", profile, key_arn)]
 pub struct AwsKeyId {
     #[serde(rename = "aws_profile")]

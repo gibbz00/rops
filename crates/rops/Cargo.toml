@@ -31,7 +31,7 @@ directories.workspace = true
 generic-array.workspace = true
 hex.workspace = true
 impl-tools.workspace = true
-indexmap.workspace = true
+indexmap = { workspace = true, features = ["serde"] }
 rand.workspace = true
 regex.workspace = true
 serde.workspace = true

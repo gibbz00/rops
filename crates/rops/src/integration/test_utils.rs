@@ -16,7 +16,6 @@ pub trait IntegrationTestUtils: Integration {
 
 pub use stub_integration::StubIntegration;
 mod stub_integration {
-
     use super::*;
 
     pub struct StubIntegration;
@@ -43,7 +42,7 @@ mod stub_integration {
             unimplemented!()
         }
 
-        fn select_metadata_units_field(_integration_metadata: &mut IntegrationMetadata) -> &mut Vec<IntegrationMetadataUnit<Self>> {
+        fn select_metadata_units(_integration_metadata: &mut IntegrationMetadata) -> &mut IntegrationMetadataUnits<Self> {
             unimplemented!()
         }
     }
@@ -54,7 +53,7 @@ mod stub_integration {
         }
     }
 
-    #[derive(Debug, PartialEq)]
+    #[derive(Debug, PartialEq, Eq, Hash)]
     pub struct StubIntegrationConfig(String);
 
     impl IntegrationConfig<StubIntegration> for StubIntegrationConfig {
