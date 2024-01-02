@@ -1,17 +1,17 @@
 hello: ENC[AES256_GCM,data:tTzY03z8kH2qtSR+6SfKbSAaZ3SeOxLEETyDamAu9BDZ6dh9BCtDp+sonXkDmw==,iv:U3QbstkzpfCLJjcK+YTd6/GYQ0vxaf5xYebB4F2PsdM=,tag:/VSPYHGRMAPF1mtEoadFDw==,type:str]
 example_key: ENC[AES256_GCM,data:AGV1GXnYRcd4JJARkA==,iv:gYGikMrJMD+5yhMg3/bMoVDd5fYcfl3ys5N1YtKsCFI=,tag:DzEO5yJjmyfwrFTbp3ZOlQ==,type:str]
 example_array:
-    - ENC[AES256_GCM,data:8xBXz6QYq0fgTzTr+jA=,iv:/OC8rOvA1LZOMFfggSt6IpC4wExb+wMy0fiChrys+78=,tag:PIoA57VE6IALEM/cQovxpQ==,type:str]
-    - ENC[AES256_GCM,data:Njzjwql0R9+QEzETwJQ=,iv:PRJXkDO5AFxxstgIvCCvrjm3zzeOxw5mKULKvwG2DlU=,tag:5dmrziU+emPaIJx53+d2nw==,type:str]
+- ENC[AES256_GCM,data:8xBXz6QYq0fgTzTr+jA=,iv:/OC8rOvA1LZOMFfggSt6IpC4wExb+wMy0fiChrys+78=,tag:PIoA57VE6IALEM/cQovxpQ==,type:str]
+- ENC[AES256_GCM,data:Njzjwql0R9+QEzETwJQ=,iv:PRJXkDO5AFxxstgIvCCvrjm3zzeOxw5mKULKvwG2DlU=,tag:5dmrziU+emPaIJx53+d2nw==,type:str]
 example_number: ENC[AES256_GCM,data:+K4TD42uoLL69A==,iv:h1MZiZQ7Vo9JuX6FSEqNjWpevuW/mkuNQapL8GuuzBo=,tag:sS4BWSbaOShC+h4UvnSL5w==,type:float]
 example_booleans:
-    - ENC[AES256_GCM,data:0IenNw==,iv:5ych7UiGtf5jYB2pMnzw722k8fbHgjlRVyEhdUtTRcw=,tag:5VG6VliIfirtmPTgSnbN5A==,type:bool]
-    - ENC[AES256_GCM,data:bUnGnrw=,iv:iNelNO2CClEbM5FL5nejiywjDY1T6lqPbUQaSpto2Yo=,tag:UlBEmJl8c1q0mWpUevlGpQ==,type:bool]
+- ENC[AES256_GCM,data:0IenNw==,iv:5ych7UiGtf5jYB2pMnzw722k8fbHgjlRVyEhdUtTRcw=,tag:5VG6VliIfirtmPTgSnbN5A==,type:bool]
+- ENC[AES256_GCM,data:bUnGnrw=,iv:iNelNO2CClEbM5FL5nejiywjDY1T6lqPbUQaSpto2Yo=,tag:UlBEmJl8c1q0mWpUevlGpQ==,type:bool]
 sops:
-    kms:
-        - aws_profile: "default"
-          arn: arn:aws:kms:eu-north-1:822284028627:key/a219f9b1-f371-466a-9143-7adff993aa05
-          created_at: "2023-12-30T16:38:10Z"
-          enc: AQICAHiB4ozqhuEpHKVV+bXVXqxUTHq97nhkmOnQqSGLV5d0fAFTT3o6k2c5G7ql7ndemOX9AAAAfjB8BgkqhkiG9w0BBwagbzBtAgEAMGgGCSqGSIb3DQEHATAeBglghkgBZQMEAS4wEQQMDbPuGe0vVm8z9wrPAgEQgDutmA7ybg/L6gL3mqP8HooB41haPgWIeB/EtUDzDKVywjiC9gQVCafHv8mmCAFHf7LPrIg6sa/08OU+0Q==
-    lastmodified: "2023-12-30T16:38:37Z"
-    mac: ENC[AES256_GCM,data:SUHtctyuACPqfwYtpw1p51nSLFHShOwpN9Crzt6JuVe7tiWooaX9Vj08gj6I0Z6lIcRboZaVrNicdLVuxuxxUrEW8PTtLiAdsNcnD6O7olqclPnzadUmX60ttiex/1fgR2lwbnyqAGl9x6y2kd7MQ3lfezi2Ilcx8e4HjYaziW4=,iv:cBwIav8EyfsDjk/Sbe0e8s5KY+c8MqAEnqHEPziwj3s=,tag:qh+nhgv54cf014NNOcIZ+w==,type:str]
+  kms:
+  - aws_profile: default
+    arn: arn:aws:kms:eu-north-1:822284028627:key/a219f9b1-f371-466a-9143-7adff993aa05
+    created_at: 2023-12-30T16:38:10Z
+    enc: AQICAHiB4ozqhuEpHKVV+bXVXqxUTHq97nhkmOnQqSGLV5d0fAFTT3o6k2c5G7ql7ndemOX9AAAAfjB8BgkqhkiG9w0BBwagbzBtAgEAMGgGCSqGSIb3DQEHATAeBglghkgBZQMEAS4wEQQMDbPuGe0vVm8z9wrPAgEQgDutmA7ybg/L6gL3mqP8HooB41haPgWIeB/EtUDzDKVywjiC9gQVCafHv8mmCAFHf7LPrIg6sa/08OU+0Q==
+  lastmodified: 2023-12-30T16:38:37Z
+  mac: ENC[AES256_GCM,data:SUHtctyuACPqfwYtpw1p51nSLFHShOwpN9Crzt6JuVe7tiWooaX9Vj08gj6I0Z6lIcRboZaVrNicdLVuxuxxUrEW8PTtLiAdsNcnD6O7olqclPnzadUmX60ttiex/1fgR2lwbnyqAGl9x6y2kd7MQ3lfezi2Ilcx8e4HjYaziW4=,iv:cBwIav8EyfsDjk/Sbe0e8s5KY+c8MqAEnqHEPziwj3s=,tag:qh+nhgv54cf014NNOcIZ+w==,type:str]

@@ -1,6 +1,6 @@
 a:
-    encrypted_1:
-        a: xxx
-        b: xxx
-    not_encrypted: aaa
+  encrypted_1:
+    a: xxx
+    b: xxx
+  not_encrypted: aaa
 b: aaa

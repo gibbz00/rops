@@ -1,9 +1,9 @@
 a:
-    unencrypted_1:
-        a: aaa
-        b: aaa
-        c:
-            - 123
-            - 456
-    encrypted: xxx
+  unencrypted_1:
+    a: aaa
+    b: aaa
+    c:
+    - 123
+    - 456
+  encrypted: xxx
 b: xxx

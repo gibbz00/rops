@@ -70,3 +70,8 @@ indoc = { workspace = true, optional = true }
 [dev-dependencies]
 serial_test.workspace = true
 tempfile.workspace = true
+
+[build-dependencies]
+walkdir.workspace = true
+serde_json.workspace = true
+serde_yaml.workspace = true

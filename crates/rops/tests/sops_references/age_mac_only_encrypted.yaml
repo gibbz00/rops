@@ -1,23 +1,23 @@
 a_encrypted: ENC[AES256_GCM,data:IA46,iv:Ap9PrtKlfDVKOh/ExGZoXl8Qh85iQrL3iFtpRRurYv8=,tag:rEnl+xiPY5/v+7G/kQNkdQ==,type:str]
 b_unencrypted:
-    a: aaa
-    b:
-        - 123
-        - 456
+  a: aaa
+  b:
+  - 123
+  - 456
 c_encrypted: ENC[AES256_GCM,data:+uP6,iv:wYcY2h8IGCn0CW23ZeqMct6SnGYQgmnW21iQL1rA03U=,tag:yeiq5D6oElI05nPihnWptQ==,type:str]
 d_unencrypted: aaa
 sops:
-    age:
-        - recipient: age1se5ghfycr4n8kcwc3qwf234ymvmr2lex2a99wh8gpfx97glwt9hqch4569
-          enc: |
-            -----BEGIN AGE ENCRYPTED FILE-----
-            YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBPTXdHZnZ0SkhGZ3UydzlZ
-            RklUWXorWk1Kb3QwR29qWktqVHh1enV0RndvCit0cHQxRVBNTEdZSUxNYWJxT0Qz
-            eWRKOVJWcUQ3am1mZGF6UExhT2JqMmcKLS0tIFNZWG5ML1hVSWVVMG1QbGwxQmFh
-            UE1nSm01Q2lObzlwMDBmazJtWG9qSVEKdHkhmvoMB4JfSztonfNqUGM4PuQs+T16
-            9+A3/jb3bGQIbGcZfC8p7662USXWdAYDagLGYZVSf02xaEsjhlP5TQ==
-            -----END AGE ENCRYPTED FILE-----
-    lastmodified: "2023-12-27T11:13:48Z"
-    mac: ENC[AES256_GCM,data:N/tCLvJawgY4qYPtu2D541yl8+YMRtrTETqAvkQih4EkR2N3YZB0D6XfcFxOHei6kDKEXc4HNPN5vwbaq8U5DeOGfSH00ZLdh85I1Ldh8Jbxnrtd+Kkti8chD2dZrD66c++oZb70z/jaM7+U37tOXM2Zy4SrRbIsUWjJ6LTY5Cs=,iv:NkvFXhw7M0DpksLeRgWdpPAxw1cx64rU+kbayQDMO3A=,tag:7uI8YXb3NPBuWtXIJWv86g==,type:str]
-    unencrypted_suffix: _unencrypted
-    mac_only_encrypted: true
+  age:
+  - recipient: age1se5ghfycr4n8kcwc3qwf234ymvmr2lex2a99wh8gpfx97glwt9hqch4569
+    enc: |
+      -----BEGIN AGE ENCRYPTED FILE-----
+      YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBPTXdHZnZ0SkhGZ3UydzlZ
+      RklUWXorWk1Kb3QwR29qWktqVHh1enV0RndvCit0cHQxRVBNTEdZSUxNYWJxT0Qz
+      eWRKOVJWcUQ3am1mZGF6UExhT2JqMmcKLS0tIFNZWG5ML1hVSWVVMG1QbGwxQmFh
+      UE1nSm01Q2lObzlwMDBmazJtWG9qSVEKdHkhmvoMB4JfSztonfNqUGM4PuQs+T16
+      9+A3/jb3bGQIbGcZfC8p7662USXWdAYDagLGYZVSf02xaEsjhlP5TQ==
+      -----END AGE ENCRYPTED FILE-----
+  lastmodified: 2023-12-27T11:13:48Z
+  mac: ENC[AES256_GCM,data:N/tCLvJawgY4qYPtu2D541yl8+YMRtrTETqAvkQih4EkR2N3YZB0D6XfcFxOHei6kDKEXc4HNPN5vwbaq8U5DeOGfSH00ZLdh85I1Ldh8Jbxnrtd+Kkti8chD2dZrD66c++oZb70z/jaM7+U37tOXM2Zy4SrRbIsUWjJ6LTY5Cs=,iv:NkvFXhw7M0DpksLeRgWdpPAxw1cx64rU+kbayQDMO3A=,tag:7uI8YXb3NPBuWtXIJWv86g==,type:str]
+  unencrypted_suffix: _unencrypted
+  mac_only_encrypted: true

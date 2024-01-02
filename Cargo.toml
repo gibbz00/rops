@@ -3,13 +3,14 @@ resolver = "2"
 members = ["crates/*"]
 
 [workspace.dependencies]
-age = "0.9"
-aws-sdk-kms = { version = "1.9", features = ["behavior-version-latest"] }
-aws-arn = "0.3"
-anyhow = "1"
 aes-gcm = { version = "0.10", features = ["std"] }
+age = "0.9"
+anyhow = "1"
+aws-arn = "0.3"
+aws-sdk-kms = { version = "1.9", features = ["behavior-version-latest"] }
 base64 = "0.21"
 chrono = { version = "0.4", features = ["serde"] }
+clap = { version = "4", features = ["derive"] }
 derive_more = "0.99"
 directories = "5"
 generic-array = "0.14"
@@ -33,6 +34,7 @@ tempfile = "3"
 textwrap = "0.16"
 tokio = "1"
 thiserror = "1"
+walkdir = "2"
 
 [patch.crates-io]
 # TEMP: https://github.com/str4d/rage/pull/429

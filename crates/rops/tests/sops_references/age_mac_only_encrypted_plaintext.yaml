@@ -1,8 +1,8 @@
 a_encrypted: xxx
 b_unencrypted:
-    a: aaa
-    b:
-        - 123
-        - 456
+  a: aaa
+  b:
+  - 123
+  - 456
 c_encrypted: xxx
 d_unencrypted: aaa

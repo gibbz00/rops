@@ -38,6 +38,13 @@ impl<F: FileFormat> RopsFileBuilder<F> {
         self
     }
 
+    pub fn add_integration_keys<I: Integration>(self, key_ids: impl IntoIterator<Item = I::KeyId>) -> Self {
+        key_ids.into_iter().fold(self, |mut builder, key_id| {
+            builder = builder.add_integration_key::<I>(key_id);
+            builder
+        })
+    }
+
     pub fn encrypt<C: Cipher, H: Hasher>(self) -> Result<RopsFile<EncryptedFile<C, H>, F>, RopsFileEncryptError> {
         #[rustfmt::skip]
         let Self { format_map: plaintext_map, partial_encryption, mac_only_encrypted, .. } = self;

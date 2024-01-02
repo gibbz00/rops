@@ -31,13 +31,6 @@ mod aws_kms_yaml_aes_gcm_sha2 {
     }
 }
 
-#[cfg(feature = "yaml")]
-mod yaml_utils {
-    pub fn normalize_yaml(input_yaml: &str) -> Result<String, serde_yaml::Error> {
-        serde_yaml::from_str::<serde_yaml::Value>(input_yaml).and_then(|value| serde_yaml::to_string(&value))
-    }
-}
-
 #[cfg(all(feature = "yaml", feature = "aes-gcm", feature = "sha2"))]
 mod yaml_aes_gcm_sha2_parity_check {
     #[macro_export]
@@ -47,21 +40,21 @@ mod yaml_aes_gcm_sha2_parity_check {
             fn $name() -> anyhow::Result<()> {
                 use rops::*;
 
-                let sops_file = $crate::yaml_utils::normalize_yaml(include_str!(concat!(
+                let sops_file = include_str!(concat!(
                     "sops_references/",
                     $integration_name,
                     "_",
                     stringify!($name),
                     ".yaml"
-                )))?;
+                ));
 
-                let sops_file_plaintext = $crate::yaml_utils::normalize_yaml(include_str!(concat!(
+                let sops_file_plaintext = include_str!(concat!(
                     "sops_references/",
                     $integration_name,
                     "_",
                     stringify!($name),
                     "_plaintext.yaml"
-                )))?;
+                ));
 
                 $integration::set_mock_private_key_env_var();
 
