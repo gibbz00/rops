@@ -36,7 +36,6 @@
     - [ ] Flag: `--mac-only-encrypted`.
     - [ ] `.rops.yaml`: `partial_encryption.mac_only_encrypted: true`.
     - [X] In library.
-- [ ] File comment encryption
 
 #### Partial Encryption
 
@@ -184,6 +183,7 @@ Many integrations already store their keys in a dedicated location. `rops` does 
 ### Misc
 
 - [ ] [Sub-process secret passing](https://github.com/getsops/sops#218passing-secrets-to-other-processes)
+- [ ] Storing file comments.
 - [ ] Compute an additional MAC over active integration keys to prevent against manual removal without rotating the secret data key.
 
 ### Preliminary non-goals

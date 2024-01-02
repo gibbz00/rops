@@ -32,7 +32,7 @@ impl IntegrationMetadata {
     pub fn decrypt_data_key(&self) -> IntegrationResult<Option<DataKey>> {
         // In order of what is assumed to be quickest:
 
-        // IMPROVEMENT: generialize?
+        // IMPROVEMENT: generialize if access to unit by simple reference becomes common.
         #[cfg(feature = "age")]
         if let Some(decrypt_result) = self.age.values().find_map(|age_metadata| {
             AgeIntegration::decrypt_data_key(&age_metadata.config.key_id, &age_metadata.encrypted_data_key).transpose()
