@@ -1,7 +1,7 @@
 use crate::*;
 
 pub struct RopsFileBuilder<F: FileFormat> {
-    plaintext_map: F::Map,
+    format_map: F::Map,
     partial_encryption: Option<PartialEncryptionConfig>,
     mac_only_encrypted: Option<bool>,
     #[cfg(feature = "age")]
@@ -11,16 +11,16 @@ pub struct RopsFileBuilder<F: FileFormat> {
 }
 
 impl<F: FileFormat> RopsFileBuilder<F> {
-    pub fn new(plaintext_map: F::Map) -> Self {
-        Self {
-            plaintext_map,
+    pub fn new(plaintext_map: &str) -> Result<Self, F::DeserializeError> {
+        Ok(Self {
+            format_map: F::deserialize_from_str(plaintext_map)?,
             partial_encryption: None,
             mac_only_encrypted: None,
             #[cfg(feature = "age")]
             age_key_ids: Vec::new(),
             #[cfg(feature = "aws-kms")]
             aws_kms_key_ids: Vec::new(),
-        }
+        })
     }
 
     pub fn with_partial_encryption(mut self, partial_encryption: PartialEncryptionConfig) -> Self {
@@ -40,7 +40,7 @@ impl<F: FileFormat> RopsFileBuilder<F> {
 
     pub fn encrypt<C: Cipher, H: Hasher>(self) -> Result<RopsFile<EncryptedFile<C, H>, F>, RopsFileEncryptError> {
         #[rustfmt::skip]
-        let Self { plaintext_map, partial_encryption, mac_only_encrypted, .. } = self;
+        let Self { format_map: plaintext_map, partial_encryption, mac_only_encrypted, .. } = self;
 
         let data_key = DataKey::new();
 
@@ -83,7 +83,8 @@ mod tests {
         AgeIntegration::set_mock_private_key_env_var();
 
         let builder_rops_file =
-            RopsFileBuilder::<YamlFileFormat>::new(RopsFileFormatMap::<DecryptedMap, YamlFileFormat>::mock().into_inner_map())
+            RopsFileBuilder::<YamlFileFormat>::new(&RopsFileFormatMap::<DecryptedMap, YamlFileFormat>::mock_format_display())
+                .unwrap()
                 .with_partial_encryption(MockTestUtil::mock())
                 .mac_only_encrypted()
                 .add_integration_key::<AgeIntegration>(MockTestUtil::mock())
