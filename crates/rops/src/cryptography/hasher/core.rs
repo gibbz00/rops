@@ -11,10 +11,8 @@ pub trait Hasher: private::SealedHasher {
 }
 
 mod private {
-    use crate::*;
-
     pub trait SealedHasher {}
 
     #[cfg(feature = "sha2")]
-    impl SealedHasher for SHA512 {}
+    impl SealedHasher for crate::SHA512 {}
 }

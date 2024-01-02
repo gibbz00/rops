@@ -1,4 +1,4 @@
-use std::{fmt::Display, str::FromStr};
+use std::fmt::Display;
 
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
@@ -20,7 +20,7 @@ impl Display for Timestamp {
 }
 
 #[cfg(feature = "test-utils")]
-impl FromStr for Timestamp {
+impl std::str::FromStr for Timestamp {
     type Err = chrono::ParseError;
 
     fn from_str(str: &str) -> Result<Self, Self::Err> {

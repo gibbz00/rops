@@ -30,13 +30,11 @@ pub trait Cipher: Sized + private::SealedCipher {
 }
 
 mod private {
-    use super::*;
-
     pub trait SealedCipher {}
 
-    #[cfg(feature = "test-utils")]
-    impl SealedCipher for StubCipher {}
-
     #[cfg(feature = "aes-gcm")]
-    impl SealedCipher for AES256GCM {}
+    impl SealedCipher for crate::AES256GCM {}
+
+    #[cfg(feature = "test-utils")]
+    impl SealedCipher for crate::StubCipher {}
 }
