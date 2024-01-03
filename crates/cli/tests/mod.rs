@@ -12,7 +12,7 @@ mod encrypt {
 
     #[test]
     fn disallows_both_stdin_and_file() {
-        let mut cmd = Command::package_command().encrypt_args();
+        let mut cmd = Command::package_command().encrypt();
         cmd.arg("/tmp/file.txt");
 
         let output = cmd.output().unwrap();
@@ -22,7 +22,7 @@ mod encrypt {
 
     #[test]
     fn disallows_missing_stdin_and_file() {
-        let mut cmd = Command::package_command().encrypt_args();
+        let mut cmd = Command::package_command().encrypt();
 
         let output = cmd.spawn().unwrap().wait_with_output().unwrap();
         output.assert_failure();
@@ -31,7 +31,7 @@ mod encrypt {
 
     #[test]
     fn encrypts_from_stdin() {
-        let mut cmd = Command::package_command().encrypt_args();
+        let mut cmd = Command::package_command().encrypt();
         cmd.stdin(Stdio::piped());
 
         let mut child = cmd.spawn().unwrap();
@@ -45,9 +45,8 @@ mod encrypt {
 
     #[test]
     fn encrypts_from_file() {
-        let mut cmd = Command::package_command().encrypt_args();
+        let mut cmd = Command::package_command().encrypt();
         cmd.arg(age_example_plaintext_path().into_os_string());
-
         assert_encrypted_output(cmd.spawn().unwrap().wait_with_output().unwrap());
     }
 
@@ -66,9 +65,9 @@ mod encrypt {
     }
 
     #[rustfmt::skip]
-    trait EncryptCommand { fn encrypt_args(self) -> Self; }
+    trait EncryptCommand { fn encrypt(self) -> Self; }
     impl EncryptCommand for Command {
-        fn encrypt_args(mut self) -> Self {
+        fn encrypt(mut self) -> Self {
             self.arg("encrypt");
             self.args(["--age", &<AgeIntegration as Integration>::KeyId::mock_display()]);
             self.args(["--format", "yaml"]);
@@ -146,7 +145,7 @@ mod command_utils {
         }
     }
 
-    pub trait OutputExitAssertions {
+    pub trait OutputExitAssertions: OutputString {
         fn assert_success(&self);
         fn assert_failure(&self);
     }

@@ -24,10 +24,6 @@
   - [ ] INI
   - [ ] ENV
   - [ ] BINARY
-- [ ] Specify:
-  - [ ] By flag: `--file-format`.
-  - [ ] Infer by extension.
-  - [X] In library.
 - [ ] Partial encryption
     - [ ] CLI flag: `--{un,}encrypted-{suffix,regex} <pattern>`.
     - [ ] `.rops.yaml`: `partial_encryption.{un,}encrypted.{ match: {regex,suffix}, pattern: "<pattern>" }`.
@@ -146,17 +142,13 @@ Many integrations already store their keys in a dedicated location. `rops` does 
 ### Key management
 
 - Key id retrieval
-  - [ ] As a CLI argument.
   - [ ] In the `.rops.yaml` config.
     - [ ] Specify with a `--config/-c` flag.
     - [ ] Specify with a `$ROPS_CONFIG` environment variable.
 - Private key retrieval
-  - [X] By an environment variable.
-    - [X] Multiple keys per variable.
   - [ ] By key file location.
     - [ ] Specify with a `--key-file INTEGRATION PATH` flag.
-    - [ ] Specify with a `$ROPS_INTEGRATION_KEY_FILE` environment variable.
-      - [ ] Official as fallback.
+    - [ ] Official as fallback.
     - [ ] Built-in default location.
 - Changes
   - [ ] Update keys
@@ -177,13 +169,15 @@ Many integrations already store their keys in a dedicated location. `rops` does 
 
 - [ ] In place `$EDITOR` support (fallback to `vim`).
 - [ ] Encrypt/Decrypt with `--in-place/-i`
-- [ ] Encrypt/Decrypt with stdin.
 - [ ] Show metadata `--show-metadata/-s`. Note that directly modifying the metadata will most likely break its integrity and prevent future decryption.
 
 ### Misc
 
 - [ ] [Sub-process secret passing](https://github.com/getsops/sops#218passing-secrets-to-other-processes)
 - [ ] Storing file comments.
+
+#### `rops` exclusives
+- [X] Encrypt/Decrypt with stdin.
 - [ ] Compute an additional MAC over active integration keys to prevent against manual removal without rotating the secret data key.
 
 ### Preliminary non-goals
