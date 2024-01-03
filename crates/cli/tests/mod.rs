@@ -78,7 +78,7 @@ mod encrypt {
 
     // IMPROVEMENT: unify with rops/tests/parity_checks.rs
     fn plaintext_age_example() -> &'static str {
-        include_str!("../../rops/tests/sops_references/age_example_plaintext.yaml")
+        include_str!("../../lib/tests/sops_references/age_example_plaintext.yaml")
     }
 
     fn age_example_plaintext_path() -> PathBuf {
@@ -91,7 +91,7 @@ mod encrypt {
         let dir = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
             .parent() // crates/
             .unwrap()
-            .join("rops/tests/sops_references");
+            .join("lib/tests/sops_references");
 
         assert!(dir.is_dir());
 

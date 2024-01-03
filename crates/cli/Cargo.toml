@@ -4,13 +4,13 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-rops = { path = "../rops" }
+rops = { path = "../lib" }
 
 anyhow.workspace = true
 clap.workspace = true
 thiserror.workspace = true
 
 [dev-dependencies]
-rops = { path = "../rops", features = ["test-utils"] }
+rops = { path = "../lib", features = ["test-utils"] }
 
 pretty_assertions.workspace = true
