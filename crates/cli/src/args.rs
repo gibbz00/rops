@@ -20,7 +20,9 @@ pub struct CliArgs {
 // use rops::RopsFileBuilder;
 #[derive(Parser)]
 pub enum CliCommand {
+    #[command(visible_alias = "e")]
     Encrypt(EncryptArgs),
+    #[command(visible_alias = "d")]
     Decrypt,
 }
 
