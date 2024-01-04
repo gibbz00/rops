@@ -8,6 +8,7 @@ rops = { path = "../lib" }
 
 anyhow.workspace = true
 clap.workspace = true
+regex.workspace = true
 thiserror.workspace = true
 
 [dev-dependencies]

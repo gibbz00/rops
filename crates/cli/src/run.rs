@@ -14,10 +14,10 @@ pub fn run() -> anyhow::Result<()> {
 
     match args.cmd {
         CliCommand::Encrypt(encrypt_args) => {
-            let explicit_file_path = args.file.as_deref();
+            let explicit_file_path = encrypt_args.input_args.file.as_deref();
             let plaintext_string = get_plaintext_string(explicit_file_path)?;
 
-            match get_format(explicit_file_path, args.format)? {
+            match get_format(explicit_file_path, encrypt_args.input_args.format)? {
                 Format::Yaml => {
                     encrypt_rops_file::<YamlFileFormat>(&plaintext_string, encrypt_args)?;
                 }
@@ -27,19 +27,23 @@ pub fn run() -> anyhow::Result<()> {
             }
 
             fn encrypt_rops_file<F: FileFormat>(plaintext_str: &str, encrypt_args: EncryptArgs) -> anyhow::Result<()> {
-                let encrypted_rops_file = RopsFileBuilder::<F>::new(plaintext_str)?
-                    .add_integration_keys::<AgeIntegration>(encrypt_args.age_keys)
-                    .encrypt::<DefaultCipher, DefaultHasher>()?;
+                let mut rops_file_builder =
+                    RopsFileBuilder::<F>::new(plaintext_str)?.add_integration_keys::<AgeIntegration>(encrypt_args.age_keys);
 
+                if let Some(partial_encryption_args) = encrypt_args.partial_encryption_args {
+                    rops_file_builder = rops_file_builder.with_partial_encryption(partial_encryption_args.into())
+                }
+
+                let encrypted_rops_file = rops_file_builder.encrypt::<DefaultCipher, DefaultHasher>()?;
                 println!("{}", encrypted_rops_file);
 
                 Ok(())
             }
         }
-        CliCommand::Decrypt => {
-            let explicit_file_path = args.file.as_deref();
+        CliCommand::Decrypt(input_args) => {
+            let explicit_file_path = input_args.file.as_deref();
             let plaintext_string = get_plaintext_string(explicit_file_path)?;
-            let format = get_format(explicit_file_path, args.format)?;
+            let format = get_format(explicit_file_path, input_args.format)?;
 
             match format {
                 Format::Yaml => decrypt_rops_file::<YamlFileFormat>(&plaintext_string)?,
