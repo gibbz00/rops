@@ -19,26 +19,43 @@ pub fn run() -> anyhow::Result<()> {
 
             match get_format(explicit_file_path, args.format)? {
                 Format::Yaml => {
-                    let encrypted_rops_file = encrypt_rops_file::<YamlFileFormat>(&plaintext_string, encrypt_args)?;
-                    println!("{}", encrypted_rops_file);
+                    encrypt_rops_file::<YamlFileFormat>(&plaintext_string, encrypt_args)?;
                 }
                 Format::Json => {
-                    let encrypted_rops_file = encrypt_rops_file::<JsonFileFormat>(&plaintext_string, encrypt_args)?;
-                    println!("{}", encrypted_rops_file);
+                    encrypt_rops_file::<JsonFileFormat>(&plaintext_string, encrypt_args)?;
                 }
-            };
+            }
 
-            fn encrypt_rops_file<F: FileFormat>(
-                plaintext_str: &str,
-                encrypt_args: EncryptArgs,
-            ) -> anyhow::Result<RopsFile<EncryptedFile<DefaultCipher, DefaultHasher>, F>> {
-                RopsFileBuilder::new(plaintext_str)?
+            fn encrypt_rops_file<F: FileFormat>(plaintext_str: &str, encrypt_args: EncryptArgs) -> anyhow::Result<()> {
+                let encrypted_rops_file = RopsFileBuilder::<F>::new(plaintext_str)?
                     .add_integration_keys::<AgeIntegration>(encrypt_args.age_keys)
-                    .encrypt()
-                    .map_err(Into::into)
+                    .encrypt::<DefaultCipher, DefaultHasher>()?;
+
+                println!("{}", encrypted_rops_file);
+
+                Ok(())
             }
         }
-        CliCommand::Decrypt(_) => todo!(),
+        CliCommand::Decrypt => {
+            let explicit_file_path = args.file.as_deref();
+            let plaintext_string = get_plaintext_string(explicit_file_path)?;
+            let format = get_format(explicit_file_path, args.format)?;
+
+            match format {
+                Format::Yaml => decrypt_rops_file::<YamlFileFormat>(&plaintext_string)?,
+                Format::Json => decrypt_rops_file::<JsonFileFormat>(&plaintext_string)?,
+            }
+
+            fn decrypt_rops_file<F: FileFormat>(plaintext_str: &str) -> anyhow::Result<()> {
+                let decrypted_rops_file = plaintext_str
+                    .parse::<RopsFile<EncryptedFile<DefaultCipher, DefaultHasher>, F>>()?
+                    .decrypt::<F>()?;
+
+                println!("{}", decrypted_rops_file);
+
+                Ok(())
+            }
+        }
     }
 
     Ok(())

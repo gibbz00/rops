@@ -7,7 +7,9 @@ use rops::*;
 pub struct CliArgs {
     #[command(subcommand)]
     pub cmd: CliCommand,
-    /// Required if no file argument is given, may otherwise be inferred by file extension.
+    /// Required if no file argument is found.
+    ///
+    /// May otherwise be inferred by a given file extension.
     #[arg(long, short, global = true)]
     pub format: Option<Format>,
     /// Input may alternatively be supplied through stdin.
@@ -19,7 +21,7 @@ pub struct CliArgs {
 #[derive(Parser)]
 pub enum CliCommand {
     Encrypt(EncryptArgs),
-    Decrypt(DecryptArgs),
+    Decrypt,
 }
 
 #[derive(Args)]
@@ -28,9 +30,6 @@ pub struct EncryptArgs {
     #[arg(long = "age")]
     pub age_keys: Vec<<AgeIntegration as Integration>::KeyId>,
 }
-
-#[derive(Args)]
-pub struct DecryptArgs {}
 
 #[derive(Debug, Clone, Copy, PartialEq, ValueEnum)]
 pub enum Format {
