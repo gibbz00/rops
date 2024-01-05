@@ -73,8 +73,6 @@ Asymmetric encryption schemes require only the key id (i.e. public key) for the 
 | age          | <age_recipient>           | `age1se5ghfycr4n8kcwc3qwf234ymvmr2lex2a99wh8gpfx97glwt9hqch4569`                       |
 | aws_kms      | `<profile>.<aws_key_arn>` | `default.arn:aws:kms:eu-north-1:822284028627:key/029dba6d-60de-4364-ac5c-cbdd284acd0a` |
 
-<!-- TODO: key-id specied in cli by --<integration> <key-id> or by creation rules -->
-
 #### Integration private key string:
 
 | Integration  | Syntax                                                  | Example                                                                     |
@@ -169,13 +167,12 @@ Many integrations already store their keys in a dedicated location. `rops` does 
 
 ### Preliminary non-goals
 
-- [`--output`](https://github.com/getsops/sops#217saving-output-to-a-file): Use `rops -d > FILE_NAME`?
+- [`--output`](https://github.com/getsops/sops#217saving-output-to-a-file): Use `rops decrypt > FILE_NAME`?
 
-- [Partial retrieval](https://github.com/getsops/sops#45extract-a-sub-part-of-a-document-tree): Use `rops -d FILE | jq`?
+- [Partial retrieval](https://github.com/getsops/sops#45extract-a-sub-part-of-a-document-tree): Use `rops decrypt FILE | jq`?
 
-- [Partial modification](https://github.com/getsops/sops#46set-a-sub-part-in-a-document-tree): Use `rops -d FILE | jq map | rops -e --file-format FILE_FORMAT`?
-
-  (Con: will skip initialization vector reuse for unchanged value.)
+- [Partial modification](https://github.com/getsops/sops#46set-a-sub-part-in-a-document-tree): 
+  Use `rops edit` or `rops decrypt FILE | jq map | rops encrypt --format FORMAT`? The latter will unfortunately skip initialization vector reuse for unchanged value.
 
 - SOPS operations deemed unsecure:
   - `--ignore-mac`
