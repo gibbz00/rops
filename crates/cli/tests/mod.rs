@@ -1,10 +1,7 @@
 use rops::*;
 use rops_cli::*;
 
-use std::{
-    path::PathBuf,
-    process::{Command, Output},
-};
+use std::process::{Command, Output};
 
 #[test]
 fn disallows_both_stdin_and_file() {
@@ -24,22 +21,24 @@ fn disallows_missing_stdin_and_file() {
 }
 
 #[test]
-fn encrypts_from_stdin() {
-    let output = Command::package_command().encrypt().run_piped(plaintext_age_example());
-    assert_encrypted_age_example(output);
+fn encrypts_with_age() {
+    let plaintext = sops_yaml_str!("age_example_plaintext");
+    let output = Command::package_command().encrypt().run_piped(plaintext);
+    assert_encrypted::<AgeIntegration>(output, plaintext);
+}
+
+#[test]
+fn encrypts_with_aws_kms() {
+    let plaintext = sops_yaml_str!("aws_kms_example_plaintext");
+    let output = Command::package_command().encrypt().run_piped(plaintext);
+    assert_encrypted::<AwsKmsIntegration>(output, plaintext);
 }
 
 #[test]
 fn encrypts_from_file() {
     let mut cmd = Command::package_command().encrypt();
-    cmd.arg(plaintext_age_example_path().into_os_string());
-    assert_encrypted_age_example(cmd.run_tty());
-}
-
-fn assert_encrypted_age_example(encrypted_output: Output) {
-    encrypted_output.assert_success();
-    let decrypted_file = decrypt_output(encrypted_output);
-    pretty_assertions::assert_eq!(plaintext_age_example(), decrypted_file.map().to_string());
+    cmd.arg(sops_yaml_path!("age_example_plaintext"));
+    assert_encrypted::<AgeIntegration>(cmd.run_tty(), sops_yaml_str!("age_example_plaintext"));
 }
 
 #[test]
@@ -47,25 +46,30 @@ fn encrypts_with_partial_encryption() {
     let mut cmd = Command::package_command().encrypt();
     cmd.arg(format!("--unencrypted-suffix={}", PartialEncryptionConfig::mock_display()));
 
-    let output = cmd.run_piped(plaintext_age_unencrypted_suffix());
+    let plaintext = sops_yaml_str!("age_unencrypted_suffix_plaintext");
+    let output = cmd.run_piped(plaintext);
     output.assert_success();
 
-    let decrypted_file = decrypt_output(output);
+    let decrypted_file = decrypt_output::<AgeIntegration>(output);
     assert_eq!(Some(PartialEncryptionConfig::mock()), decrypted_file.metadata().partial_encryption)
 }
 
-fn decrypt_output(encrypted_output: Output) -> RopsFile<DecryptedFile<DefaultHasher>, YamlFileFormat> {
-    AgeIntegration::set_mock_private_key_env_var();
-    encrypted_output
-        .stdout_str()
-        .parse::<RopsFile<EncryptedFile<DefaultCipher, DefaultHasher>, YamlFileFormat>>()
-        .unwrap()
-        .decrypt::<YamlFileFormat>()
-        .unwrap()
+#[test]
+fn decrypts_from_stdin() {
+    let encrypted_str = sops_yaml_str!("age_example");
+    let decrypted_output = Command::package_command().decrypt_age().run_piped(encrypted_str);
+    assert_decrypted_output(decrypted_output);
+}
+
+#[test]
+fn decrypts_from_file() {
+    let mut cmd = Command::package_command().decrypt_age();
+    cmd.arg(sops_yaml_path!("age_example"));
+    assert_decrypted_output(cmd.run_tty())
 }
 
 #[rustfmt::skip]
-    trait EncryptCommand { fn encrypt(self) -> Self; }
+trait EncryptCommand { fn encrypt(self) -> Self; }
 impl EncryptCommand for Command {
     fn encrypt(mut self) -> Self {
         self.arg("encrypt");
@@ -74,17 +78,20 @@ impl EncryptCommand for Command {
     }
 }
 
-#[test]
-fn decrypts_from_stdin() {
-    let decrypted_output = Command::package_command().decrypt_age().run_piped(encrypted_age_example());
-    assert_decrypted_output(decrypted_output);
+fn assert_encrypted<I: IntegrationTestUtils>(encrypted_output: Output, plaintext: &str) {
+    encrypted_output.assert_success();
+    let decrypted_file = decrypt_output::<I>(encrypted_output);
+    pretty_assertions::assert_eq!(plaintext, decrypted_file.map().to_string());
 }
 
-#[test]
-fn decrypts_from_file() {
-    let mut cmd = Command::package_command().decrypt_age();
-    cmd.arg(encrypted_age_example_path().into_os_string());
-    assert_decrypted_output(cmd.run_tty())
+fn decrypt_output<I: IntegrationTestUtils>(encrypted_output: Output) -> RopsFile<DecryptedFile<DefaultHasher>, YamlFileFormat> {
+    I::set_mock_private_key_env_var();
+    encrypted_output
+        .stdout_str()
+        .parse::<RopsFile<EncryptedFile<DefaultCipher, DefaultHasher>, YamlFileFormat>>()
+        .unwrap()
+        .decrypt::<YamlFileFormat>()
+        .unwrap()
 }
 
 fn assert_decrypted_output(decrypted_output: Output) {
@@ -93,7 +100,7 @@ fn assert_decrypted_output(decrypted_output: Output) {
         .stdout_str()
         .parse::<RopsFile<DecryptedFile<DefaultHasher>, YamlFileFormat>>()
         .unwrap();
-    pretty_assertions::assert_eq!(plaintext_age_example(), decrypted_rops_file.map().to_string())
+    pretty_assertions::assert_eq!(sops_yaml_str!("age_example_plaintext"), decrypted_rops_file.map().to_string())
 }
 
 #[rustfmt::skip]
@@ -101,7 +108,6 @@ trait DecryptCommand { fn decrypt_age(self) -> Self; }
 impl DecryptCommand for Command {
     fn decrypt_age(mut self) -> Self {
         AgeIntegration::set_mock_private_key_env_var();
-
         self.arg("decrypt");
         self.common_args()
     }
@@ -116,41 +122,21 @@ impl CommonArgs for Command {
     }
 }
 
-// IMPROVEMENT: unify with rops/tests/parity_checks.rs
+pub(crate) use sops_references::{sops_yaml_path, sops_yaml_str};
+mod sops_references {
+    macro_rules! sops_yaml_str {
+        ($file:literal) => {
+            include_str!(sops_yaml_path!($file))
+        };
+    }
+    pub(crate) use sops_yaml_str;
 
-fn plaintext_age_example() -> &'static str {
-    include_str!("../../lib/tests/sops_references/age_example_plaintext.yaml")
-}
-
-fn plaintext_age_example_path() -> PathBuf {
-    let file_path = sops_references_dir().join("age_example_plaintext.yaml");
-    assert!(file_path.is_file());
-    file_path
-}
-
-fn encrypted_age_example() -> &'static str {
-    include_str!("../../lib/tests/sops_references/age_example.yaml")
-}
-
-fn plaintext_age_unencrypted_suffix() -> &'static str {
-    include_str!("../../lib/tests/sops_references/age_unencrypted_suffix_plaintext.yaml")
-}
-
-fn encrypted_age_example_path() -> PathBuf {
-    let file_path = sops_references_dir().join("age_example.yaml");
-    assert!(file_path.is_file());
-    file_path
-}
-
-fn sops_references_dir() -> PathBuf {
-    let dir = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-        .parent() // crates/
-        .unwrap()
-        .join("lib/tests/sops_references");
-
-    assert!(dir.is_dir());
-
-    dir
+    macro_rules! sops_yaml_path {
+        ($file:literal) => {
+            concat!(env!("CARGO_MANIFEST_DIR"), "/../lib/tests/sops_references/", $file, ".yaml")
+        };
+    }
+    pub(crate) use sops_yaml_path;
 }
 
 pub use command_utils::{OutputExitAssertions, OutputString, PackageCommand, RunCommand};

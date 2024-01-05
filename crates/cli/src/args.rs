@@ -24,6 +24,9 @@ pub struct EncryptArgs {
     /// Space separated list of public age keys
     #[arg(long = "age")]
     pub age_keys: Vec<<AgeIntegration as Integration>::KeyId>,
+    /// Space separated list of AWS KMS rops key id strings.
+    #[arg(long = "aws-kms")]
+    pub aws_kms_keys: Vec<<AwsKmsIntegration as Integration>::KeyId>,
     #[command(flatten)]
     pub partial_encryption_args: Option<PartialEncryptionArgs>,
     #[command(flatten)]

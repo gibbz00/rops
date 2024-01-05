@@ -5,7 +5,7 @@ use std::{
 
 use anyhow::bail;
 use clap::{Parser, ValueEnum};
-use rops::{AgeIntegration, EncryptedFile, FileFormat, JsonFileFormat, RopsFile, RopsFileBuilder, YamlFileFormat};
+use rops::{AgeIntegration, AwsKmsIntegration, EncryptedFile, FileFormat, JsonFileFormat, RopsFile, RopsFileBuilder, YamlFileFormat};
 
 use crate::*;
 
@@ -27,8 +27,9 @@ pub fn run() -> anyhow::Result<()> {
             }
 
             fn encrypt_rops_file<F: FileFormat>(plaintext_str: &str, encrypt_args: EncryptArgs) -> anyhow::Result<()> {
-                let mut rops_file_builder =
-                    RopsFileBuilder::<F>::new(plaintext_str)?.add_integration_keys::<AgeIntegration>(encrypt_args.age_keys);
+                let mut rops_file_builder = RopsFileBuilder::<F>::new(plaintext_str)?
+                    .add_integration_keys::<AgeIntegration>(encrypt_args.age_keys)
+                    .add_integration_keys::<AwsKmsIntegration>(encrypt_args.aws_kms_keys);
 
                 if let Some(partial_encryption_args) = encrypt_args.partial_encryption_args {
                     rops_file_builder = rops_file_builder.with_partial_encryption(partial_encryption_args.into())
