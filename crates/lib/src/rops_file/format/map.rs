@@ -1,4 +1,4 @@
-use std::{fmt::Display, marker::PhantomData};
+use std::{fmt::Display, marker::PhantomData, str::FromStr};
 
 use serde::{Deserialize, Serialize};
 
@@ -62,6 +62,14 @@ impl<F: FileFormat> RopsFileFormatMap<DecryptedMap, F> {
 impl<S: RopsMapState, F: FileFormat> Display for RopsFileFormatMap<S, F> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", F::serialize_to_string(self).expect("file format map not serializable"))
+    }
+}
+
+impl<S: RopsMapState, F: FileFormat> FromStr for RopsFileFormatMap<S, F> {
+    type Err = F::DeserializeError;
+
+    fn from_str(str: &str) -> Result<Self, Self::Err> {
+        F::deserialize_from_str(str)
     }
 }
 

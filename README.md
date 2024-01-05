@@ -133,7 +133,6 @@ Many integrations already store their keys in a dedicated location. `rops` does 
 
 <!-- TODO: paste automatically generated {,encryptd,decrypt,..} --help -->
 
-- [ ] In place `$EDITOR` support (fallback to `vim`).
 - [ ] Update keys
   - [ ] `--add INTEGRATION KEY FILE`
   - [ ] `--remove INTEGRATION KEY FILE`
@@ -162,7 +161,7 @@ Many integrations already store their keys in a dedicated location. `rops` does 
 - [ ] Storing file comments.
 
 #### `rops` exclusives
-- [X] Encrypt/Decrypt with stdin.
+- [X] Encrypt, decrypt or edit using stdin.
 - [ ] Compute an additional MAC over active integration keys to prevent against manual removal without rotating the secret data key.
 
 ### Preliminary non-goals

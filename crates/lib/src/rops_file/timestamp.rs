@@ -1,6 +1,6 @@
 use std::fmt::Display;
 
-use chrono::{DateTime, Utc};
+use chrono::{DateTime, SecondsFormat, Timelike, Utc};
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
@@ -9,13 +9,13 @@ pub struct Timestamp(DateTime<Utc>);
 
 impl Timestamp {
     pub fn now() -> Self {
-        Self(Utc::now())
+        Self(Utc::now().with_nanosecond(0).expect("invalid nanosecond value"))
     }
 }
 
 impl Display for Timestamp {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", self.0.format("%Y-%m-%dT%H:%M:%SZ"))
+        write!(f, "{}", self.0.to_rfc3339_opts(SecondsFormat::Secs, true))
     }
 }
 

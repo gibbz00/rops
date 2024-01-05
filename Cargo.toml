@@ -11,6 +11,8 @@ aws-sdk-kms = { version = "1.9", features = ["behavior-version-latest"] }
 base64 = "0.21"
 chrono = { version = "0.4", features = ["serde"] }
 clap = { version = "4", features = ["derive"] }
+console = "0.15"
+ctrlc = "3"
 derive_more = "0.99"
 directories = "5"
 generic-array = "0.14"
@@ -35,6 +37,7 @@ textwrap = "0.16"
 tokio = "1"
 thiserror = "1"
 walkdir = "2"
+which = "5"
 
 [patch.crates-io]
 # TEMP: https://github.com/str4d/rage/pull/429

@@ -28,13 +28,13 @@ where
 pub enum RopsFileMetadataDecryptError {
     #[error("unable to decrypt MAC: {0}")]
     Mac(anyhow::Error),
-    #[error("unable to retrieve data key: {0}")]
+    #[error("unable to retrieve data key")]
     DataKeyRetrieval(#[from] RopsFileMetadataDataKeyRetrievalError),
 }
 
 #[derive(Debug, thiserror::Error)]
 pub enum RopsFileMetadataDataKeyRetrievalError {
-    #[error("integration error; {0}")]
+    #[error("integration error")]
     Integration(#[from] IntegrationError),
     #[error("no data key found in metadata, make sure at least one integration is used")]
     MissingDataKey,

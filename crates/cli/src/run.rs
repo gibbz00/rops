@@ -1,11 +1,15 @@
 use std::{
     io::{IsTerminal, Read},
-    path::Path,
+    path::{Path, PathBuf},
+    process::Command,
 };
 
-use anyhow::bail;
+use anyhow::{bail, Context};
 use clap::{Parser, ValueEnum};
-use rops::{AgeIntegration, AwsKmsIntegration, EncryptedFile, FileFormat, JsonFileFormat, RopsFile, RopsFileBuilder, YamlFileFormat};
+use rops::{
+    AgeIntegration, AwsKmsIntegration, DecryptedMap, EncryptedFile, FileFormat, JsonFileFormat, RopsFile, RopsFileBuilder,
+    RopsFileFormatMap, YamlFileFormat,
+};
 
 use crate::*;
 
@@ -13,97 +17,213 @@ pub fn run() -> anyhow::Result<()> {
     let args = CliArgs::parse();
 
     match args.cmd {
-        CliCommand::Encrypt(encrypt_args) => {
-            let explicit_file_path = encrypt_args.input_args.file.as_deref();
-            let plaintext_string = get_plaintext_string(explicit_file_path)?;
+        CliSubcommand::Encrypt(encrypt_args) => Cli::encrypt(encrypt_args),
+        CliSubcommand::Decrypt(input_args) => Cli::decrypt(input_args),
+        CliSubcommand::Edit(input_args) => Cli::edit(input_args),
+    }
+}
 
-            match get_format(explicit_file_path, encrypt_args.input_args.format)? {
-                Format::Yaml => {
-                    encrypt_rops_file::<YamlFileFormat>(&plaintext_string, encrypt_args)?;
-                }
-                Format::Json => {
-                    encrypt_rops_file::<JsonFileFormat>(&plaintext_string, encrypt_args)?;
-                }
+struct Cli;
+impl Cli {
+    fn encrypt(encrypt_args: EncryptArgs) -> anyhow::Result<()> {
+        let explicit_file_path = encrypt_args.input_args.file.as_deref();
+        let plaintext_string = Self::get_plaintext_string(explicit_file_path)?;
+
+        return match Self::get_format(explicit_file_path, encrypt_args.input_args.format)? {
+            Format::Yaml => encrypt_rops_file::<YamlFileFormat>(&plaintext_string, encrypt_args),
+            Format::Json => encrypt_rops_file::<JsonFileFormat>(&plaintext_string, encrypt_args),
+        };
+
+        fn encrypt_rops_file<F: FileFormat>(plaintext_str: &str, encrypt_args: EncryptArgs) -> anyhow::Result<()> {
+            let mut rops_file_builder = RopsFileBuilder::<F>::new(plaintext_str)?
+                .add_integration_keys::<AgeIntegration>(encrypt_args.age_keys)
+                .add_integration_keys::<AwsKmsIntegration>(encrypt_args.aws_kms_keys);
+
+            if let Some(partial_encryption_args) = encrypt_args.partial_encryption_args {
+                rops_file_builder = rops_file_builder.with_partial_encryption(partial_encryption_args.into())
             }
 
-            fn encrypt_rops_file<F: FileFormat>(plaintext_str: &str, encrypt_args: EncryptArgs) -> anyhow::Result<()> {
-                let mut rops_file_builder = RopsFileBuilder::<F>::new(plaintext_str)?
-                    .add_integration_keys::<AgeIntegration>(encrypt_args.age_keys)
-                    .add_integration_keys::<AwsKmsIntegration>(encrypt_args.aws_kms_keys);
-
-                if let Some(partial_encryption_args) = encrypt_args.partial_encryption_args {
-                    rops_file_builder = rops_file_builder.with_partial_encryption(partial_encryption_args.into())
-                }
-
-                if encrypt_args.mac_only_encrypted.unwrap_or_default() {
-                    rops_file_builder = rops_file_builder.mac_only_encrypted()
-                }
-
-                let encrypted_rops_file = rops_file_builder.encrypt::<DefaultCipher, DefaultHasher>()?;
-                println!("{}", encrypted_rops_file);
-
-                Ok(())
+            if encrypt_args.mac_only_encrypted.unwrap_or_default() {
+                rops_file_builder = rops_file_builder.mac_only_encrypted()
             }
+
+            let encrypted_rops_file = rops_file_builder.encrypt::<DefaultCipher, DefaultHasher>()?;
+            println!("{}", encrypted_rops_file);
+
+            Ok(())
         }
-        CliCommand::Decrypt(input_args) => {
-            let explicit_file_path = input_args.file.as_deref();
-            let plaintext_string = get_plaintext_string(explicit_file_path)?;
-            let format = get_format(explicit_file_path, input_args.format)?;
+    }
 
-            match format {
-                Format::Yaml => decrypt_rops_file::<YamlFileFormat>(&plaintext_string)?,
-                Format::Json => decrypt_rops_file::<JsonFileFormat>(&plaintext_string)?,
+    fn decrypt(input_args: InputArgs) -> anyhow::Result<()> {
+        let explicit_file_path = input_args.file.as_deref();
+        let plaintext_string = Self::get_plaintext_string(explicit_file_path)?;
+        let format = Self::get_format(explicit_file_path, input_args.format)?;
+
+        return match format {
+            Format::Yaml => decrypt_rops_file::<YamlFileFormat>(&plaintext_string),
+            Format::Json => decrypt_rops_file::<JsonFileFormat>(&plaintext_string),
+        };
+
+        fn decrypt_rops_file<F: FileFormat>(plaintext_str: &str) -> anyhow::Result<()> {
+            let decrypted_rops_file = plaintext_str
+                .parse::<RopsFile<EncryptedFile<DefaultCipher, DefaultHasher>, F>>()?
+                .decrypt::<F>()?;
+
+            println!("{}", decrypted_rops_file);
+
+            Ok(())
+        }
+    }
+
+    fn edit(input_args: InputArgs) -> anyhow::Result<()> {
+        let explicit_file_path = input_args.file.as_deref();
+        if explicit_file_path.is_some_and(|file_arg| !file_arg.exists()) {
+            // TODO: return error suggesting to run `rops encrypt --in-place FILE`
+            todo!()
+        }
+
+        return match Self::get_format(explicit_file_path, input_args.format)? {
+            Format::Yaml => edit_encrypted_file::<YamlFileFormat>(explicit_file_path),
+            Format::Json => edit_encrypted_file::<JsonFileFormat>(explicit_file_path),
+        };
+
+        // Nested to avoid it being misused for regular files which might use aliases.
+        // (E.g 'yml' over 'yaml'.)
+        #[rustfmt::skip]
+        mod temp_file_format {
+            use super::*;
+            pub trait TempFileFormat: FileFormat { const TEMP_EXTENTION: &'static str; }
+            impl TempFileFormat for YamlFileFormat { const TEMP_EXTENTION: &'static str = "yaml"; }
+            impl TempFileFormat for JsonFileFormat { const TEMP_EXTENTION: &'static str = "json"; }
+        }
+
+        fn edit_encrypted_file<F: temp_file_format::TempFileFormat>(explicit_file_path: Option<&Path>) -> anyhow::Result<()> {
+            let (mut decrypted_rops_file, saved_parameters) = Cli::get_plaintext_string(explicit_file_path)?
+                .parse::<RopsFile<EncryptedFile<DefaultCipher, DefaultHasher>, F>>()?
+                .decrypt_and_save_parameters::<F>()?;
+
+            let temp_file = tempfile::Builder::new()
+                .suffix(&format!(".{}", F::TEMP_EXTENTION))
+                // Create locally to avoid file being picked up by temporary resource cleaners.
+                .tempfile_in("./")?;
+
+            let mut command = Command::new(select_editor()?);
+            command.arg(temp_file.path());
+
+            std::fs::write(temp_file.path(), decrypted_rops_file.map().to_string())?;
+
+            let optional_decrypted_map = read_temp_file::<F>(command, temp_file.path())?;
+            drop(temp_file);
+
+            let Some(decrypted_map) = optional_decrypted_map else {
+                return Ok(());
+            };
+
+            decrypted_rops_file.set_map(decrypted_map);
+
+            let encrypted_rops_file_string = decrypted_rops_file
+                .encrypt_with_saved_parameters::<_, F>(saved_parameters)?
+                .to_string();
+
+            match std::io::stdin().lock().is_terminal() {
+                true => std::fs::write(
+                    explicit_file_path.expect(
+                        "`get_plaintext_string()` should have checked the existence of a file argument in the absence of piped stdin",
+                    ),
+                    encrypted_rops_file_string,
+                )?,
+                false => println!("{}", encrypted_rops_file_string),
             }
 
-            fn decrypt_rops_file<F: FileFormat>(plaintext_str: &str) -> anyhow::Result<()> {
-                let decrypted_rops_file = plaintext_str
-                    .parse::<RopsFile<EncryptedFile<DefaultCipher, DefaultHasher>, F>>()?
-                    .decrypt::<F>()?;
+            return Ok(());
 
-                println!("{}", decrypted_rops_file);
+            fn select_editor() -> anyhow::Result<PathBuf> {
+                use which::which;
+                match std::env::var_os("EDITOR") {
+                    Some(editor_env) => which(editor_env).context("Unable to locate $EDITOR path"),
+                    None => which("vim")
+                        .or_else(|_| which("nano"))
+                        .or_else(|_| which("vi"))
+                        .map_err(|_| anyhow::anyhow!("unable to locate vim, nano or vi as fallback editors to a missing $EDITOR")),
+                }
+            }
 
-                Ok(())
+            fn read_temp_file<F: FileFormat>(
+                mut command: Command,
+                temp_file_path: &Path,
+            ) -> anyhow::Result<Option<RopsFileFormatMap<DecryptedMap, F>>> {
+                // Capture SIGINT in order to clean up tempdir.
+                ctrlc::try_set_handler(|| ()).expect("another ctrl-c handler has already been set");
+
+                loop {
+                    let output = command.spawn()?.wait_with_output()?;
+
+                    if !output.status.success() {
+                        let error = std::str::from_utf8(&output.stderr).context("unable to read editor stderr")?;
+                        bail!("editor closed with error: {},", error)
+                    }
+
+                    let temp_file_string = std::fs::read_to_string(temp_file_path)?;
+
+                    match temp_file_string.parse() {
+                        Ok(decrypted_map) => break Ok(Some(decrypted_map)),
+                        Err(err) => {
+                            eprintln!("Unable to parse map: {}", err);
+                            eprintln!("Send SIGINT (usually Ctrl+C) to quit or any key to retry.");
+
+                            if let Err(error) = console::Term::stdout().read_key() {
+                                return if error.kind() == std::io::ErrorKind::Interrupted {
+                                    Ok(None)
+                                } else {
+                                    Err(error.into())
+                                };
+                            }
+
+                            continue;
+                        }
+                    }
+                }
             }
         }
     }
 
-    Ok(())
-}
+    fn get_plaintext_string(file_path: Option<&Path>) -> anyhow::Result<String> {
+        let mut stdin_guard = std::io::stdin().lock();
 
-fn get_plaintext_string(file_path: Option<&Path>) -> anyhow::Result<String> {
-    let mut stdin_guard = std::io::stdin().lock();
-
-    let plaintext_string = match &file_path {
-        Some(plaintext_path) => {
-            if !stdin_guard.is_terminal() {
-                bail!(RopsCliError::MultipleInputs)
+        let plaintext_string = match &file_path {
+            Some(plaintext_path) => {
+                if !stdin_guard.is_terminal() {
+                    bail!(RopsCliError::MultipleInputs)
+                }
+                drop(stdin_guard);
+                std::fs::read_to_string(plaintext_path)?
             }
-            drop(stdin_guard);
-            std::fs::read_to_string(plaintext_path)?
-        }
-        None => {
-            if stdin_guard.is_terminal() {
-                bail!(RopsCliError::MissingInput)
+            None => {
+                if stdin_guard.is_terminal() {
+                    bail!(RopsCliError::MissingInput)
+                }
+                let mut stdin_string = String::new();
+                stdin_guard.read_to_string(&mut stdin_string)?;
+                stdin_string
             }
-            let mut stdin_string = String::new();
-            stdin_guard.read_to_string(&mut stdin_string)?;
-            stdin_string
+        };
+
+        Ok(plaintext_string)
+    }
+
+    fn get_format(explicit_file_path: Option<&Path>, explicit_format: Option<Format>) -> Result<Format, RopsCliError> {
+        match explicit_format {
+            Some(format) => Ok(format),
+            None => match explicit_file_path {
+                Some(file_path) => file_path
+                    .extension()
+                    .and_then(|file_extension| {
+                        <Format as ValueEnum>::from_str(file_extension.to_str().expect("invalid unicode"), true).ok()
+                    })
+                    .ok_or_else(|| UndeterminedFormatError::NoFileExtention(file_path.to_path_buf()).into()),
+                None => Err(UndeterminedFormatError::FoundNeither.into()),
+            },
         }
-    };
-
-    Ok(plaintext_string)
-}
-
-fn get_format(explicit_file_path: Option<&Path>, explicit_format: Option<Format>) -> Result<Format, RopsCliError> {
-    match explicit_format {
-        Some(format) => Ok(format),
-        None => match explicit_file_path {
-            Some(file_path) => file_path
-                .extension()
-                .and_then(|file_extension| <Format as ValueEnum>::from_str(file_extension.to_str().expect("invalid unicode"), true).ok())
-                .ok_or_else(|| UndeterminedFormatError::NoFileExtention(file_path.to_path_buf()).into()),
-            None => Err(UndeterminedFormatError::FoundNeither.into()),
-        },
     }
 }
 
@@ -113,27 +233,40 @@ mod tests {
 
     #[test]
     fn infers_format_by_extesion() {
-        assert_eq!(Format::Yaml, get_format(Some(Path::new("test.yaml")), None).unwrap())
+        assert_eq!(Format::Yaml, Cli::get_format(Some(Path::new("test.yaml")), None).unwrap())
     }
 
     #[test]
     fn infers_format_by_extesion_alias() {
-        assert_eq!(Format::Yaml, get_format(Some(Path::new("test.yml")), None).unwrap())
+        assert_eq!(Format::Yaml, Cli::get_format(Some(Path::new("test.yml")), None).unwrap())
     }
 
     #[test]
     fn both_missing_is_undetermined_format() {
         assert_eq!(
             RopsCliError::UndeterminedFormat(UndeterminedFormatError::FoundNeither),
-            get_format(None, None).unwrap_err()
+            Cli::get_format(None, None).unwrap_err()
         )
     }
 
     #[test]
     fn errors_on_missing_file_extension() {
         assert!(matches!(
-            get_format(Some(Path::new("test")), None).unwrap_err(),
+            Cli::get_format(Some(Path::new("test")), None).unwrap_err(),
             RopsCliError::UndeterminedFormat(UndeterminedFormatError::NoFileExtention(_))
         ))
+    }
+
+    // TODO: ensure correctness on other platforms
+    #[cfg(unix)]
+    mod unix_perissions {
+        #[test]
+        fn temp_file_has_600_permessions() {
+            use std::os::unix::fs::PermissionsExt;
+            let tempfile = tempfile::tempfile().unwrap();
+            let mode = tempfile.metadata().unwrap().permissions().mode();
+            const MODE: u32 = 0o600;
+            assert_eq!(MODE, MODE & mode)
+        }
     }
 }
