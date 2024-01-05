@@ -14,7 +14,7 @@
 
 * Identical CLI to `sops` with full feature parity, see [feature non-goals](#preliminary-non-goals).
 
-## Supported features:
+## Features:
 
 ### File:
 
@@ -24,14 +24,6 @@
   - [ ] INI
   - [ ] ENV
   - [ ] BINARY
-- [ ] Partial encryption
-    - [ ] CLI flag: `--{un,}encrypted-{suffix,regex} <pattern>`.
-    - [ ] `.rops.yaml`: `partial_encryption.{un,}encrypted.{ match: {regex,suffix}, pattern: "<pattern>" }`.
-    - [X] In library.
-  - [ ] MAC encrypted values only.
-    - [ ] Flag: `--mac-only-encrypted`.
-    - [ ] `.rops.yaml`: `partial_encryption.mac_only_encrypted: true`.
-    - [X] In library.
 
 #### Partial Encryption
 
@@ -139,41 +131,36 @@ Many integrations already store their keys in a dedicated location. `rops` does 
 - [ ] [Roles](https://github.com/getsops/sops#28assuming-roles-and-using-kms-in-various-aws-accounts)
 - [ ] [Context](https://github.com/getsops/sops#29aws-kms-encryption-context)
 
-### Key management
+### CLI
 
-- Key id retrieval
-  - [ ] In the `.rops.yaml` config.
-    - [ ] Specify with a `--config/-c` flag.
-    - [ ] Specify with a `$ROPS_CONFIG` environment variable.
-- Private key retrieval
-  - [ ] By key file location.
-    - [ ] Specify with a `--key-file INTEGRATION PATH` flag.
-    - [ ] Official as fallback.
-    - [ ] Built-in default location.
-- Changes
-  - [ ] Update keys
-    - [ ] Read `.rops.yaml` with `update-keys` sub-command.
-    - [ ] `--add INTEGRATION KEY FILE`
-    - [ ] `--remove INTEGRATION KEY FILE`
-- [ ] [Grouping](https://github.com/getsops/sops#214key-groups)
+<!-- TODO: paste automatically generated {,encryptd,decrypt,..} --help -->
+
+- [ ] In place `$EDITOR` support (fallback to `vim`).
+- [ ] Update keys
+  - [ ] `--add INTEGRATION KEY FILE`
+  - [ ] `--remove INTEGRATION KEY FILE`
+- [ ] Specify with a `--key-file INTEGRATION PATH` flag.
+- [ ] Encrypt/Decrypt with `--in-place/-i`
+- [ ] Show metadata `--show-metadata/-s`. Note that directly modifying the metadata will most likely break its integrity and prevent future decryption.
 
 ### `.rops.yaml` configuration
 
 - Find by: recursive directory traversal.
   - [ ] Recursive directory traversal.
-  - [ ] Env variable directory traversal.
+  - [ ] Specify with a `$ROPS_CONFIG` environment variable.
+  - [ ] Specify with a `--config/-c` flag.
+- [ ] Update keys with `update-keys` sub-command.
 - [ ] Regex based creation rules.
-- [ ] Available keys per rule.
-
-### CLI
-
-- [ ] In place `$EDITOR` support (fallback to `vim`).
-- [ ] Encrypt/Decrypt with `--in-place/-i`
-- [ ] Show metadata `--show-metadata/-s`. Note that directly modifying the metadata will most likely break its integrity and prevent future decryption.
+- [ ] Available key ids per rule.
+- [ ] Partial encryption
+    - [ ] `partial_encryption.{un,}encrypted.{ match: {regex,suffix}, pattern: "<pattern>" }`.
+  - [ ] MAC encrypted values only.
+    - [ ] `partial_encryption.mac_only_encrypted: true`.
 
 ### Misc
 
-- [ ] [Sub-process secret passing](https://github.com/getsops/sops#218passing-secrets-to-other-processes)
+- [ ] [Sub-process secret passing.](https://github.com/getsops/sops#218passing-secrets-to-other-processes)
+- [ ] [Key groups.](https://github.com/getsops/sops#214key-groups)
 - [ ] Storing file comments.
 
 #### `rops` exclusives
