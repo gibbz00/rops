@@ -7,16 +7,19 @@ use rops::*;
 #[derive(Parser)]
 pub struct CliArgs {
     #[command(subcommand)]
-    pub cmd: CliCommand,
+    pub cmd: CliSubcommand,
 }
 
 // use rops::RopsFileBuilder;
 #[derive(Subcommand)]
-pub enum CliCommand {
+pub enum CliSubcommand {
     #[command(visible_alias = "e")]
     Encrypt(EncryptArgs),
     #[command(visible_alias = "d")]
     Decrypt(InputArgs),
+    /// Edit an encrypted rops file using $EDITOR. (Fallbacks to vim then nano and lastly vi.)
+    /// Outputs to stdout if input is piped.
+    Edit(InputArgs),
 }
 
 #[derive(Args)]

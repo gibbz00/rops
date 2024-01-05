@@ -8,7 +8,7 @@ use crate::*;
 
 type DataKeySize = U32;
 
-// FIXME: zeroize upon drop?
+// XXX: zeroize?
 #[derive(Debug, PartialEq, AsRef, AsMut)]
 #[as_ref(forward)]
 #[as_mut(forward)]

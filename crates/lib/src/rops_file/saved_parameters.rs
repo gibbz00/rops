@@ -1,6 +1,5 @@
 use crate::*;
 
-// TODO: zeroize?
 #[derive(Debug)]
 #[impl_tools::autoimpl(PartialEq)]
 pub struct SavedParameters<C: Cipher, H: Hasher> {

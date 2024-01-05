@@ -65,6 +65,13 @@ where
 }
 
 impl<H: Hasher, F: FileFormat> RopsFile<DecryptedFile<H>, F> {
+    pub fn set_map(&mut self, map: RopsFileFormatMap<DecryptedMap, F>) {
+        if self.map != map {
+            self.metadata.last_modified = LastModifiedDateTime::now();
+            self.map = map;
+        }
+    }
+
     pub fn encrypt<C: Cipher, Fo: FileFormat>(self) -> Result<RopsFile<EncryptedFile<C, H>, Fo>, RopsFileEncryptError> {
         let data_key = self.metadata.retrieve_data_key()?;
         let encrypted_map = self
@@ -238,5 +245,20 @@ mod tests {
             .unwrap_err(),
             RopsFileDecryptError::MacMismatch(_, _)
         ))
+    }
+
+    #[test]
+    fn sets_map() {
+        let mut rops_file = RopsFile::<DecryptedFile<SHA512>, YamlFileFormat>::mock();
+        rops_file.set_map(RopsFileFormatMap::mock_other());
+        assert_eq!(RopsFileFormatMap::mock_other(), rops_file.map);
+        assert_ne!(LastModifiedDateTime::mock(), rops_file.metadata.last_modified);
+    }
+
+    #[test]
+    fn skips_updating_unmodified_map() {
+        let mut rops_file = RopsFile::<DecryptedFile<SHA512>, YamlFileFormat>::mock();
+        rops_file.set_map(RopsFileFormatMap::mock());
+        assert_eq!(LastModifiedDateTime::mock(), rops_file.metadata.last_modified);
     }
 }
