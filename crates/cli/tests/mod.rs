@@ -26,28 +26,42 @@ fn disallows_missing_stdin_and_file() {
 #[test]
 fn encrypts_from_stdin() {
     let output = Command::package_command().encrypt().run_piped(plaintext_age_example());
-    assert_encrypted_output(output);
+    assert_encrypted_age_example(output);
 }
 
 #[test]
 fn encrypts_from_file() {
     let mut cmd = Command::package_command().encrypt();
     cmd.arg(plaintext_age_example_path().into_os_string());
-    assert_encrypted_output(cmd.run_tty());
+    assert_encrypted_age_example(cmd.run_tty());
 }
 
-fn assert_encrypted_output(encrypted_output: Output) {
+fn assert_encrypted_age_example(encrypted_output: Output) {
     encrypted_output.assert_success();
+    let decrypted_file = decrypt_output(encrypted_output);
+    pretty_assertions::assert_eq!(plaintext_age_example(), decrypted_file.map().to_string());
+}
 
+#[test]
+fn encrypts_with_partial_encryption() {
+    let mut cmd = Command::package_command().encrypt();
+    cmd.arg(format!("--unencrypted-suffix={}", PartialEncryptionConfig::mock_display()));
+
+    let output = cmd.run_piped(plaintext_age_unencrypted_suffix());
+    output.assert_success();
+
+    let decrypted_file = decrypt_output(output);
+    assert_eq!(Some(PartialEncryptionConfig::mock()), decrypted_file.metadata().partial_encryption)
+}
+
+fn decrypt_output(encrypted_output: Output) -> RopsFile<DecryptedFile<DefaultHasher>, YamlFileFormat> {
     AgeIntegration::set_mock_private_key_env_var();
-    let decrypted_file = encrypted_output
+    encrypted_output
         .stdout_str()
         .parse::<RopsFile<EncryptedFile<DefaultCipher, DefaultHasher>, YamlFileFormat>>()
         .unwrap()
         .decrypt::<YamlFileFormat>()
-        .unwrap();
-
-    pretty_assertions::assert_eq!(plaintext_age_example(), decrypted_file.map().to_string());
+        .unwrap()
 }
 
 #[rustfmt::skip]
@@ -83,7 +97,7 @@ fn assert_decrypted_output(decrypted_output: Output) {
 }
 
 #[rustfmt::skip]
-    trait DecryptCommand { fn decrypt_age(self) -> Self; }
+trait DecryptCommand { fn decrypt_age(self) -> Self; }
 impl DecryptCommand for Command {
     fn decrypt_age(mut self) -> Self {
         AgeIntegration::set_mock_private_key_env_var();
@@ -94,7 +108,7 @@ impl DecryptCommand for Command {
 }
 
 #[rustfmt::skip]
-    trait CommonArgs { fn common_args(self) -> Self; }
+trait CommonArgs { fn common_args(self) -> Self; }
 impl CommonArgs for Command {
     fn common_args(mut self) -> Self {
         self.args(["--format", "yaml"]);
@@ -116,6 +130,10 @@ fn plaintext_age_example_path() -> PathBuf {
 
 fn encrypted_age_example() -> &'static str {
     include_str!("../../lib/tests/sops_references/age_example.yaml")
+}
+
+fn plaintext_age_unencrypted_suffix() -> &'static str {
+    include_str!("../../lib/tests/sops_references/age_unencrypted_suffix_plaintext.yaml")
 }
 
 fn encrypted_age_example_path() -> PathBuf {
