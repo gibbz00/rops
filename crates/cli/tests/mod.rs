@@ -43,15 +43,20 @@ fn encrypts_from_file() {
 
 #[test]
 fn encrypts_with_partial_encryption() {
-    let mut cmd = Command::package_command().encrypt();
-    cmd.arg(format!("--unencrypted-suffix={}", PartialEncryptionConfig::mock_display()));
-
     let plaintext = sops_yaml_str!("age_unencrypted_suffix_plaintext");
-    let output = cmd.run_piped(plaintext);
-    output.assert_success();
-
+    let output = Command::package_command().encrypt().partial_encryption().run_piped(plaintext);
     let decrypted_file = decrypt_output::<AgeIntegration>(output);
     assert_eq!(Some(PartialEncryptionConfig::mock()), decrypted_file.metadata().partial_encryption)
+}
+
+#[test]
+fn encrypts_with_mac_encrypted_only() {
+    let mut cmd = Command::package_command().encrypt().partial_encryption();
+    cmd.arg("--mac-only-encrypted");
+
+    let plaintext = sops_yaml_str!("age_mac_only_encrypted_plaintext");
+    let decrypted_file = decrypt_output::<AgeIntegration>(cmd.run_piped(plaintext));
+    assert_eq!(Some(true), decrypted_file.metadata().mac_only_encrypted)
 }
 
 #[test]
@@ -68,24 +73,34 @@ fn decrypts_from_file() {
     assert_decrypted_output(cmd.run_tty())
 }
 
-#[rustfmt::skip]
-trait EncryptCommand { fn encrypt(self) -> Self; }
+trait EncryptCommand {
+    fn encrypt(self) -> Self;
+
+    fn partial_encryption(self) -> Self;
+}
 impl EncryptCommand for Command {
     fn encrypt(mut self) -> Self {
         self.arg("encrypt");
         self.args(["--age", &<AgeIntegration as Integration>::KeyId::mock_display()]);
         self.common_args()
     }
+
+    fn partial_encryption(mut self) -> Self {
+        self.arg(format!("--unencrypted-suffix={}", PartialEncryptionConfig::mock_display()));
+        self
+    }
 }
 
 fn assert_encrypted<I: IntegrationTestUtils>(encrypted_output: Output, plaintext: &str) {
-    encrypted_output.assert_success();
     let decrypted_file = decrypt_output::<I>(encrypted_output);
     pretty_assertions::assert_eq!(plaintext, decrypted_file.map().to_string());
 }
 
 fn decrypt_output<I: IntegrationTestUtils>(encrypted_output: Output) -> RopsFile<DecryptedFile<DefaultHasher>, YamlFileFormat> {
+    encrypted_output.assert_success();
+
     I::set_mock_private_key_env_var();
+
     encrypted_output
         .stdout_str()
         .parse::<RopsFile<EncryptedFile<DefaultCipher, DefaultHasher>, YamlFileFormat>>()

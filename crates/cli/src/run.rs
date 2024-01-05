@@ -35,6 +35,10 @@ pub fn run() -> anyhow::Result<()> {
                     rops_file_builder = rops_file_builder.with_partial_encryption(partial_encryption_args.into())
                 }
 
+                if encrypt_args.mac_only_encrypted.unwrap_or_default() {
+                    rops_file_builder = rops_file_builder.mac_only_encrypted()
+                }
+
                 let encrypted_rops_file = rops_file_builder.encrypt::<DefaultCipher, DefaultHasher>()?;
                 println!("{}", encrypted_rops_file);
 

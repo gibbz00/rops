@@ -1,6 +1,6 @@
 use std::path::PathBuf;
 
-use clap::{Args, Parser, Subcommand, ValueEnum, ValueHint};
+use clap::{ArgAction, Args, Parser, Subcommand, ValueEnum, ValueHint};
 use regex::Regex;
 use rops::*;
 
@@ -29,6 +29,9 @@ pub struct EncryptArgs {
     pub aws_kms_keys: Vec<<AwsKmsIntegration as Integration>::KeyId>,
     #[command(flatten)]
     pub partial_encryption_args: Option<PartialEncryptionArgs>,
+    /// Requires a partial encryption setting
+    #[arg(long, display_order = 11, requires = "partial_encryption", action(ArgAction::SetTrue))]
+    pub mac_only_encrypted: Option<bool>,
     #[command(flatten)]
     pub input_args: InputArgs,
 }
@@ -44,14 +47,18 @@ pub struct InputArgs {
 }
 
 #[derive(Args)]
-#[group(multiple = false)]
+#[group(id = "partial_encryption", multiple = false)]
 pub struct PartialEncryptionArgs {
+    /// Encrypt values matching key suffix.
     #[arg(long, display_order = 10, value_name = "STRING")]
     encrypted_suffix: Option<String>,
+    /// Encrypt values matching key regex.
     #[arg(long, display_order = 10, value_name = "REGEX")]
     encrypted_regex: Option<Regex>,
+    /// Skip encrypting values matching key suffix.
     #[arg(long, display_order = 10, value_name = "STRING")]
     unencrypted_suffix: Option<String>,
+    /// Skip encrypting values matching key regex.
     #[arg(long, display_order = 10, value_name = "REGEX")]
     unencrypted_regex: Option<Regex>,
 }
