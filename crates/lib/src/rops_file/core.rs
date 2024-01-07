@@ -65,11 +65,21 @@ where
 }
 
 impl<H: Hasher, F: FileFormat> RopsFile<DecryptedFile<H>, F> {
-    pub fn set_map(&mut self, map: RopsFileFormatMap<DecryptedMap, F>) {
-        if self.map != map {
+    pub fn set_map(mut self, other_map: RopsFileFormatMap<DecryptedMap, F>) -> Result<Self, FormatToInternalMapError> {
+        if self.map != other_map {
             self.metadata.last_modified = LastModifiedDateTime::now();
-            self.map = map;
         }
+
+        let internal_other_map = other_map.to_internal()?;
+
+        self.metadata.mac = Mac::<H>::compute(
+            MacOnlyEncryptedConfig::new(self.metadata.mac_only_encrypted, self.metadata.partial_encryption.as_ref()),
+            &internal_other_map,
+        );
+
+        self.map = internal_other_map.to_external();
+
+        Ok(self)
     }
 
     pub fn encrypt<C: Cipher, Fo: FileFormat>(self) -> Result<RopsFile<EncryptedFile<C, H>, Fo>, RopsFileEncryptError> {
@@ -249,16 +259,22 @@ mod tests {
 
     #[test]
     fn sets_map() {
-        let mut rops_file = RopsFile::<DecryptedFile<SHA512>, YamlFileFormat>::mock();
-        rops_file.set_map(RopsFileFormatMap::mock_other());
-        assert_eq!(RopsFileFormatMap::mock_other(), rops_file.map);
-        assert_ne!(LastModifiedDateTime::mock(), rops_file.metadata.last_modified);
+        let rops_file = RopsFile::<DecryptedFile<SHA512>, YamlFileFormat>::mock();
+        let new_rops_file = rops_file.set_map(RopsFileFormatMap::mock_other()).unwrap();
+
+        assert_eq!(RopsFileFormatMap::mock_other(), new_rops_file.map);
+        assert_ne!(LastModifiedDateTime::mock(), new_rops_file.metadata.last_modified);
+        assert_eq!(
+            Mac::<SHA512>::compute(MacOnlyEncryptedConfig::mock(), &RopsMap::mock_other()),
+            Mac::<SHA512>::compute(MacOnlyEncryptedConfig::mock(), &new_rops_file.map.to_internal().unwrap())
+        )
     }
 
     #[test]
     fn skips_updating_unmodified_map() {
-        let mut rops_file = RopsFile::<DecryptedFile<SHA512>, YamlFileFormat>::mock();
-        rops_file.set_map(RopsFileFormatMap::mock());
+        let rops_file = RopsFile::<DecryptedFile<SHA512>, YamlFileFormat>::mock()
+            .set_map(RopsFileFormatMap::mock())
+            .unwrap();
         assert_eq!(LastModifiedDateTime::mock(), rops_file.metadata.last_modified);
     }
 }

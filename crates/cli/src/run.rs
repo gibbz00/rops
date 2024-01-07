@@ -1,6 +1,6 @@
 use std::{
     io::{IsTerminal, Read},
-    path::{Path, PathBuf},
+    path::Path,
     process::Command,
 };
 
@@ -98,7 +98,7 @@ impl Cli {
         }
 
         fn edit_encrypted_file<F: temp_file_format::TempFileFormat>(explicit_file_path: Option<&Path>) -> anyhow::Result<()> {
-            let (mut decrypted_rops_file, saved_parameters) = Cli::get_plaintext_string(explicit_file_path)?
+            let (decrypted_rops_file, saved_parameters) = Cli::get_plaintext_string(explicit_file_path)?
                 .parse::<RopsFile<EncryptedFile<DefaultCipher, DefaultHasher>, F>>()?
                 .decrypt_and_save_parameters::<F>()?;
 
@@ -107,21 +107,17 @@ impl Cli {
                 // Create locally to avoid file being picked up by temporary resource cleaners.
                 .tempfile_in("./")?;
 
-            let mut command = Command::new(select_editor()?);
-            command.arg(temp_file.path());
-
             std::fs::write(temp_file.path(), decrypted_rops_file.map().to_string())?;
 
-            let optional_decrypted_map = read_temp_file::<F>(command, temp_file.path())?;
+            let optional_decrypted_map = edit_temp_file::<F>(temp_file.path())?;
             drop(temp_file);
 
             let Some(decrypted_map) = optional_decrypted_map else {
                 return Ok(());
             };
 
-            decrypted_rops_file.set_map(decrypted_map);
-
             let encrypted_rops_file_string = decrypted_rops_file
+                .set_map(decrypted_map)?
                 .encrypt_with_saved_parameters::<_, F>(saved_parameters)?
                 .to_string();
 
@@ -137,26 +133,38 @@ impl Cli {
 
             return Ok(());
 
-            fn select_editor() -> anyhow::Result<PathBuf> {
+            fn select_editor() -> anyhow::Result<(String, Vec<String>)> {
                 use which::which;
                 match std::env::var_os("EDITOR") {
-                    Some(editor_env) => which(editor_env).context("Unable to locate $EDITOR path"),
-                    None => which("vim")
-                        .or_else(|_| which("nano"))
-                        .or_else(|_| which("vi"))
-                        .map_err(|_| anyhow::anyhow!("unable to locate vim, nano or vi as fallback editors to a missing $EDITOR")),
+                    Some(editor_env) => {
+                        let editor_value = editor_env.to_str().context("$EDITOR value is invalid UTF-8")?;
+                        let mut parts_iter = shlex::split(editor_value)
+                            .context(format!("unable to parse $EDITOR value {}", editor_value))?
+                            .into_iter();
+                        let command = parts_iter.next().expect("$EDTIOR value should not have been empty");
+                        Ok((command, parts_iter.collect()))
+                    }
+                    None => match which("vim").ok().or_else(|| which("nano").ok()).or_else(|| which("vi").ok()) {
+                        Some(fallback) => Ok((fallback.to_str().expect("fallback path is invalid unicode").to_string(), Vec::new())),
+                        None => bail!("unable to locate vim, nano or vi as fallback editors to a missing $EDITOR"),
+                    },
                 }
             }
 
-            fn read_temp_file<F: FileFormat>(
-                mut command: Command,
-                temp_file_path: &Path,
-            ) -> anyhow::Result<Option<RopsFileFormatMap<DecryptedMap, F>>> {
+            fn edit_temp_file<F: FileFormat>(temp_file_path: &Path) -> anyhow::Result<Option<RopsFileFormatMap<DecryptedMap, F>>> {
+                let (editor_command, args) = select_editor()?;
+                let mut command = Command::new(editor_command);
+                command.args(args);
+                command.arg(temp_file_path);
+
                 // Capture SIGINT in order to clean up tempdir.
                 ctrlc::try_set_handler(|| ()).expect("another ctrl-c handler has already been set");
 
                 loop {
-                    let output = command.spawn()?.wait_with_output()?;
+                    let output = command
+                        .spawn()
+                        .context(format!("failed to launch editor; '{}'", command.get_program().to_string_lossy()))?
+                        .wait_with_output()?;
 
                     if !output.status.success() {
                         let error = std::str::from_utf8(&output.stderr).context("unable to read editor stderr")?;
@@ -172,10 +180,9 @@ impl Cli {
                             eprintln!("Send SIGINT (usually Ctrl+C) to quit or any key to retry.");
 
                             if let Err(error) = console::Term::stdout().read_key() {
-                                return if error.kind() == std::io::ErrorKind::Interrupted {
-                                    Ok(None)
-                                } else {
-                                    Err(error.into())
+                                return match error.kind() == std::io::ErrorKind::Interrupted {
+                                    true => Ok(None),
+                                    false => Err(error.into()),
                                 };
                             }
 

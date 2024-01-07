@@ -11,6 +11,7 @@ clap.workspace = true
 console.workspace = true
 ctrlc.workspace = true
 regex.workspace = true
+shlex.workspace = true
 tempfile.workspace = true
 thiserror.workspace = true
 which.workspace = true
@@ -19,3 +20,4 @@ which.workspace = true
 rops = { path = "../lib", features = ["test-utils"] }
 
 pretty_assertions.workspace = true
+test-binary.workspace = true

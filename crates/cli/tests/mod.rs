@@ -73,36 +73,42 @@ fn decrypts_from_file() {
     assert_decrypted_output(cmd.run_tty())
 }
 
-trait EncryptCommand {
-    fn encrypt(self) -> Self;
+test_binary::build_test_binary_once!(mock_editor, "test_bins");
 
-    fn partial_encryption(self) -> Self;
-}
-impl EncryptCommand for Command {
-    fn encrypt(mut self) -> Self {
-        self.arg("encrypt");
-        self.args(["--age", &<AgeIntegration as Integration>::KeyId::mock_display()]);
-        self.common_args()
-    }
-
-    fn partial_encryption(mut self) -> Self {
-        self.arg(format!("--unencrypted-suffix={}", PartialEncryptionConfig::mock_display()));
-        self
-    }
+#[test]
+fn edits_from_stdin() {
+    let encrypted_str = sops_yaml_str!("age_example");
+    let encrypted_output = Command::package_command().edit_age().run_piped(encrypted_str);
+    // TEMP(XXX)
+    println!("{}", encrypted_output.stdout_str());
+    assert_encrypted::<AgeIntegration>(encrypted_output, EDIT_CONTENT);
 }
 
-fn assert_encrypted<I: IntegrationTestUtils>(encrypted_output: Output, plaintext: &str) {
+#[test]
+fn edits_from_file() {
+    let temp_file = tempfile::NamedTempFile::new().unwrap();
+    std::fs::write(temp_file.path(), sops_yaml_str!("age_example")).unwrap();
+
+    let mut cmd = Command::package_command().edit_age();
+    cmd.arg(temp_file.path());
+
+    let encrypted_content = std::fs::read_to_string(temp_file.path()).unwrap();
+    pretty_assertions::assert_eq!(EDIT_CONTENT, decrypt_str::<AgeIntegration>(&encrypted_content).to_string())
+}
+
+fn assert_encrypted<I: IntegrationTestUtils>(encrypted_output: Output, expected_plaintext: &str) {
     let decrypted_file = decrypt_output::<I>(encrypted_output);
-    pretty_assertions::assert_eq!(plaintext, decrypted_file.map().to_string());
+    pretty_assertions::assert_eq!(expected_plaintext, decrypted_file.map().to_string());
 }
 
 fn decrypt_output<I: IntegrationTestUtils>(encrypted_output: Output) -> RopsFile<DecryptedFile<DefaultHasher>, YamlFileFormat> {
     encrypted_output.assert_success();
+    decrypt_str::<I>(encrypted_output.stdout_str())
+}
 
+fn decrypt_str<I: IntegrationTestUtils>(encrypted_str: &str) -> RopsFile<DecryptedFile<DefaultHasher>, YamlFileFormat> {
     I::set_mock_private_key_env_var();
-
-    encrypted_output
-        .stdout_str()
+    encrypted_str
         .parse::<RopsFile<EncryptedFile<DefaultCipher, DefaultHasher>, YamlFileFormat>>()
         .unwrap()
         .decrypt::<YamlFileFormat>()
@@ -118,20 +124,55 @@ fn assert_decrypted_output(decrypted_output: Output) {
     pretty_assertions::assert_eq!(sops_yaml_str!("age_example_plaintext"), decrypted_rops_file.map().to_string())
 }
 
+trait EncryptCommand {
+    fn encrypt(self) -> Self;
+
+    fn partial_encryption(self) -> Self;
+}
+impl EncryptCommand for Command {
+    fn encrypt(mut self) -> Self {
+        self.arg("encrypt");
+        self.args(["--age", &<AgeIntegration as Integration>::KeyId::mock_display()]);
+        self.format_args()
+    }
+
+    fn partial_encryption(mut self) -> Self {
+        self.arg(format!("--unencrypted-suffix={}", PartialEncryptionConfig::mock_display()));
+        self
+    }
+}
+
 #[rustfmt::skip]
 trait DecryptCommand { fn decrypt_age(self) -> Self; }
 impl DecryptCommand for Command {
     fn decrypt_age(mut self) -> Self {
         AgeIntegration::set_mock_private_key_env_var();
         self.arg("decrypt");
-        self.common_args()
+        self.format_args()
+    }
+}
+
+const EDIT_CONTENT: &str = "hello: editor\n";
+#[rustfmt::skip]
+trait EditCommand { fn edit_age(self) -> Self; }
+impl EditCommand for Command {
+    fn edit_age(mut self) -> Self {
+        std::env::set_var(
+            "EDITOR",
+            format!("{} \"{}\"", path_to_mock_editor().to_str().expect("valid unicode"), EDIT_CONTENT),
+        );
+
+        AgeIntegration::set_mock_private_key_env_var();
+
+        self.arg("edit");
+        self.format_args()
     }
 }
 
 #[rustfmt::skip]
-trait CommonArgs { fn common_args(self) -> Self; }
+trait CommonArgs { fn format_args(self) -> Self; }
 impl CommonArgs for Command {
-    fn common_args(mut self) -> Self {
+    fn format_args(mut self) -> Self {
         self.args(["--format", "yaml"]);
         self
     }
