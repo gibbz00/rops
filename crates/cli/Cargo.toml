@@ -19,3 +19,4 @@ which.workspace = true
 rops = { path = "../lib", features = ["test-utils"] }
 
 pretty_assertions.workspace = true
+test-binary.workspace = true
