@@ -77,10 +77,6 @@ impl Cli {
 
     fn edit(input_args: InputArgs) -> anyhow::Result<()> {
         let explicit_file_path = input_args.file.as_deref();
-        if explicit_file_path.is_some_and(|file_arg| !file_arg.exists()) {
-            // TODO: return error suggesting to run `rops encrypt --in-place FILE`
-            todo!()
-        }
 
         return match Self::get_format(explicit_file_path, input_args.format)? {
             Format::Yaml => edit_encrypted_file::<YamlFileFormat>(explicit_file_path),
@@ -151,6 +147,7 @@ impl Cli {
                 }
             }
 
+            /// Returns Ok(None) if operation was cancelled.
             fn edit_temp_file<F: FileFormat>(temp_file_path: &Path) -> anyhow::Result<Option<RopsFileFormatMap<DecryptedMap, F>>> {
                 let (editor_command, args) = select_editor()?;
                 let mut command = Command::new(editor_command);
@@ -203,6 +200,7 @@ impl Cli {
                     bail!(RopsCliError::MultipleInputs)
                 }
                 drop(stdin_guard);
+
                 std::fs::read_to_string(plaintext_path)?
             }
             None => {

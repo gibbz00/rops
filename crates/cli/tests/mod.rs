@@ -91,9 +91,10 @@ fn edits_from_file() {
 
     let mut cmd = Command::package_command().edit_age();
     cmd.arg(temp_file.path());
+    cmd.run_tty();
 
     let encrypted_content = std::fs::read_to_string(temp_file.path()).unwrap();
-    pretty_assertions::assert_eq!(EDIT_CONTENT, decrypt_str::<AgeIntegration>(&encrypted_content).to_string())
+    pretty_assertions::assert_eq!(EDIT_CONTENT, decrypt_str::<AgeIntegration>(&encrypted_content).map().to_string())
 }
 
 fn assert_encrypted<I: IntegrationTestUtils>(encrypted_output: Output, expected_plaintext: &str) {
@@ -159,9 +160,8 @@ impl EditCommand for Command {
     fn edit_age(mut self) -> Self {
         std::env::set_var(
             "EDITOR",
-            format!("{} \"{}\"", path_to_mock_editor().to_str().expect("valid unicode"), EDIT_CONTENT),
+            format!("{} '{}'", path_to_mock_editor().to_str().expect("valid unicode"), EDIT_CONTENT),
         );
-
         AgeIntegration::set_mock_private_key_env_var();
 
         self.arg("edit");
