@@ -3,16 +3,22 @@ use generic_array::{
     typenum::{Unsigned, U32},
     GenericArray,
 };
+use zeroize::Zeroize;
 
 use crate::*;
 
 type DataKeySize = U32;
 
-// XXX: zeroize?
 #[derive(Debug, PartialEq, AsRef, AsMut)]
 #[as_ref(forward)]
 #[as_mut(forward)]
 pub struct DataKey(RngKey<DataKeySize>);
+
+impl Drop for DataKey {
+    fn drop(&mut self) {
+        self.0 .0.zeroize()
+    }
+}
 
 impl DataKey {
     pub const fn byte_size() -> usize {

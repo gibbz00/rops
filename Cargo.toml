@@ -40,6 +40,7 @@ tokio = "1"
 thiserror = "1"
 walkdir = "2"
 which = "5"
+zeroize = { version = "1.7" }
 
 [patch.crates-io]
 # TEMP: https://github.com/str4d/rage/pull/429

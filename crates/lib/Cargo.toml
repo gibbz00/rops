@@ -40,6 +40,7 @@ serde_with.workspace = true
 serde_regex.workspace = true
 strum.workspace = true
 thiserror.workspace = true
+zeroize.workspace = true
 
 # AGE
 age = { workspace = true, features = ["armor"], optional = true }
