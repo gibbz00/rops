@@ -42,6 +42,22 @@ fn encrypts_from_file() {
 }
 
 #[test]
+fn encrypts_in_place() {
+    let mut cmd = Command::package_command().encrypt_in_place();
+    let plaintext = sops_yaml_str!("age_example_plaintext");
+
+    let temp_file = tempfile::NamedTempFile::new().unwrap();
+    std::fs::write(temp_file.path(), plaintext).unwrap();
+    cmd.arg(temp_file.path());
+
+    let output = cmd.run_tty();
+    output.assert_success();
+
+    let encrypted_content = std::fs::read_to_string(temp_file.path()).unwrap();
+    pretty_assertions::assert_eq!(plaintext, decrypt_str::<AgeIntegration>(&encrypted_content).map().to_string())
+}
+
+#[test]
 fn encrypts_with_partial_encryption() {
     let plaintext = sops_yaml_str!("age_unencrypted_suffix_plaintext");
     let output = Command::package_command().encrypt().partial_encryption().run_piped(plaintext);
@@ -127,6 +143,7 @@ fn assert_decrypted_output(decrypted_output: Output) {
 
 trait EncryptCommand {
     fn encrypt(self) -> Self;
+    fn encrypt_in_place(self) -> Self;
 
     fn partial_encryption(self) -> Self;
 }
@@ -135,6 +152,12 @@ impl EncryptCommand for Command {
         self.arg("encrypt");
         self.args(["--age", &<AgeIntegration as Integration>::KeyId::mock_display()]);
         self.format_args()
+    }
+
+    fn encrypt_in_place(self) -> Self {
+        let mut cmd = self.encrypt();
+        cmd.arg("--in-place");
+        cmd
     }
 
     fn partial_encryption(mut self) -> Self {

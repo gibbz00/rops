@@ -37,6 +37,9 @@ pub struct EncryptArgs {
     pub mac_only_encrypted: Option<bool>,
     #[command(flatten)]
     pub input_args: InputArgs,
+    #[arg(long, short, requires = "file", action(ArgAction::SetTrue))]
+    /// Encrypt file in place rather than printing result to stdout.
+    pub in_place: Option<bool>,
 }
 
 #[derive(Args)]

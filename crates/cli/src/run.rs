@@ -27,30 +27,54 @@ struct Cli;
 impl Cli {
     fn encrypt(encrypt_args: EncryptArgs) -> anyhow::Result<()> {
         let explicit_file_path = encrypt_args.input_args.file.as_deref();
-        let plaintext_string = Self::get_plaintext_string(explicit_file_path)?;
+        let file_format = Self::get_format(explicit_file_path, encrypt_args.input_args.format)?;
 
-        return match Self::get_format(explicit_file_path, encrypt_args.input_args.format)? {
-            Format::Yaml => encrypt_rops_file::<YamlFileFormat>(&plaintext_string, encrypt_args),
-            Format::Json => encrypt_rops_file::<JsonFileFormat>(&plaintext_string, encrypt_args),
+        return match encrypt_args.in_place.unwrap_or_default() {
+            true => {
+                let file_path = explicit_file_path
+                    .expect("inplace argument not declared with a #[requires = \"file\"] field attribute.")
+                    .to_path_buf();
+                let plaintext_string = std::fs::read_to_string(&file_path)?;
+
+                let encrypted_rops_file_string = encrypt_rops_file(file_format, &plaintext_string, encrypt_args)?;
+                std::fs::write(&file_path, encrypted_rops_file_string)?;
+
+                Ok(())
+            }
+            false => {
+                let plaintext_string = Self::get_plaintext_string(explicit_file_path)?;
+
+                let encrypted_rops_file_string = encrypt_rops_file(file_format, &plaintext_string, encrypt_args)?;
+                println!("{}", encrypted_rops_file_string);
+
+                Ok(())
+            }
         };
 
-        fn encrypt_rops_file<F: FileFormat>(plaintext_str: &str, encrypt_args: EncryptArgs) -> anyhow::Result<()> {
-            let mut rops_file_builder = RopsFileBuilder::<F>::new(plaintext_str)?
-                .add_integration_keys::<AgeIntegration>(encrypt_args.age_keys)
-                .add_integration_keys::<AwsKmsIntegration>(encrypt_args.aws_kms_keys);
+        fn encrypt_rops_file(file_format: Format, plaintext_string: &str, encrypt_args: EncryptArgs) -> anyhow::Result<String> {
+            return match file_format {
+                Format::Yaml => encrypt_rops_file_impl::<YamlFileFormat>(plaintext_string, encrypt_args),
+                Format::Json => encrypt_rops_file_impl::<JsonFileFormat>(plaintext_string, encrypt_args),
+            };
 
-            if let Some(partial_encryption_args) = encrypt_args.partial_encryption_args {
-                rops_file_builder = rops_file_builder.with_partial_encryption(partial_encryption_args.into())
+            fn encrypt_rops_file_impl<F: FileFormat>(plaintext_str: &str, encrypt_args: EncryptArgs) -> anyhow::Result<String> {
+                let mut rops_file_builder = RopsFileBuilder::<F>::new(plaintext_str)?
+                    .add_integration_keys::<AgeIntegration>(encrypt_args.age_keys)
+                    .add_integration_keys::<AwsKmsIntegration>(encrypt_args.aws_kms_keys);
+
+                if let Some(partial_encryption_args) = encrypt_args.partial_encryption_args {
+                    rops_file_builder = rops_file_builder.with_partial_encryption(partial_encryption_args.into())
+                }
+
+                if encrypt_args.mac_only_encrypted.unwrap_or_default() {
+                    rops_file_builder = rops_file_builder.mac_only_encrypted()
+                }
+
+                rops_file_builder
+                    .encrypt::<DefaultCipher, DefaultHasher>()
+                    .map(|rops_file| rops_file.to_string())
+                    .map_err(Into::into)
             }
-
-            if encrypt_args.mac_only_encrypted.unwrap_or_default() {
-                rops_file_builder = rops_file_builder.mac_only_encrypted()
-            }
-
-            let encrypted_rops_file = rops_file_builder.encrypt::<DefaultCipher, DefaultHasher>()?;
-            println!("{}", encrypted_rops_file);
-
-            Ok(())
         }
     }
 
