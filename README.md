@@ -131,13 +131,12 @@ Many integrations already store their keys in a dedicated location. `rops` does 
 
 ### CLI
 
-<!-- TODO: paste automatically generated {,encryptd,decrypt,..} --help -->
+<!-- TODO: paste automatically generated --help, and for each subcommand -->
 
 - [ ] Update keys
   - [ ] `--add INTEGRATION KEY FILE`
   - [ ] `--remove INTEGRATION KEY FILE`
 - [ ] Specify with a `--key-file INTEGRATION PATH` flag.
-- [ ] Encrypt/Decrypt with `--in-place/-i`
 - [ ] Show metadata `--show-metadata/-s`. Note that directly modifying the metadata will most likely break its integrity and prevent future decryption.
 
 ### `.rops.yaml` configuration
