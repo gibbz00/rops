@@ -5,7 +5,21 @@ use std::process::{Command, Output};
 
 #[test]
 fn disallows_both_stdin_and_file() {
-    let mut cmd = Command::package_command().encrypt();
+    disallows_both_impl(false)
+}
+
+#[test]
+fn disallows_both_stdin_and_file_for_inplace_too() {
+    disallows_both_impl(true)
+}
+
+fn disallows_both_impl(in_place: bool) {
+    let cmd = Command::package_command();
+    let mut cmd = match in_place {
+        true => cmd.encrypt_in_place(),
+        false => cmd.encrypt(),
+    };
+
     cmd.arg("/tmp/file.txt");
 
     let output = cmd.run_piped("piped input");
@@ -50,8 +64,7 @@ fn encrypts_in_place() {
     std::fs::write(temp_file.path(), plaintext).unwrap();
     cmd.arg(temp_file.path());
 
-    let output = cmd.run_tty();
-    output.assert_success();
+    cmd.run_tty().assert_success();
 
     let encrypted_content = std::fs::read_to_string(temp_file.path()).unwrap();
     pretty_assertions::assert_eq!(plaintext, decrypt_str::<AgeIntegration>(&encrypted_content).map().to_string())
@@ -87,6 +100,23 @@ fn decrypts_from_file() {
     let mut cmd = Command::package_command().decrypt_age();
     cmd.arg(sops_yaml_path!("age_example"));
     assert_decrypted_output(cmd.run_tty())
+}
+
+#[test]
+fn decrypts_in_place() {
+    let mut cmd = Command::package_command().decrypt_age_in_place();
+    let encrypted_text = sops_yaml_str!("age_example");
+
+    let temp_file = tempfile::NamedTempFile::new().unwrap();
+    std::fs::write(temp_file.path(), encrypted_text).unwrap();
+    cmd.arg(temp_file.path());
+
+    cmd.run_tty().assert_success();
+
+    pretty_assertions::assert_eq!(
+        sops_yaml_str!("age_example_plaintext"),
+        std::fs::read_to_string(temp_file.path()).unwrap()
+    )
 }
 
 test_binary::build_test_binary_once!(mock_editor, "test_bins");
@@ -134,11 +164,10 @@ fn decrypt_str<I: IntegrationTestUtils>(encrypted_str: &str) -> RopsFile<Decrypt
 
 fn assert_decrypted_output(decrypted_output: Output) {
     decrypted_output.assert_success();
-    let decrypted_rops_file = decrypted_output
-        .stdout_str()
-        .parse::<RopsFile<DecryptedFile<DefaultHasher>, YamlFileFormat>>()
-        .unwrap();
-    pretty_assertions::assert_eq!(sops_yaml_str!("age_example_plaintext"), decrypted_rops_file.map().to_string())
+    pretty_assertions::assert_eq!(
+        format!("{}\n", sops_yaml_str!("age_example_plaintext")),
+        decrypted_output.stdout_str()
+    )
 }
 
 trait EncryptCommand {
@@ -166,13 +195,21 @@ impl EncryptCommand for Command {
     }
 }
 
-#[rustfmt::skip]
-trait DecryptCommand { fn decrypt_age(self) -> Self; }
+trait DecryptCommand {
+    fn decrypt_age(self) -> Self;
+    fn decrypt_age_in_place(self) -> Self;
+}
 impl DecryptCommand for Command {
     fn decrypt_age(mut self) -> Self {
         AgeIntegration::set_mock_private_key_env_var();
         self.arg("decrypt");
         self.format_args()
+    }
+
+    fn decrypt_age_in_place(self) -> Self {
+        let mut cmd = self.decrypt_age();
+        cmd.arg("--in-place");
+        cmd
     }
 }
 

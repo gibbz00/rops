@@ -18,7 +18,7 @@ pub fn run() -> anyhow::Result<()> {
 
     match args.cmd {
         CliSubcommand::Encrypt(encrypt_args) => Cli::encrypt(encrypt_args),
-        CliSubcommand::Decrypt(input_args) => Cli::decrypt(input_args),
+        CliSubcommand::Decrypt(decrypt_args) => Cli::decrypt(decrypt_args),
         CliSubcommand::Edit(input_args) => Cli::edit(input_args),
     }
 }
@@ -26,30 +26,23 @@ pub fn run() -> anyhow::Result<()> {
 struct Cli;
 impl Cli {
     fn encrypt(encrypt_args: EncryptArgs) -> anyhow::Result<()> {
-        let explicit_file_path = encrypt_args.input_args.file.as_deref();
-        let file_format = Self::get_format(explicit_file_path, encrypt_args.input_args.format)?;
+        let explicit_file_path = encrypt_args.input_args.file.clone();
+        let in_place = encrypt_args.in_place;
 
-        return match encrypt_args.in_place.unwrap_or_default() {
+        let file_format = Self::get_format(explicit_file_path.as_deref(), encrypt_args.input_args.format)?;
+        let plaintext_string = Self::get_plaintext_string(explicit_file_path.as_deref(), in_place)?;
+        let encrypted_rops_file_string = encrypt_rops_file(file_format, &plaintext_string, encrypt_args)?;
+
+        match in_place.unwrap_or_default() {
             true => {
-                let file_path = explicit_file_path
-                    .expect("inplace argument not declared with a #[requires = \"file\"] field attribute.")
-                    .to_path_buf();
-                let plaintext_string = std::fs::read_to_string(&file_path)?;
-
-                let encrypted_rops_file_string = encrypt_rops_file(file_format, &plaintext_string, encrypt_args)?;
-                std::fs::write(&file_path, encrypted_rops_file_string)?;
-
-                Ok(())
+                std::fs::write(explicit_file_path.expect(IN_PLACE_PANIC), encrypted_rops_file_string)?;
             }
             false => {
-                let plaintext_string = Self::get_plaintext_string(explicit_file_path)?;
-
-                let encrypted_rops_file_string = encrypt_rops_file(file_format, &plaintext_string, encrypt_args)?;
                 println!("{}", encrypted_rops_file_string);
-
-                Ok(())
             }
-        };
+        }
+
+        return Ok(());
 
         fn encrypt_rops_file(file_format: Format, plaintext_string: &str, encrypt_args: EncryptArgs) -> anyhow::Result<String> {
             return match file_format {
@@ -78,24 +71,37 @@ impl Cli {
         }
     }
 
-    fn decrypt(input_args: InputArgs) -> anyhow::Result<()> {
+    fn decrypt(decrypt_args: DecryptArgs) -> anyhow::Result<()> {
+        let input_args = decrypt_args.input_args;
         let explicit_file_path = input_args.file.as_deref();
-        let plaintext_string = Self::get_plaintext_string(explicit_file_path)?;
         let format = Self::get_format(explicit_file_path, input_args.format)?;
+        let plaintext_string = Self::get_plaintext_string(explicit_file_path, decrypt_args.in_place)?;
+        let decrypted_rops_file_string = decrypt_rops_file(format, &plaintext_string)?;
 
-        return match format {
-            Format::Yaml => decrypt_rops_file::<YamlFileFormat>(&plaintext_string),
-            Format::Json => decrypt_rops_file::<JsonFileFormat>(&plaintext_string),
-        };
+        match decrypt_args.in_place.unwrap_or_default() {
+            true => {
+                std::fs::write(explicit_file_path.expect(IN_PLACE_PANIC), decrypted_rops_file_string)?;
+            }
+            false => {
+                println!("{}", decrypted_rops_file_string);
+            }
+        }
 
-        fn decrypt_rops_file<F: FileFormat>(plaintext_str: &str) -> anyhow::Result<()> {
-            let decrypted_rops_file = plaintext_str
-                .parse::<RopsFile<EncryptedFile<DefaultCipher, DefaultHasher>, F>>()?
-                .decrypt::<F>()?;
+        return Ok(());
 
-            println!("{}", decrypted_rops_file);
+        fn decrypt_rops_file(format: Format, plaintext_str: &str) -> anyhow::Result<String> {
+            return match format {
+                Format::Yaml => decrypt_rops_file_impl::<YamlFileFormat>(plaintext_str),
+                Format::Json => decrypt_rops_file_impl::<JsonFileFormat>(plaintext_str),
+            };
 
-            Ok(())
+            fn decrypt_rops_file_impl<F: FileFormat>(plaintext_str: &str) -> anyhow::Result<String> {
+                plaintext_str
+                    .parse::<RopsFile<EncryptedFile<DefaultCipher, DefaultHasher>, F>>()?
+                    .decrypt::<F>()
+                    .map(|decrypted_rops_file| decrypted_rops_file.map().to_string())
+                    .map_err(Into::into)
+            }
         }
     }
 
@@ -118,7 +124,7 @@ impl Cli {
         }
 
         fn edit_encrypted_file<F: temp_file_format::TempFileFormat>(explicit_file_path: Option<&Path>) -> anyhow::Result<()> {
-            let (decrypted_rops_file, saved_parameters) = Cli::get_plaintext_string(explicit_file_path)?
+            let (decrypted_rops_file, saved_parameters) = Cli::get_plaintext_string(explicit_file_path, None)?
                 .parse::<RopsFile<EncryptedFile<DefaultCipher, DefaultHasher>, F>>()?
                 .decrypt_and_save_parameters::<F>()?;
 
@@ -215,29 +221,34 @@ impl Cli {
         }
     }
 
-    fn get_plaintext_string(file_path: Option<&Path>) -> anyhow::Result<String> {
+    fn get_plaintext_string(file_path: Option<&Path>, in_place: Option<bool>) -> anyhow::Result<String> {
         let mut stdin_guard = std::io::stdin().lock();
 
-        let plaintext_string = match &file_path {
-            Some(plaintext_path) => {
-                if !stdin_guard.is_terminal() {
-                    bail!(RopsCliError::MultipleInputs)
+        let plaintext_string = match in_place.unwrap_or_default() {
+            true => read_from_path(file_path.expect(IN_PLACE_PANIC), stdin_guard)?,
+            false => match &file_path {
+                Some(plaintext_path) => read_from_path(plaintext_path, stdin_guard)?,
+                None => {
+                    if stdin_guard.is_terminal() {
+                        bail!(RopsCliError::MissingInput)
+                    }
+                    let mut stdin_string = String::new();
+                    stdin_guard.read_to_string(&mut stdin_string)?;
+                    stdin_string
                 }
-                drop(stdin_guard);
-
-                std::fs::read_to_string(plaintext_path)?
-            }
-            None => {
-                if stdin_guard.is_terminal() {
-                    bail!(RopsCliError::MissingInput)
-                }
-                let mut stdin_string = String::new();
-                stdin_guard.read_to_string(&mut stdin_string)?;
-                stdin_string
-            }
+            },
         };
 
-        Ok(plaintext_string)
+        return Ok(plaintext_string);
+
+        fn read_from_path(path: &Path, stdin_guard: std::io::StdinLock<'_>) -> anyhow::Result<String> {
+            if !stdin_guard.is_terminal() {
+                bail!(RopsCliError::MultipleInputs)
+            }
+            drop(stdin_guard);
+
+            std::fs::read_to_string(path).map_err(Into::into)
+        }
     }
 
     fn get_format(explicit_file_path: Option<&Path>, explicit_format: Option<Format>) -> Result<Format, RopsCliError> {

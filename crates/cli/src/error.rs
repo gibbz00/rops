@@ -19,3 +19,5 @@ pub enum UndeterminedFormatError {
     #[error("unable to determine file extension for {0} when no format argument was found")]
     NoFileExtention(PathBuf),
 }
+
+pub const IN_PLACE_PANIC: &str = "inplace argument not declared with a #[requires = \"file\"] field attribute.";

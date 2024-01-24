@@ -1,5 +1,5 @@
 mod error;
-pub use error::{RopsCliError, UndeterminedFormatError};
+pub use error::{RopsCliError, UndeterminedFormatError, IN_PLACE_PANIC};
 
 mod args;
 pub use args::*;

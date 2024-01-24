@@ -16,7 +16,7 @@ pub enum CliSubcommand {
     #[command(visible_alias = "e")]
     Encrypt(EncryptArgs),
     #[command(visible_alias = "d")]
-    Decrypt(InputArgs),
+    Decrypt(DecryptArgs),
     /// Edit an encrypted rops file using $EDITOR. (Fallbacks to vim then nano and lastly vi.)
     /// Outputs to stdout if input is piped.
     Edit(InputArgs),
@@ -38,7 +38,16 @@ pub struct EncryptArgs {
     #[command(flatten)]
     pub input_args: InputArgs,
     #[arg(long, short, requires = "file", action(ArgAction::SetTrue))]
-    /// Encrypt file in place rather than printing result to stdout.
+    /// Encrypt file in place rather than printing the result to stdout.
+    pub in_place: Option<bool>,
+}
+
+#[derive(Args)]
+pub struct DecryptArgs {
+    #[command(flatten)]
+    pub input_args: InputArgs,
+    #[arg(long, short, requires = "file", action(ArgAction::SetTrue))]
+    /// Decrypt file in place rather than printing the result to stdout, metadata excluded
     pub in_place: Option<bool>,
 }
 
