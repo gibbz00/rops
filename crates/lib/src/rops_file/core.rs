@@ -36,6 +36,15 @@ where
     pub fn metadata(&self) -> &RopsFileMetadata<S::MetadataState> {
         &self.metadata
     }
+
+    // Not a public method of metadata as we don't want to expose mutable access to it.
+    pub fn add_keys<I: Integration>(&mut self, key_ids: impl IntoIterator<Item = I::KeyId>) -> Result<(), RopsFileAddKeyError>
+    where
+        I::KeyId: Clone,
+    {
+        let data_key = self.metadata.retrieve_data_key()?;
+        self.metadata.intregation.add_keys::<I>(key_ids, &data_key).map_err(Into::into)
+    }
 }
 
 impl<S: RopsFileState, F: FileFormat> Display for RopsFile<S, F>

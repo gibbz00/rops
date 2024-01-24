@@ -27,3 +27,11 @@ pub enum RopsFileDecryptError {
     #[error("invalid MAC, computed {0}, stored {0}")]
     MacMismatch(String, String),
 }
+
+#[derive(Debug, thiserror::Error)]
+pub enum RopsFileAddKeyError {
+    #[error("unable to retrieve current data key")]
+    DataKeyRetrieval(#[from] RopsFileMetadataDataKeyRetrievalError),
+    #[error("encountered error when attempting to add keys")]
+    AddKey(#[from] IntegrationError),
+}

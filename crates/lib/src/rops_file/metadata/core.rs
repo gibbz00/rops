@@ -100,40 +100,11 @@ impl<C: Cipher, H: Hasher> RopsFileMetadata<EncryptedMetadata<C, H>> {
 }
 
 impl<H: Hasher> RopsFileMetadata<DecryptedMetadata<H>> {
-    pub fn encrypt<C: Cipher>(self, data_key: &DataKey) -> Result<RopsFileMetadata<EncryptedMetadata<C, H>>, C::Error> {
-        #[rustfmt::skip]
-        let RopsFileMetadata { intregation, last_modified, mac, partial_encryption, mac_only_encrypted } = self;
-
-        Ok(RopsFileMetadata {
-            intregation,
-            mac: mac.encrypt(data_key, &last_modified)?,
-            last_modified,
-            partial_encryption,
-            mac_only_encrypted,
-        })
-    }
-
-    pub fn encrypt_with_saved_mac_nonce<C: Cipher>(
-        self,
-        data_key: &DataKey,
-        saved_mac_nonce: SavedMacNonce<C, H>,
-    ) -> Result<RopsFileMetadata<EncryptedMetadata<C, H>>, C::Error> {
-        #[rustfmt::skip]
-        let RopsFileMetadata { intregation, last_modified, mac, partial_encryption, mac_only_encrypted } = self;
-
-        Ok(RopsFileMetadata {
-            intregation,
-            mac: mac.encrypt_with_saved_nonce(data_key, &last_modified, saved_mac_nonce)?,
-            last_modified,
-            partial_encryption,
-            mac_only_encrypted,
-        })
-    }
-
-    // NOTE: Assumes sync of encrypted/decrypted state between map and metadata in `RopsFile`.
-    // (We don't want to update the data key when the map is encrypted.)
+    // * Metadata Key Management *
+    // Assumes sync of encrypted/decrypted state between map and metadata in `RopsFile`.
+    // We don't want to for example update the data key when the map is encrypted.
     // WORKAROUND: Handling done here to avoid adding type state parameters to IntegrationMetadata
-    // E.g IntegrationMetadata<DecryptedIntegrationMetadata>::remove_integration_key()
+    // E.g IntegrationMetadata<DecryptedIntegrationMetadata>
     pub(crate) fn remove_integration_key<I: Integration>(
         &mut self,
         key_id: &I::KeyId,
@@ -163,6 +134,36 @@ impl<H: Hasher> RopsFileMetadata<DecryptedMetadata<H>> {
                     .map(|encrypted_data_key| unit.encrypted_data_key = encrypted_data_key)
             })
         }
+    }
+
+    pub fn encrypt<C: Cipher>(self, data_key: &DataKey) -> Result<RopsFileMetadata<EncryptedMetadata<C, H>>, C::Error> {
+        #[rustfmt::skip]
+        let RopsFileMetadata { intregation, last_modified, mac, partial_encryption, mac_only_encrypted } = self;
+
+        Ok(RopsFileMetadata {
+            intregation,
+            mac: mac.encrypt(data_key, &last_modified)?,
+            last_modified,
+            partial_encryption,
+            mac_only_encrypted,
+        })
+    }
+
+    pub fn encrypt_with_saved_mac_nonce<C: Cipher>(
+        self,
+        data_key: &DataKey,
+        saved_mac_nonce: SavedMacNonce<C, H>,
+    ) -> Result<RopsFileMetadata<EncryptedMetadata<C, H>>, C::Error> {
+        #[rustfmt::skip]
+        let RopsFileMetadata { intregation, last_modified, mac, partial_encryption, mac_only_encrypted } = self;
+
+        Ok(RopsFileMetadata {
+            intregation,
+            mac: mac.encrypt_with_saved_nonce(data_key, &last_modified, saved_mac_nonce)?,
+            last_modified,
+            partial_encryption,
+            mac_only_encrypted,
+        })
     }
 }
 

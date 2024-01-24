@@ -2,7 +2,7 @@ mod core;
 pub use core::{RopsFile, RopsFileFromStrError};
 
 mod error;
-pub use error::{RopsFileDecryptError, RopsFileEncryptError};
+pub use error::{RopsFileAddKeyError, RopsFileDecryptError, RopsFileEncryptError};
 
 mod state;
 pub use state::{DecryptedFile, EncryptedFile, RopsFileState};

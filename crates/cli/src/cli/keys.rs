@@ -11,11 +11,23 @@ impl Cli {
     }
 
     fn add_keys(key_args: KeyInputArgs) -> anyhow::Result<()> {
-        // read path,
-        // parse to encrypted rops file
-        // add to metadata
-        // Integration::select_metadata_units(&mut integration_metadata) can be of help
-        todo!()
+        return match Self::get_format(Some(&key_args.file), key_args.format)? {
+            Format::Yaml => add_key_impl::<YamlFileFormat>(key_args),
+            Format::Json => add_key_impl::<JsonFileFormat>(key_args),
+        };
+
+        fn add_key_impl<F: FileFormat>(key_args: KeyInputArgs) -> anyhow::Result<()> {
+            let mut rops_file =
+                Cli::get_input_string(Some(&key_args.file), None)?.parse::<RopsFile<EncryptedFile<DefaultCipher, DefaultHasher>, F>>()?;
+
+            let keys = key_args.intregration_keys;
+            rops_file.add_keys::<AgeIntegration>(keys.age_keys)?;
+            rops_file.add_keys::<AwsKmsIntegration>(keys.aws_kms_keys)?;
+
+            std::fs::write(key_args.file, rops_file.to_string())?;
+
+            Ok(())
+        }
     }
 
     fn remove_keys(key_args: KeyInputArgs) -> anyhow::Result<()> {
