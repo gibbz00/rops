@@ -15,6 +15,16 @@ pub struct InputArgs {
 }
 
 #[derive(Args)]
+pub struct IntegrationKeys {
+    /// Space separated list of public age keys
+    #[arg(long = "age")]
+    pub age_keys: Vec<<AgeIntegration as Integration>::KeyId>,
+    /// Space separated list of AWS KMS rops key id strings.
+    #[arg(long = "aws-kms")]
+    pub aws_kms_keys: Vec<<AwsKmsIntegration as Integration>::KeyId>,
+}
+
+#[derive(Args)]
 #[group(id = "partial_encryption", multiple = false)]
 pub struct PartialEncryptionArgs {
     /// Encrypt values matching key suffix.
