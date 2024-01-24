@@ -1,16 +1,14 @@
-mod error;
-pub use error::{RopsCliError, UndeterminedFormatError, IN_PLACE_PANIC};
-
-mod args;
-pub use args::*;
-
 mod run;
 pub use run::run;
 
-pub use cryptography_stack::{DefaultCipher, DefaultHasher};
-mod cryptography_stack {
-    use rops::{AES256GCM, SHA512};
+mod error;
+pub(crate) use error::{RopsCliError, UndeterminedFormatError, IN_PLACE_PANIC};
 
-    pub type DefaultCipher = AES256GCM;
-    pub type DefaultHasher = SHA512;
-}
+mod args;
+pub(crate) use args::*;
+
+mod cli;
+pub(crate) use cli::Cli;
+
+mod cryptography_stack;
+pub(crate) use cryptography_stack::{DefaultCipher, DefaultHasher};
