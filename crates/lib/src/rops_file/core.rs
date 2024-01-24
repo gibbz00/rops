@@ -82,6 +82,11 @@ impl<H: Hasher, F: FileFormat> RopsFile<DecryptedFile<H>, F> {
         Ok(self)
     }
 
+    /// Returns the removed integration medata unit, if any.
+    pub fn remove_integration_key<I: Integration>(&mut self, key_id: &I::KeyId) -> IntegrationResult<Option<IntegrationMetadataUnit<I>>> {
+        self.metadata.remove_integration_key(key_id)
+    }
+
     pub fn encrypt<C: Cipher, Fo: FileFormat>(self) -> Result<RopsFile<EncryptedFile<C, H>, Fo>, RopsFileEncryptError> {
         let data_key = self.metadata.retrieve_data_key()?;
         let encrypted_map = self

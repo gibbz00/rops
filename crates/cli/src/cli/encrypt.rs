@@ -8,7 +8,7 @@ impl Cli {
         let in_place = encrypt_args.in_place;
 
         let file_format = Self::get_format(explicit_file_path.as_deref(), encrypt_args.input_args.format)?;
-        let plaintext_string = Self::get_plaintext_string(explicit_file_path.as_deref(), in_place)?;
+        let plaintext_string = Self::get_input_string(explicit_file_path.as_deref(), in_place)?;
         let encrypted_rops_file_string = encrypt_rops_file(file_format, &plaintext_string, encrypt_args)?;
 
         match in_place.unwrap_or_default() {

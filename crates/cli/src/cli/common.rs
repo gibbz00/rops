@@ -9,10 +9,10 @@ use clap::ValueEnum;
 use crate::*;
 
 impl Cli {
-    pub fn get_plaintext_string(file_path: Option<&Path>, in_place: Option<bool>) -> anyhow::Result<String> {
+    pub fn get_input_string(file_path: Option<&Path>, in_place: Option<bool>) -> anyhow::Result<String> {
         let mut stdin_guard = std::io::stdin().lock();
 
-        let plaintext_string = match in_place.unwrap_or_default() {
+        let input_string = match in_place.unwrap_or_default() {
             true => read_from_path(file_path.expect(IN_PLACE_PANIC), stdin_guard)?,
             false => match &file_path {
                 Some(plaintext_path) => read_from_path(plaintext_path, stdin_guard)?,
@@ -27,7 +27,7 @@ impl Cli {
             },
         };
 
-        return Ok(plaintext_string);
+        return Ok(input_string);
 
         fn read_from_path(path: &Path, stdin_guard: std::io::StdinLock<'_>) -> anyhow::Result<String> {
             if !stdin_guard.is_terminal() {

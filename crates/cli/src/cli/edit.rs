@@ -25,7 +25,7 @@ impl Cli {
         }
 
         fn edit_encrypted_file<F: temp_file_format::TempFileFormat>(explicit_file_path: Option<&Path>) -> anyhow::Result<()> {
-            let (decrypted_rops_file, saved_parameters) = Cli::get_plaintext_string(explicit_file_path, None)?
+            let (decrypted_rops_file, saved_parameters) = Cli::get_input_string(explicit_file_path, None)?
                 .parse::<RopsFile<EncryptedFile<DefaultCipher, DefaultHasher>, F>>()?
                 .decrypt_and_save_parameters::<F>()?;
 

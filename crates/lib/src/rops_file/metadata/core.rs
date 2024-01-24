@@ -130,12 +130,14 @@ impl<H: Hasher> RopsFileMetadata<DecryptedMetadata<H>> {
         })
     }
 
-    /// Returns the removed integration medata unit , if any.
     // NOTE: Assumes sync of encrypted/decrypted state between map and metadata in `RopsFile`.
     // (We don't want to update the data key when the map is encrypted.)
     // WORKAROUND: Handling done here to avoid adding type state parameters to IntegrationMetadata
     // E.g IntegrationMetadata<DecryptedIntegrationMetadata>::remove_integration_key()
-    pub fn remove_integration_key<I: Integration>(&mut self, key_id: &I::KeyId) -> IntegrationResult<Option<IntegrationMetadataUnit<I>>> {
+    pub(crate) fn remove_integration_key<I: Integration>(
+        &mut self,
+        key_id: &I::KeyId,
+    ) -> IntegrationResult<Option<IntegrationMetadataUnit<I>>> {
         let integration_keys = I::select_metadata_units(&mut self.intregation);
 
         let Some(removed_key) = integration_keys.remove(key_id) else {

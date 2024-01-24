@@ -7,8 +7,8 @@ impl Cli {
         let input_args = decrypt_args.input_args;
         let explicit_file_path = input_args.file.as_deref();
         let format = Self::get_format(explicit_file_path, input_args.format)?;
-        let plaintext_string = Self::get_plaintext_string(explicit_file_path, decrypt_args.in_place)?;
-        let decrypted_rops_file_string = decrypt_rops_file(format, &plaintext_string)?;
+        let input_string = Self::get_input_string(explicit_file_path, decrypt_args.in_place)?;
+        let decrypted_rops_file_string = decrypt_rops_file(format, &input_string)?;
 
         match decrypt_args.in_place.unwrap_or_default() {
             true => {
@@ -21,14 +21,14 @@ impl Cli {
 
         return Ok(());
 
-        fn decrypt_rops_file(format: Format, plaintext_str: &str) -> anyhow::Result<String> {
+        fn decrypt_rops_file(format: Format, encrypted_rops_file_str: &str) -> anyhow::Result<String> {
             return match format {
-                Format::Yaml => decrypt_rops_file_impl::<YamlFileFormat>(plaintext_str),
-                Format::Json => decrypt_rops_file_impl::<JsonFileFormat>(plaintext_str),
+                Format::Yaml => decrypt_rops_file_impl::<YamlFileFormat>(encrypted_rops_file_str),
+                Format::Json => decrypt_rops_file_impl::<JsonFileFormat>(encrypted_rops_file_str),
             };
 
-            fn decrypt_rops_file_impl<F: FileFormat>(plaintext_str: &str) -> anyhow::Result<String> {
-                plaintext_str
+            fn decrypt_rops_file_impl<F: FileFormat>(encrypted_rops_file_str: &str) -> anyhow::Result<String> {
+                encrypted_rops_file_str
                     .parse::<RopsFile<EncryptedFile<DefaultCipher, DefaultHasher>, F>>()?
                     .decrypt::<F>()
                     .map(|decrypted_rops_file| decrypted_rops_file.map().to_string())
