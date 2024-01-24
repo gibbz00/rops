@@ -11,6 +11,8 @@ mod decryption;
 
 mod editing;
 
+mod keys;
+
 test_binary::build_test_binary_once!(mock_editor, "test_bins");
 
 mod command_utils;

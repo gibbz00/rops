@@ -122,6 +122,12 @@ mod key_id {
                 Self::mock_display().parse().unwrap()
             }
         }
+
+        impl MockOtherTestUtil for age::x25519::Recipient {
+            fn mock_other() -> Self {
+                "age1qazf43xll4ramx3wcn7h2yl9scycxdhrwge8862vv6zj97pafdvq0d5mn6".parse().unwrap()
+            }
+        }
     }
 }
 
