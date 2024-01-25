@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [features]
-default = ["age", "aws-kms", "yaml", "json", "aes-gcm", "sha2"]
+default = ["age", "aws-kms", "yaml", "json", "toml", "aes-gcm", "sha2"]
 # Integrations:
 age = ["dep:age"]
 aws-kms = ["dep:aws-arn", "dep:aws-sdk-kms", "dep:tokio"]

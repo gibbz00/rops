@@ -14,6 +14,7 @@ impl Cli {
         return match Self::get_format(Some(&key_args.file), key_args.format)? {
             Format::Yaml => add_key_impl::<YamlFileFormat>(key_args),
             Format::Json => add_key_impl::<JsonFileFormat>(key_args),
+            Format::Toml => add_key_impl::<TomlFileFormat>(key_args),
         };
 
         fn add_key_impl<F: FileFormat>(key_args: KeyInputArgs) -> anyhow::Result<()> {
@@ -34,6 +35,7 @@ impl Cli {
         return match Self::get_format(Some(&key_args.file), key_args.format)? {
             Format::Yaml => remove_key_impl::<YamlFileFormat>(key_args),
             Format::Json => remove_key_impl::<JsonFileFormat>(key_args),
+            Format::Toml => remove_key_impl::<TomlFileFormat>(key_args),
         };
 
         fn remove_key_impl<F: FileFormat>(key_args: KeyInputArgs) -> anyhow::Result<()> {

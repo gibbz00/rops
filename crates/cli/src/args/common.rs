@@ -61,4 +61,5 @@ pub enum Format {
     #[value(alias = "yml")]
     Yaml,
     Json,
+    Toml,
 }

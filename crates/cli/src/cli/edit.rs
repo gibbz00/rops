@@ -12,6 +12,7 @@ impl Cli {
         return match Self::get_format(explicit_file_path, input_args.format)? {
             Format::Yaml => edit_encrypted_file::<YamlFileFormat>(explicit_file_path),
             Format::Json => edit_encrypted_file::<JsonFileFormat>(explicit_file_path),
+            Format::Toml => edit_encrypted_file::<TomlFileFormat>(explicit_file_path),
         };
 
         // Nested to avoid it being misused for regular files which might use aliases.
@@ -22,6 +23,7 @@ impl Cli {
             pub trait TempFileFormat: FileFormat { const TEMP_EXTENTION: &'static str; }
             impl TempFileFormat for YamlFileFormat { const TEMP_EXTENTION: &'static str = "yaml"; }
             impl TempFileFormat for JsonFileFormat { const TEMP_EXTENTION: &'static str = "json"; }
+            impl TempFileFormat for TomlFileFormat { const TEMP_EXTENTION: &'static str = "toml"; }
         }
 
         fn edit_encrypted_file<F: temp_file_format::TempFileFormat>(explicit_file_path: Option<&Path>) -> anyhow::Result<()> {
