@@ -17,6 +17,11 @@ mod json;
 #[cfg(feature = "json")]
 pub use json::JsonFileFormat;
 
+#[cfg(feature = "toml")]
+mod toml;
+#[cfg(feature = "toml")]
+pub use toml::TomlFileFormat;
+
 #[cfg(feature = "test-utils")]
 mod test_utils;
 #[cfg(feature = "test-utils")]

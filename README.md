@@ -5,7 +5,7 @@
 
 ### Goals
 
-* Full `sops` encrypted file compatibility. Decrypt any `sops` file using `rops` and vice versa.
+* Full `sops` encrypted file compatibility. Decrypt any `sops` supported format using `rops` and vice versa.
 * Be consistent in how credentials are used, set and retrieved across integrations.
 * Disincentivize unsecure operations.
 * Available as a rust library.
@@ -21,6 +21,7 @@
 - Formats:
   - [X] YAML
   - [X] JSON
+  - [X] TOML ([Currently](https://github.com/getsops/sops/pull/812) exclusive to `rops`)
   - [ ] INI
   - [ ] ENV
   - [ ] BINARY
@@ -136,7 +137,7 @@ Many integrations already store their keys in a dedicated location. `rops` does 
 - [ ] Specify keys by `--key-file INTEGRATION PATH` flag.
 - [ ] Show metadata `--show-metadata/-s`. Note that directly modifying the metadata will most likely break its integrity and prevent future decryption.
 
-### Missing `.rops.yaml` configuration features
+### Missing `.rops.toml` configuration features
 
 - Find by: recursive directory traversal.
   - [ ] Recursive directory traversal.

@@ -11,6 +11,7 @@ aws-kms = ["dep:aws-arn", "dep:aws-sdk-kms", "dep:tokio"]
 # File formats:
 yaml = ["dep:serde_yaml"]
 json = ["dep:serde_json"]
+toml = ["dep:toml"]
 # Ciphers
 aes-gcm = ["dep:aes-gcm"]
 # Hashers
@@ -55,6 +56,9 @@ serde_yaml = { workspace = true, optional = true }
 
 # JSON
 serde_json = { workspace = true, features = ["preserve_order"], optional = true }
+
+# TOML
+toml = { workspace = true, features = ["preserve_order"], optional = true }
 
 # AES_GCM
 aes-gcm = { workspace = true, optional = true }

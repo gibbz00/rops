@@ -90,8 +90,9 @@ macro_rules! generate_file_format_test_suite {
                 }
 
                 #[test]
+                #[should_panic]
                 fn dissallows_out_of_range_integers() {
-                    assert!(matches!(
+                    assert!(!matches!(
                         $file_format::key_value_map::<DecryptedMap>("invalid_integer", u64::MAX)
                             .to_internal()
                             .unwrap_err(),

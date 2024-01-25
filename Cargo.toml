@@ -36,8 +36,9 @@ strum = { version = "0.25", features = ["derive"] }
 tempfile = "3"
 test-binary = "3"
 textwrap = "0.16"
-tokio = "1"
 thiserror = "1"
+tokio = "1"
+toml = "0.8"
 walkdir = "2"
 which = "5"
 zeroize = { version = "1.7" }
