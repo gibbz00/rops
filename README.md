@@ -129,17 +129,14 @@ Many integrations already store their keys in a dedicated location. `rops` does 
 - [ ] [Roles](https://github.com/getsops/sops#28assuming-roles-and-using-kms-in-various-aws-accounts)
 - [ ] [Context](https://github.com/getsops/sops#29aws-kms-encryption-context)
 
-### CLI
+### Missing CLI features
 
 <!-- TODO: paste automatically generated --help, and for each subcommand -->
 
-- [ ] Update keys
-  - [ ] `--add INTEGRATION KEY FILE`
-  - [ ] `--remove INTEGRATION KEY FILE`
-- [ ] Specify with a `--key-file INTEGRATION PATH` flag.
+- [ ] Specify keys by `--key-file INTEGRATION PATH` flag.
 - [ ] Show metadata `--show-metadata/-s`. Note that directly modifying the metadata will most likely break its integrity and prevent future decryption.
 
-### `.rops.yaml` configuration
+### Missing `.rops.yaml` configuration features
 
 - Find by: recursive directory traversal.
   - [ ] Recursive directory traversal.
