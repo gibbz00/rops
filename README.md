@@ -130,26 +130,36 @@ Many integrations already store their keys in a dedicated location. `rops` does 
 - [ ] [Roles](https://github.com/getsops/sops#28assuming-roles-and-using-kms-in-various-aws-accounts)
 - [ ] [Context](https://github.com/getsops/sops#29aws-kms-encryption-context)
 
-### Missing CLI features
+
+## CLI
 
 <!-- TODO: paste automatically generated --help, and for each subcommand -->
 
-- [ ] Specify keys by `--key-file INTEGRATION PATH` flag.
-- [ ] Show metadata `--show-metadata/-s`. Note that directly modifying the metadata will most likely break its integrity and prevent future decryption.
+### Config
 
-### Missing `.rops.toml` configuration features
+<!-- TODO: paste automacially generated reference config -->
 
+#### Retrieval
+
+<!-- TODO:
 - Find by: recursive directory traversal.
   - [ ] Recursive directory traversal.
   - [ ] Specify with a `$ROPS_CONFIG` environment variable.
   - [ ] Specify with a `--config/-c` flag.
+-->
+
+#### Missing features
+
 - [ ] Update keys with `update-keys` sub-command.
-- [ ] Regex based creation rules.
-- [ ] Available key ids per rule.
 - [ ] Partial encryption
     - [ ] `partial_encryption.{un,}encrypted.{ match: {regex,suffix}, pattern: "<pattern>" }`.
   - [ ] MAC encrypted values only.
     - [ ] `partial_encryption.mac_only_encrypted: true`.
+
+### Missing features
+
+- [ ] Specify keys by `--key-file INTEGRATION PATH` flag.
+- [ ] Show metadata `--show-metadata/-s`. Note that directly modifying the metadata will most likely break its integrity and prevent future decryption.
 
 ### Misc
 
@@ -157,7 +167,7 @@ Many integrations already store their keys in a dedicated location. `rops` does 
 - [ ] [Key groups.](https://github.com/getsops/sops#214key-groups)
 - [ ] Storing file comments.
 
-#### `rops` exclusives
+#### Additional `rops` exclusives
 - [X] Encrypt, decrypt or edit using stdin.
 - [ ] Compute an additional MAC over active integration keys to prevent against manual removal without rotating the secret data key.
 
