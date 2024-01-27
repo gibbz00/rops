@@ -22,8 +22,8 @@ impl Cli {
                 Cli::get_input_string(Some(&key_args.file), None)?.parse::<RopsFile<EncryptedFile<DefaultCipher, DefaultHasher>, F>>()?;
 
             let keys = key_args.intregration_keys;
-            rops_file.add_keys::<AgeIntegration>(keys.age_keys)?;
-            rops_file.add_keys::<AwsKmsIntegration>(keys.aws_kms_keys)?;
+            rops_file.add_keys::<AgeIntegration>(keys.age)?;
+            rops_file.add_keys::<AwsKmsIntegration>(keys.aws_kms)?;
 
             std::fs::write(key_args.file, rops_file.to_string())?;
 
@@ -46,11 +46,11 @@ impl Cli {
             let keys = key_args.intregration_keys;
 
             // IMPROVEMENT: return error if any key not found?
-            for age_key in keys.age_keys {
+            for age_key in keys.age {
                 decrypted_rops_file.remove_integration_key::<AgeIntegration>(&age_key)?;
             }
 
-            for aws_key in keys.aws_kms_keys {
+            for aws_key in keys.aws_kms {
                 decrypted_rops_file.remove_integration_key::<AwsKmsIntegration>(&aws_key)?;
             }
 

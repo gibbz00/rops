@@ -1,4 +1,4 @@
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 use clap::{Args, Subcommand, ValueHint};
 
@@ -20,4 +20,16 @@ pub struct KeyInputArgs {
     /// Path to an encrypted rops file.
     #[arg(value_hint = ValueHint::FilePath)]
     pub file: PathBuf,
+}
+
+impl ConfigArg for KeysSubcommand {
+    fn config_path(&self) -> Option<&Path> {
+        None
+    }
+}
+
+impl MergeConfig for KeysSubcommand {
+    fn merge_config(&mut self, _config: Config) {
+        // todo!()
+    }
 }

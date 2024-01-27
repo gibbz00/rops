@@ -3,7 +3,8 @@ use clap::Parser;
 use crate::*;
 
 pub fn run() -> anyhow::Result<()> {
-    let args = CliArgs::parse();
+    let mut args = CliArgs::parse();
+    args.merge_config(Config::retrieve(args.config_path())?);
 
     match args.cmd {
         CliSubcommand::Encrypt(encrypt_args) => Cli::encrypt(encrypt_args),
