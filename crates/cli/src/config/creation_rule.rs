@@ -1,3 +1,5 @@
+use std::path::Path;
+
 use regex::Regex;
 use rops::*;
 use serde::Deserialize;
@@ -16,6 +18,19 @@ pub struct CreationRule {
     pub integration_keys: IntegrationKeys,
 }
 
+impl CreationRule {
+    pub fn implies_metadata(
+        &self,
+        rops_file_path: &Path,
+        metadata: &RopsFileMetadata<EncryptedMetadata<DefaultCipher, DefaultHasher>>,
+    ) -> bool {
+        self.path_regex.is_match(&rops_file_path.to_string_lossy())
+            && self.mac_only_encrypted == metadata.mac_only_encrypted
+            && self.partial_encryption == metadata.partial_encryption
+            && self.integration_keys.implies_integration_metadata(&metadata.intregation)
+    }
+}
+
 #[cfg(feature = "test-utils")]
 mod mock {
     use super::*;
@@ -23,12 +38,13 @@ mod mock {
     impl MockTestUtil for CreationRule {
         fn mock() -> Self {
             let file_to_match = InputArgs::mock().file.unwrap();
+            let rops_file_metadata = RopsFileMetadata::<EncryptedMetadata<DefaultCipher, DefaultHasher>>::mock();
 
             Self {
                 path_regex: file_to_match.to_str().unwrap().parse().unwrap(),
                 integration_keys: MockTestUtil::mock(),
-                mac_only_encrypted: Some(true),
-                partial_encryption: Some(MockTestUtil::mock()),
+                mac_only_encrypted: rops_file_metadata.mac_only_encrypted,
+                partial_encryption: rops_file_metadata.partial_encryption,
             }
         }
     }
@@ -38,9 +54,21 @@ mod mock {
             Self {
                 path_regex: ".*".parse().unwrap(),
                 integration_keys: MockOtherTestUtil::mock_other(),
-                mac_only_encrypted: None,
+                mac_only_encrypted: Some(true),
                 partial_encryption: None,
             }
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn implies_metadata() {
+        let file = InputArgs::mock().file.unwrap();
+        assert!(CreationRule::mock().implies_metadata(&file, &MockTestUtil::mock()));
+        assert!(!CreationRule::mock_other().implies_metadata(&file, &MockTestUtil::mock()));
     }
 }

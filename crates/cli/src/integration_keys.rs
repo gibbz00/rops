@@ -1,4 +1,5 @@
 use clap::Args;
+use indexmap::IndexSet;
 use rops::*;
 use serde::Deserialize;
 use serde_with::DisplayFromStr;
@@ -30,6 +31,17 @@ impl IntegrationKeys {
         self.age.append(&mut other.age);
         self.aws_kms.append(&mut other.aws_kms);
     }
+
+    pub fn implies_integration_metadata(&self, integration_metadata: &IntegrationMetadata) -> bool {
+        return identical_keys::<AgeIntegration>(&self.age, &integration_metadata.age)
+            && identical_keys::<AwsKmsIntegration>(&self.aws_kms, &integration_metadata.kms);
+
+        fn identical_keys<I: Integration>(arg_keys: &[I::KeyId], metadata_keys: &IntegrationMetadataUnits<I>) -> bool {
+            let args_keys_set = IndexSet::<&I::KeyId>::from_iter(arg_keys.iter());
+            let metadata_keys_set = IndexSet::<&I::KeyId>::from_iter(metadata_keys.keys());
+            args_keys_set.symmetric_difference(&metadata_keys_set).next().is_none()
+        }
+    }
 }
 
 #[cfg(feature = "test-utils")]
@@ -40,7 +52,7 @@ mod mock {
         fn mock() -> Self {
             Self {
                 age: vec![<<AgeIntegration as Integration>::KeyId>::mock()],
-                aws_kms: vec![],
+                aws_kms: vec![<<AwsKmsIntegration as Integration>::KeyId>::mock()],
             }
         }
     }
@@ -52,5 +64,16 @@ mod mock {
                 aws_kms: vec![],
             }
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn implies_metadata() {
+        assert!(IntegrationKeys::mock().implies_integration_metadata(&IntegrationMetadata::mock()));
+        assert!(!IntegrationKeys::mock_other().implies_integration_metadata(&IntegrationMetadata::mock()));
     }
 }

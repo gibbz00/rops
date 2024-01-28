@@ -13,6 +13,7 @@ anyhow.workspace = true
 clap.workspace = true
 console.workspace = true
 ctrlc.workspace = true
+indexmap.workspace = true
 regex.workspace = true
 serde.workspace = true
 serde_regex.workspace = true

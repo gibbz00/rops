@@ -43,6 +43,8 @@ impl MergeConfig for EncryptArgs {
                             self.partial_encryption_args = Some(partial_encryption_config.into());
                         }
                     }
+
+                    break;
                 }
             }
         }
@@ -93,7 +95,7 @@ mod test {
     fn merges_mac_only_encrypted_from_config() {
         let mut encrypted_args = EncryptArgs::mock();
         assert!(encrypted_args.mac_only_encrypted.is_none());
-        encrypted_args.merge_config(Config::mock());
+        encrypted_args.merge_config(Config::mock_other());
         assert!(encrypted_args.mac_only_encrypted.is_some());
     }
 }
