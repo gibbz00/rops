@@ -130,7 +130,6 @@ Many integrations already store their keys in a dedicated location. `rops` does 
 - [ ] [Roles](https://github.com/getsops/sops#28assuming-roles-and-using-kms-in-various-aws-accounts)
 - [ ] [Context](https://github.com/getsops/sops#29aws-kms-encryption-context)
 
-
 ## CLI
 
 <!-- TODO: paste automatically generated --help, and for each subcommand -->
@@ -139,14 +138,13 @@ Many integrations already store their keys in a dedicated location. `rops` does 
 
 <!-- TODO: paste automacially generated reference config -->
 
-#### Retrieval
+CLI config is retrieved from a...
 
-<!-- TODO:
-- Find by: recursive directory traversal.
-  - [ ] Recursive directory traversal.
-  - [ ] Specify with a `$ROPS_CONFIG` environment variable.
-  - [ ] Specify with a `--config/-c` flag.
--->
+1. `--config/-c <FILE>` flag.
+2. File path set by the environment variable `$ROPS_CONFIG`.
+3. File of the name `.rops.toml` found in the current working directory or any ancestor thereof.
+
+First match of any lookup cancels the next, fallback being the default config shown above.
 
 #### Missing features
 
