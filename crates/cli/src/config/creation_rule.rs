@@ -1,4 +1,5 @@
 use regex::Regex;
+use rops::*;
 use serde::Deserialize;
 
 use crate::*;
@@ -10,13 +11,13 @@ pub struct CreationRule {
     pub path_regex: Regex,
     #[cfg_attr(feature = "test-utils", serde(skip_serializing_if = "Option::is_none"))]
     pub mac_only_encrypted: Option<bool>,
+    #[cfg_attr(feature = "test-utils", serde(skip_serializing_if = "Option::is_none"))]
+    pub partial_encryption: Option<PartialEncryptionConfig>,
     pub integration_keys: IntegrationKeys,
 }
 
 #[cfg(feature = "test-utils")]
 mod mock {
-    use rops::*;
-
     use super::*;
 
     impl MockTestUtil for CreationRule {
@@ -27,6 +28,7 @@ mod mock {
                 path_regex: file_to_match.to_str().unwrap().parse().unwrap(),
                 integration_keys: MockTestUtil::mock(),
                 mac_only_encrypted: Some(true),
+                partial_encryption: Some(MockTestUtil::mock()),
             }
         }
     }
@@ -37,6 +39,7 @@ mod mock {
                 path_regex: ".*".parse().unwrap(),
                 integration_keys: MockOtherTestUtil::mock_other(),
                 mac_only_encrypted: None,
+                partial_encryption: None,
             }
         }
     }

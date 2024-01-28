@@ -2,18 +2,15 @@ use derive_more::AsRef;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
 pub enum PartialEncryptionConfig {
     // Limit
-    #[serde(rename = "encrypted_suffix")]
     EncryptedSuffix(String),
-    #[serde(rename = "encrypted_regex")]
     EncryptedRegex(RopsRegex),
 
     // Escape
-    #[serde(rename = "unencrypted_suffix")]
     UnencryptedSuffix(String),
-    #[serde(rename = "unencrypted_regex")]
-    UencryptedRegex(RopsRegex),
+    UnencryptedRegex(RopsRegex),
 }
 
 #[derive(Default, Clone, Copy, AsRef)]
@@ -25,7 +22,7 @@ impl PartialEncryptionConfig {
             PartialEncryptionConfig::EncryptedSuffix(suffix) => key_str.ends_with(suffix).then_some(EscapeEncryption(false)),
             PartialEncryptionConfig::EncryptedRegex(regex) => regex.is_match(key_str).then_some(EscapeEncryption(false)),
             PartialEncryptionConfig::UnencryptedSuffix(suffix) => key_str.ends_with(suffix).then_some(EscapeEncryption(true)),
-            PartialEncryptionConfig::UencryptedRegex(regex) => regex.is_match(key_str).then_some(EscapeEncryption(true)),
+            PartialEncryptionConfig::UnencryptedRegex(regex) => regex.is_match(key_str).then_some(EscapeEncryption(true)),
         };
 
         match maybe_escape_encryption {
@@ -47,7 +44,7 @@ impl ResolvedPartialEncrpytion<'_> {
             ResolvedPartialEncrpytion::Yes(escape_encryption) => escape_encryption.0,
             ResolvedPartialEncrpytion::No(partial_encryption_config) => match partial_encryption_config {
                 PartialEncryptionConfig::EncryptedSuffix(_) | PartialEncryptionConfig::EncryptedRegex(_) => true,
-                PartialEncryptionConfig::UnencryptedSuffix(_) | PartialEncryptionConfig::UencryptedRegex(_) => false,
+                PartialEncryptionConfig::UnencryptedSuffix(_) | PartialEncryptionConfig::UnencryptedRegex(_) => false,
             },
         }
     }
@@ -64,11 +61,11 @@ impl<'a> From<Option<&'a PartialEncryptionConfig>> for ResolvedPartialEncrpytion
 
 pub use regex::RopsRegex;
 mod regex {
-    use derive_more::{Deref, From};
+    use derive_more::{Deref, From, Into};
     use regex::Regex;
     use serde::{Deserialize, Serialize};
 
-    #[derive(Debug, Serialize, Deserialize, Deref, From)]
+    #[derive(Debug, Serialize, Deserialize, Deref, From, Into)]
     #[serde(transparent)]
     pub struct RopsRegex(#[serde(with = "serde_regex")] Regex);
 

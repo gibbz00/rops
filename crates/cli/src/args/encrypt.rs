@@ -1,6 +1,7 @@
 use std::path::Path;
 
 use clap::{ArgAction, Args};
+use rops::*;
 
 use crate::*;
 
@@ -36,6 +37,12 @@ impl MergeConfig for EncryptArgs {
                     if self.mac_only_encrypted.is_none() {
                         self.mac_only_encrypted = creation_rule.mac_only_encrypted;
                     }
+
+                    if self.partial_encryption_args.is_none() {
+                        if let Some(partial_encryption_config) = creation_rule.partial_encryption {
+                            self.partial_encryption_args = Some(partial_encryption_config.into());
+                        }
+                    }
                 }
             }
         }
@@ -44,8 +51,6 @@ impl MergeConfig for EncryptArgs {
 
 #[cfg(feature = "test-utils")]
 mod mock {
-    use rops::*;
-
     use super::*;
 
     impl MockTestUtil for EncryptArgs {
@@ -63,8 +68,6 @@ mod mock {
 
 #[cfg(test)]
 mod test {
-    use rops::*;
-
     use super::*;
 
     #[test]
@@ -73,6 +76,17 @@ mod test {
         assert_eq!(1, encrypted_args.intregration_keys.age.len());
         encrypted_args.merge_config(Config::mock_other());
         assert_eq!(2, encrypted_args.intregration_keys.age.len());
+    }
+
+    #[test]
+    fn merges_partial_encryption_from_config() {
+        let mut encrypted_args = EncryptArgs::mock();
+        assert!(encrypted_args.partial_encryption_args.is_none());
+        encrypted_args.merge_config(Config::mock());
+        assert_eq!(
+            PartialEncryptionConfig::mock(),
+            encrypted_args.partial_encryption_args.unwrap().into()
+        );
     }
 
     #[test]

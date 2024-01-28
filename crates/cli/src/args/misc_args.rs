@@ -2,7 +2,7 @@ use clap::{Args, ValueEnum};
 use regex::Regex;
 use rops::*;
 
-#[derive(Args)]
+#[derive(Default, Args)]
 #[group(id = "partial_encryption", multiple = false)]
 pub struct PartialEncryptionArgs {
     /// Encrypt values matching key suffix
@@ -28,9 +28,25 @@ impl From<PartialEncryptionArgs> for PartialEncryptionConfig {
             .map(PartialEncryptionConfig::EncryptedSuffix)
             .or_else(|| encrypted_regex.map(Into::into).map(PartialEncryptionConfig::EncryptedRegex))
             .or_else(|| unencrypted_suffix.map(PartialEncryptionConfig::UnencryptedSuffix))
-            .or_else(|| unencrypted_regex.map(Into::into).map(PartialEncryptionConfig::UencryptedRegex))
+            .or_else(|| unencrypted_regex.map(Into::into).map(PartialEncryptionConfig::UnencryptedRegex))
             // from #[group(multiple = true)]
             .expect("at least one partial encryption arg must be set")
+    }
+}
+
+// For merging arg with config.
+impl From<PartialEncryptionConfig> for PartialEncryptionArgs {
+    fn from(partial_encryption_config: PartialEncryptionConfig) -> Self {
+        let mut partial_encryption_arg = PartialEncryptionArgs::default();
+
+        match partial_encryption_config {
+            PartialEncryptionConfig::EncryptedSuffix(config) => partial_encryption_arg.encrypted_suffix = Some(config),
+            PartialEncryptionConfig::EncryptedRegex(config) => partial_encryption_arg.encrypted_regex = Some(config.into()),
+            PartialEncryptionConfig::UnencryptedSuffix(config) => partial_encryption_arg.unencrypted_suffix = Some(config),
+            PartialEncryptionConfig::UnencryptedRegex(config) => partial_encryption_arg.unencrypted_regex = Some(config.into()),
+        }
+
+        partial_encryption_arg
     }
 }
 
