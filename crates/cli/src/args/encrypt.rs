@@ -68,6 +68,14 @@ mod test {
     use super::*;
 
     #[test]
+    fn merges_integration_keys_from_config() {
+        let mut encrypted_args = EncryptArgs::mock();
+        assert_eq!(1, encrypted_args.intregration_keys.age.len());
+        encrypted_args.merge_config(Config::mock_other());
+        assert_eq!(2, encrypted_args.intregration_keys.age.len());
+    }
+
+    #[test]
     fn merges_mac_only_encrypted_from_config() {
         let mut encrypted_args = EncryptArgs::mock();
         assert!(encrypted_args.mac_only_encrypted.is_none());
