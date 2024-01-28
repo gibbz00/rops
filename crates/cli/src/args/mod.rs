@@ -13,6 +13,9 @@ pub use edit::EditArgs;
 mod keys;
 pub use keys::{KeyInputArgs, KeysSubcommand};
 
+mod refresh;
+pub use refresh::RefreshArgs;
+
 mod input_args;
 pub use input_args::InputArgs;
 

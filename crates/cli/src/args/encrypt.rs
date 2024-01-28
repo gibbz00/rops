@@ -8,7 +8,7 @@ use crate::*;
 #[derive(Args)]
 pub struct EncryptArgs {
     #[command(flatten)]
-    pub intregration_keys: IntegrationKeys,
+    pub integration_keys: IntegrationKeys,
     #[command(flatten)]
     pub partial_encryption_args: Option<PartialEncryptionArgs>,
     /// Requires a partial encryption setting
@@ -32,7 +32,7 @@ impl MergeConfig for EncryptArgs {
         for creation_rule in config.creation_rules {
             if let Some(file_path) = &self.input_args.file {
                 if creation_rule.path_regex.is_match(&file_path.to_string_lossy()) {
-                    self.intregration_keys.merge(creation_rule.integration_keys);
+                    self.integration_keys.merge(creation_rule.integration_keys);
 
                     if self.mac_only_encrypted.is_none() {
                         self.mac_only_encrypted = creation_rule.mac_only_encrypted;
@@ -58,7 +58,7 @@ mod mock {
     impl MockTestUtil for EncryptArgs {
         fn mock() -> Self {
             Self {
-                intregration_keys: MockTestUtil::mock(),
+                integration_keys: MockTestUtil::mock(),
                 partial_encryption_args: None,
                 mac_only_encrypted: None,
                 input_args: MockTestUtil::mock(),
@@ -75,9 +75,9 @@ mod test {
     #[test]
     fn merges_integration_keys_from_config() {
         let mut encrypted_args = EncryptArgs::mock();
-        assert_eq!(1, encrypted_args.intregration_keys.age.len());
+        assert_eq!(1, encrypted_args.integration_keys.age.len());
         encrypted_args.merge_config(Config::mock_other());
-        assert_eq!(2, encrypted_args.intregration_keys.age.len());
+        assert_eq!(2, encrypted_args.integration_keys.age.len());
     }
 
     #[test]

@@ -33,6 +33,10 @@ where
         &self.map
     }
 
+    pub fn into_inner_map(self) -> F::Map {
+        self.map.into_inner_map()
+    }
+
     pub fn metadata(&self) -> &RopsFileMetadata<S::MetadataState> {
         &self.metadata
     }

@@ -17,12 +17,16 @@ pub enum RopsFileBuilderError {
 
 impl<F: FileFormat> RopsFileBuilder<F> {
     pub fn new(plaintext_map: &str) -> Result<Self, F::DeserializeError> {
-        Ok(Self {
-            format_map: F::deserialize_from_str(plaintext_map)?,
+        F::deserialize_from_str(plaintext_map).map(Self::from_map)
+    }
+
+    pub fn from_map(format_map: F::Map) -> Self {
+        Self {
+            format_map,
             partial_encryption: None,
             mac_only_encrypted: None,
             integration_metadata_builder: Default::default(),
-        })
+        }
     }
 
     pub fn with_partial_encryption(mut self, partial_encryption: PartialEncryptionConfig) -> Self {

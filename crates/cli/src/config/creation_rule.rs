@@ -1,5 +1,3 @@
-use std::path::Path;
-
 use regex::Regex;
 use rops::*;
 use serde::Deserialize;
@@ -19,13 +17,8 @@ pub struct CreationRule {
 }
 
 impl CreationRule {
-    pub fn implies_metadata(
-        &self,
-        rops_file_path: &Path,
-        metadata: &RopsFileMetadata<EncryptedMetadata<DefaultCipher, DefaultHasher>>,
-    ) -> bool {
-        self.path_regex.is_match(&rops_file_path.to_string_lossy())
-            && self.mac_only_encrypted == metadata.mac_only_encrypted
+    pub fn implies_metadata(&self, metadata: &RopsFileMetadata<EncryptedMetadata<DefaultCipher, DefaultHasher>>) -> bool {
+        self.mac_only_encrypted == metadata.mac_only_encrypted
             && self.partial_encryption == metadata.partial_encryption
             && self.integration_keys.implies_integration_metadata(&metadata.intregation)
     }
@@ -67,8 +60,7 @@ mod tests {
 
     #[test]
     fn implies_metadata() {
-        let file = InputArgs::mock().file.unwrap();
-        assert!(CreationRule::mock().implies_metadata(&file, &MockTestUtil::mock()));
-        assert!(!CreationRule::mock_other().implies_metadata(&file, &MockTestUtil::mock()));
+        assert!(CreationRule::mock().implies_metadata(&MockTestUtil::mock()));
+        assert!(!CreationRule::mock_other().implies_metadata(&MockTestUtil::mock()));
     }
 }

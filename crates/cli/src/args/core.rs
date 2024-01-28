@@ -20,6 +20,8 @@ pub enum CliSubcommand {
     /// Encrypted rops file key management.
     #[command(subcommand, visible_alias = "k")]
     Keys(KeysSubcommand),
+    /// Make a config the single source of configuration truth for an encrypted rops file.
+    Refresh(RefreshArgs),
 }
 
 impl ConfigArg for CliArgs {
@@ -29,6 +31,7 @@ impl ConfigArg for CliArgs {
             CliSubcommand::Decrypt(sub_command) => sub_command.config_path(),
             CliSubcommand::Edit(sub_command) => sub_command.config_path(),
             CliSubcommand::Keys(sub_command) => sub_command.config_path(),
+            CliSubcommand::Refresh(sub_command) => sub_command.config_path(),
         }
     }
 }
@@ -40,6 +43,7 @@ impl MergeConfig for CliArgs {
             CliSubcommand::Decrypt(sub_command) => sub_command.merge_config(config),
             CliSubcommand::Edit(sub_command) => sub_command.merge_config(config),
             CliSubcommand::Keys(sub_command) => sub_command.merge_config(config),
+            CliSubcommand::Refresh(sub_command) => sub_command.merge_config(config),
         }
     }
 }

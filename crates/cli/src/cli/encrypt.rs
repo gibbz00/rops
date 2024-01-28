@@ -30,9 +30,9 @@ impl Cli {
             };
 
             fn encrypt_rops_file_impl<F: FileFormat>(plaintext_str: &str, encrypt_args: EncryptArgs) -> anyhow::Result<String> {
-                let mut rops_file_builder = RopsFileBuilder::<F>::new(plaintext_str)?
-                    .add_integration_keys::<AgeIntegration>(encrypt_args.intregration_keys.age)
-                    .add_integration_keys::<AwsKmsIntegration>(encrypt_args.intregration_keys.aws_kms);
+                let mut rops_file_builder = encrypt_args
+                    .integration_keys
+                    .add_to_builder(RopsFileBuilder::<F>::new(plaintext_str)?);
 
                 if let Some(partial_encryption_args) = encrypt_args.partial_encryption_args {
                     rops_file_builder = rops_file_builder.with_partial_encryption(partial_encryption_args.into())

@@ -42,6 +42,12 @@ impl IntegrationKeys {
             args_keys_set.symmetric_difference(&metadata_keys_set).next().is_none()
         }
     }
+
+    pub fn add_to_builder<F: FileFormat>(self, builder: RopsFileBuilder<F>) -> RopsFileBuilder<F> {
+        builder
+            .add_integration_keys::<AgeIntegration>(self.age)
+            .add_integration_keys::<AwsKmsIntegration>(self.aws_kms)
+    }
 }
 
 #[cfg(feature = "test-utils")]
