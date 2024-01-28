@@ -7,6 +7,14 @@ pub struct RopsFileBuilder<F: FileFormat> {
     pub(crate) integration_metadata_builder: IntegrationMetadataBuilder,
 }
 
+#[derive(Debug, thiserror::Error)]
+pub enum RopsFileBuilderError {
+    #[error(transparent)]
+    Encrypt(#[from] RopsFileEncryptError),
+    #[error(transparent)]
+    IntegrationMetaData(#[from] IntegrationMetadataBuilderError),
+}
+
 impl<F: FileFormat> RopsFileBuilder<F> {
     pub fn new(plaintext_map: &str) -> Result<Self, F::DeserializeError> {
         Ok(Self {
@@ -39,13 +47,15 @@ impl<F: FileFormat> RopsFileBuilder<F> {
         })
     }
 
-    pub fn encrypt<C: Cipher, H: Hasher>(self) -> Result<RopsFile<EncryptedFile<C, H>, F>, RopsFileEncryptError> {
+    pub fn encrypt<C: Cipher, H: Hasher>(self) -> Result<RopsFile<EncryptedFile<C, H>, F>, RopsFileBuilderError> {
         #[rustfmt::skip]
-    let Self { format_map: plaintext_map, partial_encryption, mac_only_encrypted, .. } = self;
+        let Self { format_map: plaintext_map, partial_encryption, mac_only_encrypted, .. } = self;
 
         let data_key = DataKey::new();
 
-        let decrypted_map = plaintext_map.decrypted_to_internal()?;
+        let decrypted_map = plaintext_map
+            .decrypted_to_internal()
+            .map_err(RopsFileEncryptError::FormatToIntenrnalMap)?;
 
         let mac = Mac::<H>::compute(
             MacOnlyEncryptedConfig::new(mac_only_encrypted, partial_encryption.as_ref()),
@@ -63,7 +73,7 @@ impl<F: FileFormat> RopsFileBuilder<F> {
         }
         .encrypt(&data_key);
 
-        RopsFile::from_parts_results(encrypted_map_result, encrypted_metadata_result)
+        RopsFile::from_parts_results(encrypted_map_result, encrypted_metadata_result).map_err(Into::into)
     }
 }
 
