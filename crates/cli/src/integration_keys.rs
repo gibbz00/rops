@@ -36,6 +36,15 @@ impl IntegrationKeys {
 mod mock {
     use super::*;
 
+    impl MockTestUtil for IntegrationKeys {
+        fn mock() -> Self {
+            Self {
+                age: vec![<<AgeIntegration as Integration>::KeyId>::mock()],
+                aws_kms: vec![],
+            }
+        }
+    }
+
     impl MockOtherTestUtil for IntegrationKeys {
         fn mock_other() -> Self {
             Self {

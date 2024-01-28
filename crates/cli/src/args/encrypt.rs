@@ -32,8 +32,46 @@ impl MergeConfig for EncryptArgs {
             if let Some(file_path) = &self.input_args.file {
                 if creation_rule.path_regex.is_match(&file_path.to_string_lossy()) {
                     self.intregration_keys.merge(creation_rule.integration_keys);
+
+                    if self.mac_only_encrypted.is_none() {
+                        self.mac_only_encrypted = creation_rule.mac_only_encrypted;
+                    }
                 }
             }
         }
+    }
+}
+
+#[cfg(feature = "test-utils")]
+mod mock {
+    use rops::*;
+
+    use super::*;
+
+    impl MockTestUtil for EncryptArgs {
+        fn mock() -> Self {
+            Self {
+                intregration_keys: MockTestUtil::mock(),
+                partial_encryption_args: None,
+                mac_only_encrypted: None,
+                input_args: MockTestUtil::mock(),
+                in_place: None,
+            }
+        }
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use rops::*;
+
+    use super::*;
+
+    #[test]
+    fn merges_mac_only_encrypted_from_config() {
+        let mut encrypted_args = EncryptArgs::mock();
+        assert!(encrypted_args.mac_only_encrypted.is_none());
+        encrypted_args.merge_config(Config::mock());
+        assert!(encrypted_args.mac_only_encrypted.is_some());
     }
 }

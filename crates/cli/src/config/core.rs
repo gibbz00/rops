@@ -22,6 +22,14 @@ mod mock {
 
     use super::*;
 
+    impl MockTestUtil for Config {
+        fn mock() -> Self {
+            Self {
+                creation_rules: vec![MockTestUtil::mock()],
+            }
+        }
+    }
+
     impl MockOtherTestUtil for Config {
         fn mock_other() -> Self {
             Self {
