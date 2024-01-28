@@ -47,8 +47,8 @@ mod stub_integration {
         }
     }
 
-    impl IntegrationKeyId<StubIntegration> for String {
-        fn append_to_builder<F: FileFormat>(self, _rops_file_builder: &mut RopsFileBuilder<F>) {
+    impl AppendIntegrationKey<StubIntegration> for String {
+        fn append_to_metadata_builder(self, _integration_metadata_builder: &mut IntegrationMetadataBuilder) {
             unimplemented!()
         }
     }

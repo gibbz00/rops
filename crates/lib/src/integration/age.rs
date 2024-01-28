@@ -101,9 +101,9 @@ mod error {
 mod key_id {
     use super::*;
 
-    impl IntegrationKeyId<AgeIntegration> for age::x25519::Recipient {
-        fn append_to_builder<F: FileFormat>(self, rops_file_builder: &mut RopsFileBuilder<F>) {
-            rops_file_builder.age_key_ids.push(self)
+    impl AppendIntegrationKey<AgeIntegration> for age::x25519::Recipient {
+        fn append_to_metadata_builder(self, integration_metadata_builder: &mut IntegrationMetadataBuilder) {
+            integration_metadata_builder.age_key_ids.push(self)
         }
     }
 

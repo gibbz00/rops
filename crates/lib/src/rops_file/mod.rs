@@ -14,7 +14,7 @@ mod metadata;
 pub use metadata::*;
 
 mod builder;
-pub use builder::RopsFileBuilder;
+pub use builder::*;
 
 mod format;
 pub use format::*;

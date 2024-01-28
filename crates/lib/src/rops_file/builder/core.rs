@@ -4,10 +4,7 @@ pub struct RopsFileBuilder<F: FileFormat> {
     format_map: F::Map,
     partial_encryption: Option<PartialEncryptionConfig>,
     mac_only_encrypted: Option<bool>,
-    #[cfg(feature = "age")]
-    pub(crate) age_key_ids: Vec<<AgeIntegration as Integration>::KeyId>,
-    #[cfg(feature = "aws-kms")]
-    pub(crate) aws_kms_key_ids: Vec<<AwsKmsIntegration as Integration>::KeyId>,
+    pub(crate) integration_metadata_builder: IntegrationMetadataBuilder,
 }
 
 impl<F: FileFormat> RopsFileBuilder<F> {
@@ -16,10 +13,7 @@ impl<F: FileFormat> RopsFileBuilder<F> {
             format_map: F::deserialize_from_str(plaintext_map)?,
             partial_encryption: None,
             mac_only_encrypted: None,
-            #[cfg(feature = "age")]
-            age_key_ids: Vec::new(),
-            #[cfg(feature = "aws-kms")]
-            aws_kms_key_ids: Vec::new(),
+            integration_metadata_builder: Default::default(),
         })
     }
 
@@ -34,7 +28,7 @@ impl<F: FileFormat> RopsFileBuilder<F> {
     }
 
     pub fn add_integration_key<I: Integration>(mut self, key_id: I::KeyId) -> Self {
-        key_id.append_to_builder(&mut self);
+        key_id.append_to_metadata_builder(&mut self.integration_metadata_builder);
         self
     }
 
@@ -47,7 +41,7 @@ impl<F: FileFormat> RopsFileBuilder<F> {
 
     pub fn encrypt<C: Cipher, H: Hasher>(self) -> Result<RopsFile<EncryptedFile<C, H>, F>, RopsFileEncryptError> {
         #[rustfmt::skip]
-        let Self { format_map: plaintext_map, partial_encryption, mac_only_encrypted, .. } = self;
+    let Self { format_map: plaintext_map, partial_encryption, mac_only_encrypted, .. } = self;
 
         let data_key = DataKey::new();
 
@@ -60,14 +54,8 @@ impl<F: FileFormat> RopsFileBuilder<F> {
 
         let encrypted_map_result = decrypted_map.encrypt(&data_key, partial_encryption.as_ref());
 
-        let mut integration_metadata = IntegrationMetadata::default();
-        #[cfg(feature = "age")]
-        integration_metadata.add_keys::<AgeIntegration>(self.age_key_ids, &data_key)?;
-        #[cfg(feature = "aws-kms")]
-        integration_metadata.add_keys::<AwsKmsIntegration>(self.aws_kms_key_ids, &data_key)?;
-
         let encrypted_metadata_result = RopsFileMetadata {
-            intregation: integration_metadata,
+            intregation: self.integration_metadata_builder.into_integration_metadata(&data_key)?,
             last_modified: LastModifiedDateTime::now(),
             mac,
             partial_encryption,

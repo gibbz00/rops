@@ -35,9 +35,9 @@ impl FromStr for AwsKeyId {
     }
 }
 
-impl IntegrationKeyId<AwsKmsIntegration> for AwsKeyId {
-    fn append_to_builder<F: FileFormat>(self, rops_file_builder: &mut RopsFileBuilder<F>) {
-        rops_file_builder.aws_kms_key_ids.push(self)
+impl AppendIntegrationKey<AwsKmsIntegration> for AwsKeyId {
+    fn append_to_metadata_builder(self, integration_metadata_builder: &mut IntegrationMetadataBuilder) {
+        integration_metadata_builder.aws_kms_key_ids.push(self)
     }
 }
 

@@ -6,7 +6,7 @@ const ROPS_APPLICATION_NAME: &str = "rops";
 
 pub trait Integration: Sized {
     const NAME: &'static str;
-    type KeyId: IntegrationKeyId<Self>;
+    type KeyId: AppendIntegrationKey<Self>;
     type PrivateKey;
     type Config: IntegrationConfig<Self>;
 
