@@ -11,17 +11,7 @@ impl Cli {
         let encrypted_rops_file_string = Self::get_input_string(explicit_file_path.as_deref(), in_place)?;
         let encrypted_rops_file_string = refresh_rops_file(file_format, encrypted_rops_file_string, refresh_args)?;
 
-        // IMPROVEMENT: dry up with other in place calls
-        match in_place.unwrap_or_default() {
-            true => {
-                std::fs::write(explicit_file_path.expect(IN_PLACE_PANIC), encrypted_rops_file_string)?;
-            }
-            false => {
-                println!("{}", encrypted_rops_file_string);
-            }
-        }
-
-        return Ok(());
+        return Cli::write_or_print(in_place, explicit_file_path.as_deref(), &encrypted_rops_file_string).map_err(Into::into);
 
         fn refresh_rops_file(file_format: Format, encrypted_rops_file_string: String, refresh_args: RefreshArgs) -> anyhow::Result<String> {
             return match file_format {

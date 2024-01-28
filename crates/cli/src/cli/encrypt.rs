@@ -11,16 +11,7 @@ impl Cli {
         let plaintext_string = Self::get_input_string(explicit_file_path.as_deref(), in_place)?;
         let encrypted_rops_file_string = encrypt_rops_file(file_format, &plaintext_string, encrypt_args)?;
 
-        match in_place.unwrap_or_default() {
-            true => {
-                std::fs::write(explicit_file_path.expect(IN_PLACE_PANIC), encrypted_rops_file_string)?;
-            }
-            false => {
-                println!("{}", encrypted_rops_file_string);
-            }
-        }
-
-        return Ok(());
+        return Cli::write_or_print(in_place, explicit_file_path.as_deref(), &encrypted_rops_file_string).map_err(Into::into);
 
         fn encrypt_rops_file(file_format: Format, plaintext_string: &str, encrypt_args: EncryptArgs) -> anyhow::Result<String> {
             return match file_format {

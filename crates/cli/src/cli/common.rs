@@ -53,6 +53,20 @@ impl Cli {
             },
         }
     }
+
+    pub fn write_or_print(in_place: Option<bool>, explicit_file_path: Option<&Path>, output_str: &str) -> std::io::Result<()> {
+        match in_place.unwrap_or_default() {
+            true => {
+                // TODO: improve error message
+                std::fs::write(explicit_file_path.expect(IN_PLACE_PANIC), output_str)?;
+            }
+            false => {
+                println!("{}", output_str);
+            }
+        }
+
+        Ok(())
+    }
 }
 
 #[cfg(test)]
