@@ -1,20 +1,13 @@
 use std::path::Path;
 
-use regex::Regex;
 use serde::Deserialize;
 
 use crate::*;
 
 #[derive(Default, Deserialize)]
+#[cfg_attr(feature = "test-utils", derive(serde::Serialize))]
 pub struct Config {
     pub creation_rules: Vec<CreationRule>,
-}
-
-#[derive(Deserialize)]
-pub struct CreationRule {
-    #[serde(with = "serde_regex")]
-    pub path_regex: Regex,
-    pub integration_keys: IntegrationKeys,
 }
 
 impl Config {
@@ -25,5 +18,20 @@ impl Config {
     /// 4. Fallback to default if none were found.
     pub fn retrieve(optional_config_path: Option<&Path>) -> anyhow::Result<Self> {
         super::retrieve::retrieve_impl::<Self>(optional_config_path)
+    }
+}
+
+#[cfg(feature = "test-utils")]
+mod mock {
+    use rops::*;
+
+    use super::*;
+
+    impl MockOtherTestUtil for Config {
+        fn mock_other() -> Self {
+            Self {
+                creation_rules: vec![MockOtherTestUtil::mock_other()],
+            }
+        }
     }
 }

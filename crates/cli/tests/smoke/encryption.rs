@@ -54,7 +54,7 @@ fn encrypts_with_mac_encrypted_only() {
     assert_eq!(Some(true), decrypted_file.metadata().mac_only_encrypted)
 }
 
-use utils::{assert_encrypted, decrypt_output, decrypt_str, EncryptCommand};
+pub use utils::{assert_encrypted, decrypt_output, decrypt_str, EncryptCommand};
 pub mod utils {
     use super::*;
 

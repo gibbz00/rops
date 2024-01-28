@@ -6,12 +6,15 @@ use std::process::{Command, Output};
 mod input_selection;
 
 mod encryption;
+pub use encryption::EncryptCommand;
 
 mod decryption;
 
 mod editing;
 
 mod keys;
+
+mod config;
 
 test_binary::build_test_binary_once!(mock_editor, "test_bins");
 

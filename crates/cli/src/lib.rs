@@ -12,7 +12,8 @@ mod cli;
 pub(crate) use cli::Cli;
 
 mod config;
-pub(crate) use config::Config;
+pub(crate) use config::CreationRule;
+pub use config::{Config, DefaulConfigFileFormat};
 
 mod cryptography_stack;
 pub use cryptography_stack::{DefaultCipher, DefaultHasher};

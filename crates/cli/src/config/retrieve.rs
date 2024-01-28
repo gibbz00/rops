@@ -3,7 +3,7 @@ use std::path::Path;
 use rops::*;
 use serde::de::DeserializeOwned;
 
-type DefaultFileFormat = TomlFileFormat;
+pub type DefaulConfigFileFormat = TomlFileFormat;
 const ROPS_CONFIG_ENV_VAR_NAME: &str = "ROPS_CONFIG";
 const ROPS_CONFIG_DEFAULT_FILE_NAME: &str = ".rops.toml";
 
@@ -36,7 +36,7 @@ pub(super) fn retrieve_impl<T: DeserializeOwned + Default>(optional_config_path:
 
     fn read_fs_path_and_deserialize<T: DeserializeOwned>(config_path: impl AsRef<Path>) -> anyhow::Result<T> {
         let config_string = std::fs::read_to_string(config_path)?;
-        DefaultFileFormat::deserialize_from_str(&config_string).map_err(Into::into)
+        DefaulConfigFileFormat::deserialize_from_str(&config_string).map_err(Into::into)
     }
 }
 
@@ -54,7 +54,7 @@ mod tests {
 
     impl StubConfig {
         pub fn serialize(&self, path: &Path) {
-            let config_string = DefaultFileFormat::serialize_to_string(self).unwrap();
+            let config_string = DefaulConfigFileFormat::serialize_to_string(self).unwrap();
             std::fs::write(path, config_string).unwrap();
         }
     }
