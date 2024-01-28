@@ -149,10 +149,6 @@ First match of any lookup cancels the next, fallback being the default config sh
 #### Missing features
 
 - [ ] Update keys with `update-keys` sub-command.
-- [ ] Partial encryption
-    - [ ] `partial_encryption.{un,}encrypted.{ match: {regex,suffix}, pattern: "<pattern>" }`.
-  - [ ] MAC encrypted values only.
-    - [ ] `partial_encryption.mac_only_encrypted: true`.
 
 ### Missing features
 
