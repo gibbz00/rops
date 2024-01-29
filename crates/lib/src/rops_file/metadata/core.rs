@@ -111,7 +111,7 @@ impl<H: Hasher> RopsFileMetadata<DecryptedMetadata<H>> {
     ) -> IntegrationResult<Option<IntegrationMetadataUnit<I>>> {
         let integration_keys = I::select_metadata_units(&mut self.intregation);
 
-        let Some(removed_key) = integration_keys.remove(key_id) else {
+        let Some(removed_key) = integration_keys.shift_remove(key_id) else {
             return Ok(None);
         };
 
