@@ -40,7 +40,7 @@ thiserror = "1"
 tokio = "1"
 toml = "0.8"
 walkdir = "2"
-which = "5"
+which = "6"
 zeroize = { version = "1.7" }
 
 [patch.crates-io]
