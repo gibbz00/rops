@@ -1,7 +1,6 @@
 use std::path::Path;
 
 use clap::{ArgAction, Args};
-use rops::*;
 
 use crate::*;
 
@@ -53,6 +52,8 @@ impl MergeConfig for EncryptArgs {
 
 #[cfg(feature = "test-utils")]
 mod mock {
+    use rops::*;
+
     use super::*;
 
     impl MockTestUtil for EncryptArgs {
@@ -70,6 +71,8 @@ mod mock {
 
 #[cfg(test)]
 mod test {
+    use rops::*;
+
     use super::*;
 
     #[test]

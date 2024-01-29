@@ -36,7 +36,7 @@ pub enum RopsFileMetadataDecryptError {
 pub enum RopsFileMetadataDataKeyRetrievalError {
     #[error("integration error")]
     Integration(#[from] IntegrationError),
-    #[error("no data key found in metadata, make sure at least one integration is used")]
+    #[error("no data key retrieved from metadata, make sure at least one private integration key is present")]
     MissingDataKey,
 }
 

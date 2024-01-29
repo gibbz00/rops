@@ -16,6 +16,8 @@ mod keys;
 
 mod config;
 
+mod refresh;
+
 test_binary::build_test_binary_once!(mock_editor, "test_bins");
 
 mod command_utils;
