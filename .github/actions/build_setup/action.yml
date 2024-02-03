@@ -11,4 +11,4 @@ runs:
     uses: dtolnay/rust-toolchain@stable
     with:
       toolchain: nightly
-      components: rustfmt, clippy
+      components: rustfmt, clippy, rust-docs

@@ -52,6 +52,19 @@ jobs:
         uses: ./.github/actions/build_setup
       - name: Run clippy
         run: cargo clippy --all-features --tests -- -D warnings
+  docs_validation:
+    name: Docs validation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v4
+      - name: Build Setup
+        uses: ./.github/actions/build_setup
+      - name: Run cargo doc
+        env:
+          RUSTDOCFLAGS: "-D warnings"
+        # Because CLI binary is also called `rops`:
+        run: cargo doc --no-deps --all-features --workspace --exclude rops-cli
   audit:
     name: Audit
     runs-on: ubuntu-latest
