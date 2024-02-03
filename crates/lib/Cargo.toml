@@ -1,6 +1,13 @@
 [package]
 name = "rops"
 version = "0.1.0"
+description = "SOPS library in pure Rust"
+license = "MPL-2.0"
+authors = ["Gabriel Hansson <gabrielhansson00@gmail.com>"]
+repository = "https://github.com/gibbz00/rops"
+keywords = ["sops", "encryption", "config"]
+categories = ["cryptography"]
+exclude = ["/.github"]
 edition = "2021"
 
 [features]
