@@ -52,5 +52,5 @@ which = "6"
 zeroize = { version = "1.7" }
 
 [patch.crates-io]
-# TEMP: https://github.com/str4d/rage/pull/429
-age = { git = "https://github.com/gibbz00/rage", branch = "eq_hash" }
+# TEMP: See https://github.com/str4d/rage/issues/470
+age = { git = "https://github.com/str4d/rage" }
