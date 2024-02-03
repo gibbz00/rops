@@ -20,9 +20,12 @@ impl PackageCommand for Command {
                 bin_dir.pop();
             }
 
-            let bin_path = bin_dir.join(env!("CARGO_PKG_NAME"));
-            assert!(bin_path.is_file(), "function not called from within an integration test");
-            bin_path
+            // TEMP: Checking if this fixes CI
+            bin_dir.join(env!("CARGO_BIN_EXE_rops"))
+
+            // let bin_path = bin_dir.join(env!("CARGO_PKG_NAME"));
+            // assert!(bin_path.is_file(), "function not called from within an integration test");
+            // bin_path
         }
     }
 }
