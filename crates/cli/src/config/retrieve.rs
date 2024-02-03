@@ -1,6 +1,6 @@
 use std::path::Path;
 
-use rops::*;
+use rops::file::format::*;
 use serde::de::DeserializeOwned;
 
 pub type DefaulConfigFileFormat = TomlFileFormat;

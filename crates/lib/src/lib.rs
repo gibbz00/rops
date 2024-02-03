@@ -1,8 +1,8 @@
 pub mod cryptography;
 pub(crate) use cryptography::*;
 
-mod file;
-pub use file::*;
+pub mod file;
+pub(crate) use file::*;
 
 pub mod integration;
 pub(crate) use integration::*;

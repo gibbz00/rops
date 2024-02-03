@@ -1,20 +1,20 @@
 mod core;
-pub use core::{RopsMap, RopsTree};
+pub(crate) use core::{RopsMap, RopsTree};
 
 mod key_path;
-pub use key_path::KeyPath;
+pub(crate) use key_path::KeyPath;
 
 mod value;
-pub use value::*;
+pub(crate) use value::*;
 
-mod state;
-pub use state::{DecryptedMap, EncryptedMap, RopsMapEncryptedLeaf, RopsMapState};
+pub mod state;
+pub(crate) use state::{DecryptedMap, EncryptedMap, RopsMapEncryptedLeaf, RopsMapState};
 
 mod transforms;
-pub use transforms::ToExternalMap;
+pub(crate) use transforms::ToExternalMap;
 
 mod saved_nonces;
-pub use saved_nonces::SavedRopsMapNonces;
+pub(crate) use saved_nonces::SavedRopsMapNonces;
 
 mod decrypt;
 

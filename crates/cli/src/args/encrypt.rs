@@ -71,8 +71,7 @@ mod mock {
 
 #[cfg(test)]
 mod test {
-    // TODO: remove star import
-    use rops::{test_utils::*, *};
+    use rops::{file::metadata::PartialEncryptionConfig, test_utils::*};
 
     use super::*;
 

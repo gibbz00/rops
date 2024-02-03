@@ -1,7 +1,7 @@
 use std::{io::IsTerminal, path::Path, process::Command};
 
 use anyhow::{bail, Context};
-use rops::*;
+use rops::file::{format::*, map::state::*, state::*, RopsFile};
 
 use crate::*;
 

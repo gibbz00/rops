@@ -2,25 +2,25 @@ mod core;
 pub use core::{RopsFile, RopsFileFromStrError};
 
 mod error;
-pub use error::{RopsFileAddKeyError, RopsFileDecryptError, RopsFileEncryptError};
+pub(crate) use error::{RopsFileAddKeyError, RopsFileDecryptError, RopsFileEncryptError};
 
-mod state;
-pub use state::{DecryptedFile, EncryptedFile, RopsFileState};
+pub mod state;
+pub(crate) use state::{DecryptedFile, EncryptedFile, RopsFileState};
 
-mod map;
-pub use map::*;
+pub mod map;
+pub(crate) use map::*;
 
-mod metadata;
-pub use metadata::*;
+pub mod metadata;
+pub(crate) use metadata::*;
 
-mod builder;
-pub use builder::*;
+pub mod builder;
+pub(crate) use builder::*;
 
-mod format;
-pub use format::*;
+pub mod format;
+pub(crate) use format::*;
 
 mod saved_parameters;
-pub use saved_parameters::SavedParameters;
+pub(crate) use saved_parameters::SavedParameters;
 
 mod timestamp;
 pub(crate) use timestamp::Timestamp;

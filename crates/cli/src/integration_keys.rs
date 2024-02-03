@@ -1,9 +1,8 @@
 use clap::Args;
 use indexmap::IndexSet;
-// TODO: remove star import
 use rops::{
+    file::{builder::RopsFileBuilder, format::*, metadata::integration::*},
     integration::{AgeIntegration, AwsKmsIntegration, Integration},
-    *,
 };
 use serde::Deserialize;
 use serde_with::DisplayFromStr;

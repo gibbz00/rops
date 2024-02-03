@@ -1,6 +1,6 @@
 use clap::{Args, ValueEnum};
 use regex::Regex;
-use rops::*;
+use rops::file::metadata::PartialEncryptionConfig;
 
 #[derive(Default, Args)]
 #[group(id = "partial_encryption", multiple = false)]

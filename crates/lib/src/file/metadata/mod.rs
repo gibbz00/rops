@@ -1,17 +1,19 @@
 mod core;
-pub use core::{RopsFileMetadata, RopsFileMetadataDataKeyRetrievalError, RopsFileMetadataDecryptError};
+pub use core::RopsFileMetadata;
+pub(crate) use core::{RopsFileMetadataDataKeyRetrievalError, RopsFileMetadataDecryptError};
 
-mod state;
-pub use state::{DecryptedMetadata, EncryptedMetadata, RopsMetadataState};
+pub mod state;
+pub(crate) use state::{DecryptedMetadata, EncryptedMetadata, RopsMetadataState};
 
-mod integration;
-pub use integration::*;
+pub mod integration;
+pub(crate) use integration::*;
 
 mod last_modified;
-pub use last_modified::LastModifiedDateTime;
+pub(crate) use last_modified::LastModifiedDateTime;
 
 mod mac;
-pub use mac::*;
+pub(crate) use mac::*;
 
 mod partial_encryption;
-pub use partial_encryption::{EscapeEncryption, PartialEncryptionConfig, ResolvedPartialEncrpytion};
+pub use partial_encryption::PartialEncryptionConfig;
+pub(crate) use partial_encryption::ResolvedPartialEncrpytion;
