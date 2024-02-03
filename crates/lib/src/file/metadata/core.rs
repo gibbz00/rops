@@ -246,33 +246,37 @@ mod tests {
         #[test]
         fn removes_key() {
             let mut metadata = RopsFileMetadata::<DecryptedMetadata<SHA512>>::mock();
-
-            let new_age_key_id = "age18e57g4yp3anhs0xpssgmy7x0u23tryqzpew0t3x2h4yzqx029yfqu7xfgg"
-                .parse::<<AgeIntegration as Integration>::KeyId>()
-                .unwrap();
-
-            let new_age_identity = "AGE-SECRET-KEY-1RQHTSUKPA93KMCUJ0LDZ5DWW3VMVJRHAWGK5ZM6835FU9KEYQ90SVQ46JQ";
-
-            AwsKmsIntegration::set_mock_private_key_env_var();
-            std::env::set_var(AgeIntegration::private_key_env_var_name(), new_age_identity);
+            let other_key = <AgeIntegration as Integration>::KeyId::mock_other();
 
             metadata
                 .intregation
-                .add_keys::<AgeIntegration>(Some(new_age_key_id.clone()), &DataKey::mock())
+                .add_keys::<AgeIntegration>(Some(other_key.clone()), &DataKey::mock())
                 .unwrap();
 
             assert_eq!(metadata.intregation.age.len(), 2);
 
-            metadata.remove_integration_key::<AgeIntegration>(&MockTestUtil::mock()).unwrap();
+            AgeIntegration::set_mock_private_key_env_var();
+            AwsKmsIntegration::set_mock_private_key_env_var();
+
+            metadata.remove_integration_key::<AgeIntegration>(&other_key).unwrap();
 
             assert_eq!(metadata.intregation.age.len(), 1);
+        }
 
-            assert_ne!(
-                DataKey::mock(),
-                AgeIntegration::decrypt_data_key(&new_age_key_id, &metadata.intregation.age.first().unwrap().1.encrypted_data_key)
-                    .unwrap()
-                    .unwrap()
-            )
+        #[test]
+        fn key_removal_rotates_data_key() {
+            let mut metadata = RopsFileMetadata::<DecryptedMetadata<SHA512>>::mock();
+
+            AgeIntegration::set_mock_private_key_env_var();
+
+            assert_eq!(DataKey::mock(), metadata.retrieve_data_key().unwrap());
+
+            {
+                let removed_key = metadata.remove_integration_key::<AwsKmsIntegration>(&MockTestUtil::mock()).unwrap();
+                assert!(removed_key.is_some());
+            }
+
+            assert_ne!(DataKey::mock(), metadata.retrieve_data_key().unwrap());
         }
     }
 }
