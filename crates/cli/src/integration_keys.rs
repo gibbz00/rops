@@ -1,6 +1,10 @@
 use clap::Args;
 use indexmap::IndexSet;
-use rops::*;
+// TODO: remove star import
+use rops::{
+    integration::{AgeIntegration, AwsKmsIntegration, Integration},
+    *,
+};
 use serde::Deserialize;
 use serde_with::DisplayFromStr;
 
@@ -52,6 +56,8 @@ impl IntegrationKeys {
 
 #[cfg(feature = "test-utils")]
 mod mock {
+    use rops::test_utils::*;
+
     use super::*;
 
     impl MockTestUtil for IntegrationKeys {
@@ -75,6 +81,8 @@ mod mock {
 
 #[cfg(test)]
 mod tests {
+    use rops::test_utils::*;
+
     use super::*;
 
     #[test]

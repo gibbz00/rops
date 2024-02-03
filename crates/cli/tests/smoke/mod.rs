@@ -1,4 +1,5 @@
-use rops::*;
+// TODO: remove star import
+use rops::{integration::*, test_utils::*, *};
 use rops_cli::*;
 
 use std::process::{Command, Output};

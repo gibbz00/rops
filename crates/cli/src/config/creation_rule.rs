@@ -26,6 +26,8 @@ impl CreationRule {
 
 #[cfg(feature = "test-utils")]
 mod mock {
+    use rops::test_utils::*;
+
     use super::*;
 
     impl MockTestUtil for CreationRule {
@@ -56,6 +58,8 @@ mod mock {
 
 #[cfg(test)]
 mod tests {
+    use rops::test_utils::*;
+
     use super::*;
 
     #[test]

@@ -38,7 +38,9 @@ mod yaml_aes_gcm_sha2_parity_check {
         ($integration_name:literal, $integration:tt, $name:tt) => {
             #[test]
             fn $name() -> anyhow::Result<()> {
-                use rops::*;
+                use rops::cryptography::{cipher::AES256GCM, hasher::SHA512};
+                // TEMP: remove star import
+                use rops::{integration::*, *};
 
                 let sops_file = include_str!(concat!(
                     "sops_references/",

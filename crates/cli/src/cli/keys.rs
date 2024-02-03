@@ -1,4 +1,7 @@
-use rops::*;
+use rops::{
+    integration::{AgeIntegration, AwsKmsIntegration},
+    *,
+};
 
 use crate::*;
 

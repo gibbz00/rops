@@ -1,5 +1,5 @@
 mod core;
-pub use core::Hasher;
+pub(crate) use core::Hasher;
 
 #[cfg(feature = "sha2")]
 mod sha512;

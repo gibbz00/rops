@@ -18,7 +18,7 @@ impl Config {
 
 #[cfg(feature = "test-utils")]
 mod mock {
-    use rops::*;
+    use rops::test_utils::*;
 
     use super::*;
 

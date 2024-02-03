@@ -1,20 +1,20 @@
 mod authorization_tag;
-pub use authorization_tag::AuthorizationTag;
+pub(crate) use authorization_tag::AuthorizationTag;
 
 mod rng_key;
-pub use rng_key::RngKey;
+pub(crate) use rng_key::RngKey;
 
 mod data_key;
-pub use data_key::DataKey;
+pub(crate) use data_key::DataKey;
 
 mod nonce;
-pub use nonce::Nonce;
+pub(crate) use nonce::Nonce;
 
 mod encrypted_data;
-pub use encrypted_data::EncryptedData;
+pub(crate) use encrypted_data::EncryptedData;
 
-mod cipher;
-pub use cipher::*;
+pub mod cipher;
+pub(crate) use cipher::*;
 
-mod hasher;
-pub use hasher::*;
+pub mod hasher;
+pub(crate) use hasher::*;

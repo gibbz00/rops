@@ -52,7 +52,7 @@ impl MergeConfig for EncryptArgs {
 
 #[cfg(feature = "test-utils")]
 mod mock {
-    use rops::*;
+    use rops::test_utils::*;
 
     use super::*;
 
@@ -71,7 +71,8 @@ mod mock {
 
 #[cfg(test)]
 mod test {
-    use rops::*;
+    // TODO: remove star import
+    use rops::{test_utils::*, *};
 
     use super::*;
 
