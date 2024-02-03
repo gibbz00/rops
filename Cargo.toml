@@ -2,6 +2,14 @@
 resolver = "2"
 members = ["crates/*"]
 
+[workspace.package]
+keywords = ["sops", "encryption", "config"]
+authors = ["Gabriel Hansson <gabrielhansson00@gmail.com>"]
+repository = "https://github.com/gibbz00/rops"
+license = "MPL-2.0"
+exclude = ["/.github"]
+edition = "2021"
+
 [workspace.dependencies]
 aes-gcm = { version = "0.10", features = ["std"] }
 age = "0.9"

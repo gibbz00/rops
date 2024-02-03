@@ -1,14 +1,14 @@
 [package]
 name = "rops"
 version = "0.1.0"
-description = "SOPS library in pure Rust"
-license = "MPL-2.0"
-authors = ["Gabriel Hansson <gabrielhansson00@gmail.com>"]
-repository = "https://github.com/gibbz00/rops"
-keywords = ["sops", "encryption", "config"]
+description = "SOPS-like library in pure Rust"
 categories = ["cryptography"]
-exclude = ["/.github"]
-edition = "2021"
+license.workspace = true
+authors.workspace = true
+repository.workspace = true
+keywords.workspace = true
+exclude.workspace = true
+edition.workspace = true
 
 [features]
 default = ["age", "aws-kms", "yaml", "json", "toml", "aes-gcm", "sha2"]
