@@ -1,8 +1,8 @@
 mod variant;
-pub use variant::RopsValueVariant;
+pub(crate) use variant::RopsValueVariant;
 
 mod core;
-pub use core::{RopsValue, RopsValueFromBytesError};
+pub(crate) use core::{RopsValue, RopsValueFromBytesError};
 
 mod encrypted;
-pub use encrypted::{DecryptRopsValueError, EncryptedRopsValue, EncryptedRopsValueFromStrError};
+pub(crate) use encrypted::{DecryptRopsValueError, EncryptedRopsValue, EncryptedRopsValueFromStrError};

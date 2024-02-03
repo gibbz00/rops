@@ -2,7 +2,6 @@ use serde::{de::DeserializeOwned, Serialize};
 
 use crate::*;
 
-// TODO: pub(crate)?
 pub trait FileFormat: Sized {
     type Map: FileFormatMapAdapter;
 

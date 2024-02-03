@@ -1,11 +1,11 @@
-pub use error::Base64DecodeError;
+pub(crate) use error::Base64DecodeError;
 mod error {
     #[derive(Debug, thiserror::Error)]
     #[error("unable to base64 decode {0}, reason: {1}")]
     pub struct Base64DecodeError(pub String, pub base64::DecodeError);
 }
 
-pub use encoding::Base64EncodingUtils;
+pub(crate) use encoding::Base64EncodingUtils;
 mod encoding {
     use base64::{engine::general_purpose, Engine};
 
@@ -21,7 +21,7 @@ mod encoding {
     impl<T: AsRef<[u8]>> Base64EncodingUtils for T {}
 }
 
-pub use decoding::Base64DecodingUtils;
+pub(crate) use decoding::Base64DecodingUtils;
 mod decoding {
     use base64::{engine::general_purpose, Engine};
 
