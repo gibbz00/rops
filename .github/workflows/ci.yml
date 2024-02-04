@@ -14,11 +14,11 @@ jobs:
     steps:
       - name: Checkout sources
         uses: actions/checkout@v4
-      - name: Build Setup
+      - name: Build setup
         uses: ./.github/actions/build_setup
       - name: cargo fmt
         run: cargo fmt --all -- --check
-  toml_validation:
+  taplo_checks:
     name: Toml validation
     runs-on: ubuntu-latest
     container:
@@ -30,13 +30,13 @@ jobs:
         run: taplo lint
       - name: taplo fmt
         run: taplo fmt --check --diff
-  test:
+  cargo_test:
     name: Test
     runs-on: ubuntu-latest
     steps:
       - name: Checkout sources
         uses: actions/checkout@v4
-      - name: Build Setup
+      - name: Build setup
         uses: ./.github/actions/build_setup
       - name: Run tests
         # https://github.com/actions/runner/issues/241, required to make the stdin.isterminal() conditionals work.
@@ -48,17 +48,31 @@ jobs:
     steps:
       - name: Checkout sources
         uses: actions/checkout@v4
-      - name: Build Setup
+      - name: Build setup
         uses: ./.github/actions/build_setup
       - name: Run clippy
         run: cargo clippy --all-features --tests -- -D warnings
+  mdbook_validation:
+    name: mdBook validation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v4
+      - name: Build setup
+        uses: ./.github/actions/build_setup
+      - name: mdBook setup
+        uses: peaceiris/actions-mdbook@v1
+        with:
+          mdbook-version: 'latest'
+      - name: Run mdbook test
+        run: mdbook test
   docs_validation:
     name: Docs validation
     runs-on: ubuntu-latest
     steps:
       - name: Checkout sources
         uses: actions/checkout@v4
-      - name: Build Setup
+      - name: Build setup
         uses: ./.github/actions/build_setup
       - name: Run cargo doc
         env:
@@ -79,13 +93,13 @@ jobs:
     steps:
       - name: Checkout sources
         uses: actions/checkout@v4
-      - name: Build Setup
+      - name: Build setup
         uses: ./.github/actions/build_setup
       - name: Run cargo-udeps
         uses: aig787/cargo-udeps-action@v1
         with:
           args: --all-features
-  links:
+  lychee_links:
     name: Links
     runs-on: ubuntu-latest
     steps:
@@ -101,7 +115,7 @@ jobs:
     steps:
       - name: Checkout sources
         uses: actions/checkout@v4
-      - name: Build Setup
+      - name: Build setup
         uses: ./.github/actions/build_setup
       - name: Install cargo-llvm-cov
         uses: taiki-e/install-action@cargo-llvm-cov

@@ -72,7 +72,7 @@ Private keys are retrieved by first checking the existence of their respective e
 ##### Supplying private keys by environment variables.
 
 Syntax is `ROPS_<INTEGRATION>='key1,key2'` where keys follow the above syntax. For example:
-```
+```sh
 export ROPS_AWS_KMS='default.AKIAXXXXXXXXXXXXXXL2.BRZXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXigu'
 ```
 
@@ -89,7 +89,7 @@ Private keys can also be read from files, these reside by default in `<local_con
 | Windows  | `{FOLDERID_LocalAppData}`             | `C:\Users\Alice\AppData\Local`             |
 
 Linux users wishing to use Age could for example save a file in `$HOME/.config/rops/age_keys` containing:
-```
+```sh
 AGE-SECRET-KEY-1VR0S4...KD8D
 AGE-SECRET-KEY-1GQ6XJ...DZ5W
 ```
