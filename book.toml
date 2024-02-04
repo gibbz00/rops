@@ -5,5 +5,13 @@ multilingual = false
 src = "book"
 title = "`rops` Documentation"
 
+[rust]
+edition = "2021"
+
 [build]
 build-dir = "target/book"
+
+[output.html]
+preferred-dark-theme = "navy"
+git-repository-url = "https://github.com/gibbz00/rops"
+edit-url-template = "https://github.com/gibbz00/rops/edit/main/{path}"
