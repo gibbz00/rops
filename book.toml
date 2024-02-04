@@ -15,3 +15,4 @@ build-dir = "target/book"
 preferred-dark-theme = "navy"
 git-repository-url = "https://github.com/gibbz00/rops"
 edit-url-template = "https://github.com/gibbz00/rops/edit/main/{path}"
+curly-quotes = true
