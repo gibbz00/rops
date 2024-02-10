@@ -1,4 +1,4 @@
-# Configuration
+# CLI Configuration
 
 <!-- TODO: paste automacially generated reference config -->
 

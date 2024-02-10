@@ -11,6 +11,8 @@ edition = "2021"
 [build]
 build-dir = "target/book"
 
+[preprocessor.cmdrun]
+
 [output.html]
 preferred-dark-theme = "navy"
 git-repository-url = "https://github.com/gibbz00/rops"

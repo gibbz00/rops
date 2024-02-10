@@ -10,17 +10,19 @@ pub struct CliArgs {
 
 #[derive(Subcommand)]
 pub enum CliSubcommand {
+    /// Encrypt plaintext maps
     #[command(visible_alias = "e")]
     Encrypt(EncryptArgs),
+    /// Decrypt rops files
     #[command(visible_alias = "d")]
     Decrypt(DecryptArgs),
     /// Edit an encrypted rops file using $EDITOR. (Fallbacks to vim then nano and lastly vi.)
-    /// Outputs to stdout if input is piped.
+    /// Outputs to stdout if input is piped
     Edit(EditArgs),
-    /// Encrypted rops file key management.
+    /// Manage encrypt rops file keys
     #[command(subcommand, visible_alias = "k")]
     Keys(KeysSubcommand),
-    /// Make a config the single source of configuration truth for an encrypted rops file.
+    /// Make a config the single source of configuration truth for an encrypted rops file
     Refresh(RefreshArgs),
 }
 

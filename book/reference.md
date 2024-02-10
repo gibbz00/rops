@@ -1,3 +1,5 @@
-# Reference
+# CLI Reference
 
-<!-- TODO: paste automatically generated --help, and for each subcommand -->
+```
+<!-- cmdrun cargo run -- --help -->
+```
