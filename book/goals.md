@@ -7,8 +7,27 @@
 * Disincentivize unsecure operations.
 * Support standard input (stdin) as an alternative to file paths whenever possible.
 * Available as a rust library.
+* Support a wide variety of file formats and integrations.
+
+|File formats  | Integrations                  |
+| ---          | ---                           |
+| ✅ YAML      | ✅ `age` - Asymmetric         |
+| ✅ JSON      | ✅ `aws_kms` - Symmetric [^1] |
+| ✅ TOML [^2] | ❎`pgp` [^3]                  |
+| ❎ INI       | ❎`gcp_kms`                   |
+| ❎ ENV       | ❎`azure_kv`                  |
+| ❎ BINARY    | ❎`hashicorp_kv`              |
+
+(Asymmetric encryption schemes require only the integration key id for the first encryption whilst symmetric schemes require both key id and private key up front.)
+
+[^1]: AWS KMS effectively becomes a symmetric encryption scheme when it requires private credentials to a remote encryption service, even if that service uses asymmetric encryption internally.
+
+[^2]: [Currently](https://github.com/getsops/sops/pull/812) exclusive to `rops`
+
+[^3]: Awaiting status update for: [OpenPGP Crypto Refresh](https://datatracker.ietf.org/doc/draft-ietf-openpgp-crypto-refresh/)
 
 ### Non-Goals
+
 
 * Identical CLI to `sops` with full feature parity, see [preliminary non-goals](#preliminary-non-goals).
 

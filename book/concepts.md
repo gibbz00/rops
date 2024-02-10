@@ -1,17 +1,5 @@
 # Concepts
 
-## Features:
-
-### File:
-
-- Formats:
-  - [X] YAML
-  - [X] JSON
-  - [X] TOML ([Currently](https://github.com/getsops/sops/pull/812) exclusive to `rops`)
-  - [ ] INI
-  - [ ] ENV
-  - [ ] BINARY
-
 #### Partial Encryption
 
 All keys are encrypted by default, unless one of `encrypted_suffix`, `encrypted_regex`, `unencrypted_suffix`, `unencrypted_regex` exists as a metadata setting.
@@ -22,7 +10,7 @@ All keys are encrypted by default, unless one of `encrypted_suffix`, `encrypted_
 | `unncrypted_{suffix,regex}` | Yes                | Escapes encryption |
 
 Note that any matched key "locks" the triggered encryption config for all descendant key-value pairs.
-I.e. if the metadata contains `encrypted_suffix: "_encrypted"`, then the values for `i` and `ii` become encrypted in the map below:
+I.e. if the metadata contains `encrypted_suffix: "_encrypted"`, then the values for `i` and `ii` become encrypted:
 
 ```yaml
 foo: bar
@@ -40,18 +28,6 @@ This is because all values are hashed into a message authentication code (MAC) b
 MAC verification will also fail after any unauthenticated addition, removal or reordering of values, regardless if they have been encrypted or not.
 The `mac_only_encrypted` metadata boolean can be enabled to allow for such unauthenticated modifications of plaintext key-value pairs, so long as the key paths for encrypted values remain the same.
 
-### Integrations:
-
-- [X] `age` - Asymmetric
-- [X] `aws_kms` - Symmetric [^1]
-- [ ] `pgp` - Awaiting status update for: [OpenPGP Crypto Refresh](https://datatracker.ietf.org/doc/draft-ietf-openpgp-crypto-refresh/)
-- [ ] `gcp_kms`
-- [ ] `azure_kv`
-- [ ] `hashicorp_kv`
-
-Asymmetric encryption schemes require only the key id (i.e. public key) for the first encryption whilst symmetric schemes require both key id and private key up front.
-
-[^1]: AWS KMS effectively becomes a symmetric encryption scheme when it requires private credentials to a remote encryption service, even if that service uses asymmetric encryption internally.
 
 #### Integration key id string:
 
