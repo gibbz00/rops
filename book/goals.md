@@ -10,34 +10,36 @@
 
 ### Non-Goals
 
-* Identical CLI to `sops` with full feature parity, see [feature non-goals](#preliminary-non-goals).
+* Identical CLI to `sops` with full feature parity, see [preliminary non-goals](#preliminary-non-goals).
 
-### Preliminary Non-Goals
+#### Preliminary Non-Goals
 
-- [`--output`](https://github.com/getsops/sops#217saving-output-to-a-file): Use `rops decrypt > FILE_NAME`?
+This list includes a collection of SOPS features which are currently not under consideration to be included in `rops`. Nothing here is set in stone, so feel free to open up an [issue](https://github.com/gibbz00/rops/issues) if there's anything you don't agree with 🙂
 
-- [Partial retrieval](https://github.com/getsops/sops#45extract-a-sub-part-of-a-document-tree): Use `rops decrypt FILE | jq`?
+- The `--output` flag: Use `rops decrypt > FILE_NAME` instead?
 
-- [Partial modification](https://github.com/getsops/sops#46set-a-sub-part-in-a-document-tree): 
-  Use `rops edit` or `rops decrypt FILE | jq map | rops encrypt --format FORMAT`? The latter will unfortunately skip initialization vector reuse for unchanged value.
+- Partial retrieval: Use `rops decrypt FILE | jq` instead?
 
-- SOPS operations deemed unsecure:
-  - `--ignore-mac`
-  - Manual key rotation (`--rotate/-r`). `rops` will automatically rotate the secret data key upon integration key removal.
+- Partial modification: 
+  Use `rops edit` or `rops decrypt FILE | jq map | rops encrypt --format FORMAT` instead? This will unfortunately skip initialization vector reuse for unchanged value.
 
-- [Integrated formatting configuration](https://github.com/getsops/sops#32json-and-json_binary-indentation)
+- The `--ignore-mac` flag: Deemed too insecure. `rops` files are instead encouraged to be placed under and then recovered with version control systems such as git.
 
-- [Integrated secrets publishing](https://github.com/getsops/sops#219using-the-publish-command)
+- Manual key rotation (`--rotate/-r`): `rops` will automatically rotate the secret data key upon integration key id removal.
 
-- [Remote key service](https://github.com/getsops/sops#215key-service) Possibly as a separate crate+binary conforming to [KMIP 2.1](https://en.wikipedia.org/wiki/Key_Management_Interoperability_Protocol) or higher.
+- Integrated formatting configuration: Might be better achieved by piping output through more powerful formatters.
 
-- [Access logging](https://github.com/getsops/sops#216auditing) Better handled by the respective integrations for now. Might become relevant if a `rops` key service is developed.
+- Integrated secrets publishing: This too might be better handled externally.
 
-#### Currently, Missing Features
+- `rops` as a remote key service: Possibly as a separate crate+binary conforming to [KMIP 2.1](https://en.wikipedia.org/wiki/Key_Management_Interoperability_Protocol) or higher.
 
-- [ ] Specify keys by `--key-file INTEGRATION PATH` flag.
-- [ ] Show metadata `--show-metadata/-s`. Note that directly modifying the metadata will most likely break its integrity and prevent future decryption.
-- [ ] [Sub-process secret passing.](https://github.com/getsops/sops#218passing-secrets-to-other-processes)
-- [ ] [Key groups.](https://github.com/getsops/sops#214key-groups)
-- [ ] Storing file comments.
-- [ ] Compute an additional MAC over active integration keys to prevent against manual removal without rotating the secret data key. (Currently not done in SOPS either.)
+- Access logging: Better handled by the respective integrations for now. Might become relevant to include in the remote key service.
+
+### Currently missing features
+
+- Sub-process secret passing. 
+- Key groups.
+- Storing file comments.
+- Compute an additional MAC over active integration keys to prevent against manual removal without rotating the secret data key. (Currently not done by SOPS either.)
+- Specify keys by `--key-file INTEGRATION PATH` flag.
+- Show decrypted metadata with `--show-metadata/-s`. (Note that directly modifying the metadata will most likely break its integrity and prevent future decryption.)
