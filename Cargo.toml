@@ -12,7 +12,7 @@ edition = "2021"
 
 [workspace.dependencies]
 aes-gcm = { version = "0.10", features = ["std"] }
-age = "0.9"
+age = "0.10"
 anyhow = "1"
 aws-arn = "0.3"
 aws-sdk-kms = { version = "1.9", features = ["behavior-version-latest"] }
@@ -50,7 +50,3 @@ toml = "0.8"
 walkdir = "2"
 which = "6"
 zeroize = { version = "1.7" }
-
-[patch.crates-io]
-# TEMP: See https://github.com/str4d/rage/issues/470
-age = { git = "https://github.com/str4d/rage" }
