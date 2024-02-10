@@ -18,16 +18,16 @@
 | ❎ ENV       | ❎`azure_kv`                  |
 | ❎ BINARY    | ❎`hashicorp_kv`              |
 
-(Asymmetric encryption schemes require only the integration key id for the first encryption whilst symmetric schemes require both key id and private key up front.)
+The difference between asymmetric and symmetric integrations is later explained in the [concepts chapter](concepts.md#integration-key-id).
 
 [^1]: AWS KMS effectively becomes a symmetric encryption scheme when it requires private credentials to a remote encryption service, even if that service uses asymmetric encryption internally.
 
-[^2]: [Currently](https://github.com/getsops/sops/pull/812) exclusive to `rops`
+[^2]: [Currently](https://github.com/getsops/sops/pull/812) exclusive to `rops`.
 
-[^3]: Awaiting status update for: [OpenPGP Crypto Refresh](https://datatracker.ietf.org/doc/draft-ietf-openpgp-crypto-refresh/)
+[^3]: Awaiting status update for: [OpenPGP Crypto Refresh](https://datatracker.ietf.org/doc/draft-ietf-openpgp-crypto-refresh/).
+
 
 ### Non-Goals
-
 
 * Identical CLI to `sops` with full feature parity, see [preliminary non-goals](#preliminary-non-goals).
 
@@ -62,3 +62,4 @@ This list includes a collection of SOPS features which are currently not under c
 - Compute an additional MAC over active integration keys to prevent against manual removal without rotating the secret data key. (Currently not done by SOPS either.)
 - Specify keys by `--key-file INTEGRATION PATH` flag.
 - Show decrypted metadata with `--show-metadata/-s`. (Note that directly modifying the metadata will most likely break its integrity and prevent future decryption.)
+- Integration sub-features such as AWS [Profiles](https://github.com/getsops/sops#27kms-aws-profiles), [Roles](https://github.com/getsops/sops#28assuming-roles-and-using-kms-in-various-aws-accounts) and [Context](https://github.com/getsops/sops#29aws-kms-encryption-context).
