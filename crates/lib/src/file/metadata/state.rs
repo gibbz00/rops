@@ -7,7 +7,7 @@ mod core {
 
     use crate::*;
 
-    pub trait RopsMetadataState {
+    pub trait RopsMetadataState: private::SealedRopsMetadataState {
         type Mac: Debug + PartialEq + FromStr + Display;
     }
 
