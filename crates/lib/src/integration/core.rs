@@ -52,7 +52,6 @@ pub trait Integration: Sized {
     fn retrieve_private_keys() -> IntegrationResult<Vec<Self::PrivateKey>> {
         let mut private_key_strings = Vec::<Self::PrivateKey>::new();
 
-        // TODO: Expand key retrieval methods, see README.md
         private_key_strings.append(&mut Self::private_keys_from_env()?);
         private_key_strings.append(&mut Self::private_keys_from_default_key_file()?);
 
