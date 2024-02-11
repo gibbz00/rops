@@ -6,7 +6,9 @@ use crate::*;
 
 #[derive(Subcommand)]
 pub enum KeysSubcommand {
+    /// Add integration key IDs to an encrypted rops file
     Add(KeyInputArgs),
+    /// Remove intregration key IDs of an encrypted rops file and rotate the data key.
     Remove(KeyInputArgs),
 }
 

@@ -5,6 +5,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- CLI subcommand documentation for `rops keys {add,remove}`.
+
 ## [0.1.1] - 2024-02-11
 
 ### Added

@@ -19,7 +19,7 @@ pub enum CliSubcommand {
     /// Edit an encrypted rops file using $EDITOR. (Fallbacks to vim then nano and lastly vi.)
     /// Outputs to stdout if input is piped
     Edit(EditArgs),
-    /// Manage encrypt rops file keys
+    /// Manage encrypted rops file keys
     #[command(subcommand, visible_alias = "k")]
     Keys(KeysSubcommand),
     /// Make a config the single source of configuration truth for an encrypted rops file
