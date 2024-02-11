@@ -1,16 +1,3 @@
-# # CLI Config reference:
-# #
-# # Configured creation rules are used to automatically provide metadata
-# # settings if the file name is matched to the creation rule path regex.
-# # Each rule is read in the order it appears, and the first match of any
-# # lookup cancels the next.
-# #
-# # Stdin content can be matched with a creation rule that captures the
-# # pseudo file name of an empty string.
-# #
-# # Put simply; `path_regex = ".*"` can be used as a general fallback
-# # for both input sources.
-# #
 # [[creation_rules]]
 # path_regex = "<REGEX>"
 # # Optional: Defaults to false if not set.
