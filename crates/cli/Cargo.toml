@@ -1,8 +1,8 @@
 [package]
 name = "rops-cli"
-version = "0.1.0"
 description = "SOPS CLI alternative in pure Rust"
 categories = ["cryptography", "command-line-utilities"]
+version.workspace = true
 license.workspace = true
 authors.workspace = true
 readme.workspace = true

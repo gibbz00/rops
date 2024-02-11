@@ -1,8 +1,8 @@
 [package]
 name = "rops"
-version = "0.1.0"
 description = "SOPS-like library in pure Rust"
 categories = ["cryptography"]
+version.workspace = true
 license.workspace = true
 authors.workspace = true
 readme.workspace = true
