@@ -1,0 +1,28 @@
+name: Release
+
+on:
+  workflow_dispatch:
+
+jobs:
+  publish_book:
+      name: Publish mdBook
+      runs-on: ubuntu-latest
+      permissions:
+        contents: write
+      steps:
+        - name: Checkout sources
+          uses: actions/checkout@v4
+        - name: Build setup
+          uses: ./.github/actions/build_setup
+        - name: mdBook setup
+          uses: peaceiris/actions-mdbook@v1
+          with:
+            mdbook-version: 'latest'
+        - name: Install `mdbook-cmdrun`
+          run: cargo install mdbook-cmdrun
+        - name: Build book
+          run: mdbook build
+        - name: Deploy to GitHub pages
+          uses: JamesIves/github-pages-deploy-action@v4
+          with:
+            folder: target/book
