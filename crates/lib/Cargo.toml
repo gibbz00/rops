@@ -5,6 +5,7 @@ description = "SOPS-like library in pure Rust"
 categories = ["cryptography"]
 license.workspace = true
 authors.workspace = true
+readme.workspace = true
 repository.workspace = true
 keywords.workspace = true
 exclude.workspace = true

@@ -5,6 +5,7 @@ description = "SOPS CLI alternative in pure Rust"
 categories = ["cryptography", "command-line-utilities"]
 license.workspace = true
 authors.workspace = true
+readme.workspace = true
 repository.workspace = true
 keywords.workspace = true
 exclude.workspace = true
