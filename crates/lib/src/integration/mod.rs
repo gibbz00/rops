@@ -7,7 +7,7 @@ pub(crate) use error::{IntegrationError, IntegrationResult};
 
 #[cfg(feature = "age")]
 mod age;
-#[cfg(feature = "age")]
+#[cfg(all(test, feature = "age"))]
 pub(crate) use age::AgeConfig;
 #[cfg(feature = "age")]
 pub use age::AgeIntegration;
