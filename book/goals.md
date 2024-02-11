@@ -40,7 +40,7 @@ This list includes a collection of SOPS features which are currently not under c
 - Partial retrieval: Use `rops decrypt FILE | jq` instead?
 
 - Partial modification: 
-  Use `rops edit` or `rops decrypt FILE | jq map | rops encrypt --format FORMAT` instead? This will unfortunately skip initialization vector reuse for unchanged value.
+  Use `rops edit` or `rops decrypt FILE | jq map | rops encrypt --format FORMAT` instead? This will unfortunately skip initialization vector reuse of unchanged values.
 
 - The `--ignore-mac` flag: Deemed too insecure. `rops` files are instead encouraged to be placed under and then recovered with version control systems such as git.
 
