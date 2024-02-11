@@ -52,3 +52,16 @@ mdbook test
 ### Building the book locally
 
 Both [`mdbook`](https://rust-lang.github.io/mdBook/guide/installation.html) and the [`mdbook-cmdrun`](https://github.com/FauconFan/mdbook-cmdrun?tab=readme-ov-file#getting-started) processor will need to be installed before running `mdbook serve --open` or the like.
+
+## Release (for maintainers)
+
+1. Make sure CI is [not failing](https://github.com/gibbz00/rops/actions/workflows/ci.yml).
+2. Bump version in the workspace `Cargo.toml` file.
+3. Move the unreleased section in the CHANGELOG.md into a release with the current date added.
+4. Finally:
+
+```sh
+git commit -am "Prepare X.X.X release."
+git tag "X.X.X"
+git push && git push --tags
+```
