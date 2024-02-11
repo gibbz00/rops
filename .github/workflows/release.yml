@@ -1,7 +1,9 @@
 name: Release
 
 on:
-  workflow_dispatch:
+  push:
+    tags:
+    - '[0-9]+.[0-9]+.[0-9]+'
 
 jobs:
   publish_book:
@@ -27,3 +29,17 @@ jobs:
           with:
             folder: target/book
             git-config-email: <>
+  publish_crates:
+    name: Publish to crates.io
+    runs-on: ubuntu-latest
+    env:
+      CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v4
+      - name: Build setup
+        uses: ./.github/actions/build_setup
+      - name: Publish rops library
+        run: cargo publish --package rops
+      - name: Publish rops cli
+        run: cargo publish --package rops-cli
