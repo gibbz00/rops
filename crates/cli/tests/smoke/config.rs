@@ -24,3 +24,9 @@ fn applies_config_creation_rule() {
 
     assert_eq!(2, encrypted_rops_file.metadata().intregation.age.len())
 }
+
+#[test]
+fn deserializes_book_examples() {
+    let book_config = include_str!("../../../../book/assets/.rops.toml");
+    DefaulConfigFileFormat::deserialize_from_str::<Config>(book_config).unwrap();
+}

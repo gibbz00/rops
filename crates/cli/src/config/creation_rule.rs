@@ -13,6 +13,8 @@ pub struct CreationRule {
     pub mac_only_encrypted: Option<bool>,
     #[cfg_attr(feature = "test-utils", serde(skip_serializing_if = "Option::is_none"))]
     pub partial_encryption: Option<PartialEncryptionConfig>,
+    // IMPROVEMENT: add some skip serializing if default for testing
+    #[serde(default)]
     pub integration_keys: IntegrationKeys,
 }
 

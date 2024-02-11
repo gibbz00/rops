@@ -1,0 +1,50 @@
+# # CLI Config reference:
+# #
+# # Configured creation rules are used to automatically provide metadata
+# # settings if the file name is matched to the creation rule path regex.
+# # Each rule is read in the order it appears, and the first match of any
+# # lookup cancels the next.
+# #
+# # Stdin content can be matched with a creation rule that captures the
+# # pseudo file name of an empty string.
+# #
+# # Put simply; `path_regex = ".*"` can be used as a general fallback
+# # for both input sources.
+# #
+# [[creation_rules]]
+# path_regex = "<REGEX>"
+# # Optional: Defaults to false if not set.
+# mac_only_encrypted = false
+# # Optional: Defaults to nothing unless set.
+# # Variant may be one of:
+# # - encrypted_suffix
+# # - encrypted_regex
+# # - unencrypted_suffix
+# # - unencrypted_regex
+# partial_encryption.<variant> = ""
+# # Opional: The arrays of key IDs for each integration
+# # are also optional and default to being empty.
+# [creation_rules.integration_keys]
+# age = ["<Age Key ID>"]
+# aws_kms = ["<AWS KMS KeyID>"]
+
+# Example:
+[[creation_rules]]
+path_regex = "testing/**"
+mac_only_encrypted = true
+partial_encryption.unencrypted_regex = "config"
+integration_keys.age = [
+  "age1se5ghfycr4n8kcwc3qwf234ymvmr2lex2a99wh8gpfx97glwt9hqch4569",
+]
+
+[[creation_rules]]
+path_regex = "production/**"
+mac_only_encrypted = false
+partial_encryption.unencrypted_regex = "config"
+integration_keys.age = [
+  "age1qazf43xll4ramx3wcn7h2yl9scycxdhrwge8862vv6zj97pafdvq0d5mn6",
+]
+
+[[creation_rules]]
+path_regex = ".*"
+partial_encryption.encrypted_regex = "pass|token"
