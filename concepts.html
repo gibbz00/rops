@@ -1,0 +1,310 @@
+<!DOCTYPE HTML>
+<html lang="en" class="light" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Concepts - &#x60;rops&#x60; Documentation</title>
+
+
+        <!-- Custom HTML head -->
+        
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="favicon.svg">
+        <link rel="shortcut icon" href="favicon.png">
+        <link rel="stylesheet" href="css/variables.css">
+        <link rel="stylesheet" href="css/general.css">
+        <link rel="stylesheet" href="css/chrome.css">
+        <link rel="stylesheet" href="css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="highlight.css">
+        <link rel="stylesheet" href="tomorrow-night.css">
+        <link rel="stylesheet" href="ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+    </head>
+    <body class="sidebar-visible no-js">
+    <div id="body-container">
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('light')
+            html.classList.add(theme);
+            var body = document.querySelector('body');
+            body.classList.remove('no-js')
+            body.classList.add('js');
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var body = document.querySelector('body');
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            body.classList.remove('sidebar-visible');
+            body.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded affix "><a href="introduction.html">Introduction</a></li><li class="chapter-item expanded "><a href="goals.html"><strong aria-hidden="true">1.</strong> Goals and Non-Goals</a></li><li class="chapter-item expanded "><a href="concepts.html" class="active"><strong aria-hidden="true">2.</strong> Concepts</a></li><li class="chapter-item expanded "><a href="installation.html"><strong aria-hidden="true">3.</strong> Installation</a></li><li class="chapter-item expanded "><a href="reference.html"><strong aria-hidden="true">4.</strong> CLI Reference</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="cli/encrypt.html"><strong aria-hidden="true">4.1.</strong> encrypt</a></li><li class="chapter-item expanded "><a href="cli/decrypt.html"><strong aria-hidden="true">4.2.</strong> decrypt</a></li><li class="chapter-item expanded "><a href="cli/edit.html"><strong aria-hidden="true">4.3.</strong> edit</a></li><li class="chapter-item expanded "><a href="cli/keys.html"><strong aria-hidden="true">4.4.</strong> keys</a></li><li class="chapter-item expanded "><a href="cli/refresh.html"><strong aria-hidden="true">4.5.</strong> refresh</a></li></ol></li><li class="chapter-item expanded "><a href="configuration.html"><strong aria-hidden="true">5.</strong> CLI Configuration</a></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <!-- Track and set sidebar scroll position -->
+        <script>
+            var sidebarScrollbox = document.querySelector('#sidebar .sidebar-scrollbox');
+            sidebarScrollbox.addEventListener('click', function(e) {
+                if (e.target.tagName === 'A') {
+                    sessionStorage.setItem('sidebar-scroll', sidebarScrollbox.scrollTop);
+                }
+            }, { passive: true });
+            var sidebarScrollTop = sessionStorage.getItem('sidebar-scroll');
+            sessionStorage.removeItem('sidebar-scroll');
+            if (sidebarScrollTop) {
+                // preserve sidebar scroll position when navigating via links within sidebar
+                sidebarScrollbox.scrollTop = sidebarScrollTop;
+            } else {
+                // scroll sidebar to current active section when navigating via "next/previous chapter" buttons
+                var activeSection = document.querySelector('#sidebar .active');
+                if (activeSection) {
+                    activeSection.scrollIntoView({ block: 'center' });
+                }
+            }
+        </script>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">&#x60;rops&#x60; Documentation</h1>
+
+                    <div class="right-buttons">
+                        <a href="print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/gibbz00/rops" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+                        <a href="https://github.com/gibbz00/rops/edit/main/book/concepts.md" title="Suggest an edit" aria-label="Suggest an edit">
+                            <i id="git-edit-button" class="fa fa-edit"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="concepts"><a class="header" href="#concepts">Concepts</a></h1>
+<p>A <em><code>rops</code> file</em> is first created by encrypting a plaintext <em>map</em> (collection of key-value pairs) of a specified file format. The resulting <code>rops</code> file will then contain the encrypted version of the map, followed by some <code>rops</code> file metadata.</p>
+<p>Only the value part of any key-value pair is encrypted. This is done using an <a href="https://en.wikipedia.org/wiki/Authenticated_encryption#Authenticated_encryption_with_associated_data">authenticated encryption with additional data</a> scheme. The secret key is a randomly generated 32 byte array called the <em>data key</em>, and the additional data is a concatenated path for key in question. Key paths as additional data is how unlawful key name changes and some forms of reorderings are protected against.</p>
+<h2 id="integrations"><a class="header" href="#integrations">Integrations</a></h2>
+<p>One or multiple <em>integrations</em> encrypt the data key in their own way once all values have been encrypted. The use of multiple integrations and <em>key pairs</em> within each integration add the necessary redundancy in case one integration private key is lost, or simply not present.</p>
+<p>It is also how access to a <code>rops</code> file may be revoked without needing access to/knowledge of the file itself. To do so one would use an <em>identity and access management</em> (IAM) service in combination with a <em>key management service</em> (KMS) as the integration. If those services are used to encrypt and decrypt the data key, then access to the <code>rops</code> file may be revoked by removing the users’ ability to access the KMS.</p>
+<h3 id="integration-key-id"><a class="header" href="#integration-key-id">Integration Key ID:</a></h3>
+<p>Integration key IDs used to encrypt the data key are all stored inside the <code>rops</code> file metadata section. The key IDs also serve as a way to identify which private key is to be used when things need to be decrypted it again. If the integration relies on an asymmetric encryption scheme, then only the integration key ID is needed when the <code>rops</code> file is being created, symmetric integration require on the other hand both key id and private key up front.</p>
+<p>The key IDs conform to an integration specific syntax/format, and should not be any different as a function of where it is used.</p>
+<div class="table-wrapper"><table><thead><tr><th>Integration</th><th>Syntax</th><th>Example</th></tr></thead><tbody>
+<tr><td>age</td><td>&lt;age_recipient&gt;</td><td><code>age1se5ghfycr4n8kcwc3qwf234ymvmr2lex2a99wh8gpfx97glwt9hqch4569</code></td></tr>
+<tr><td>aws_kms</td><td><code>&lt;profile&gt;.&lt;aws_key_arn&gt;</code></td><td><code>default.arn:aws:kms:eu-north-1:822284028627:key/029dba6d-60de-4364-ac5c-cbdd284acd0a</code></td></tr>
+</tbody></table>
+</div>
+<h3 id="private-integration-key"><a class="header" href="#private-integration-key">Private Integration Key:</a></h3>
+<p>Only one private integration key that can decrypt data key needs to be found for the data key to then decrypt the entire <code>rops</code> file map. <sup class="footnote-reference"><a href="#1">1</a></sup> Private keys are not stored in the metadata section, but instead retrieved by iterating over the stored integration key IDs. The strategy for where to look for a private key goes as follows:</p>
+<ol>
+<li>In the environment variables.</li>
+<li>In the <code>rops</code> key files.</li>
+<li>(Future) In the default integration key files.</li>
+</ol>
+<p>Private integration keys follow—just like the respective key IDs—a syntax/form that is unchanged regardless of context.</p>
+<div class="table-wrapper"><table><thead><tr><th>Integration</th><th>Syntax</th><th>Example</th></tr></thead><tbody>
+<tr><td>age</td><td>&lt;age_secret_key&gt;</td><td><code>AGE-SECRET-KEY-1CZG0RPQJNDZWZMRMJLNYSF6H00WK0ECYAVE83ALFC2KE53WJ2FRSNZ8GC</code></td></tr>
+<tr><td>aws_kms</td><td><code>&lt;profile&gt;.&lt;aws_access_key_id&gt;.&lt;aws_secret_access_key&gt;</code></td><td><code>default.AKIAXXXXXXXXXXXXXXL2.BRZXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXigu</code></td></tr>
+</tbody></table>
+</div>
+<div class="footnote-definition" id="1"><sup class="footnote-definition-label">1</sup>
+<p>Unless the unimplemented key group future is.</p>
+</div>
+<h5 id="to-supply-private-keys-by-environment-variables"><a class="header" href="#to-supply-private-keys-by-environment-variables">To supply private keys by environment variables</a></h5>
+<p>Syntax is <code>ROPS_&lt;INTEGRATION&gt;='key1,key2'</code>. For example:</p>
+<pre><code class="language-sh">export ROPS_AWS_KMS='default.AKIAXXXXXXXXXXXXXXL2.BRZXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXigu'
+</code></pre>
+<h5 id="to-supply-private-keys-by-rops-key-files"><a class="header" href="#to-supply-private-keys-by-rops-key-files">To supply private keys by <code>rops</code> key files</a></h5>
+<p>Private keys can also be read from files, each containing a <em>new-line</em> separated list of private keys. They reside by default in <code>&lt;local_config_dir&gt;/rops/&lt;integration&gt;_keys</code>.</p>
+<p><code>&lt;local_config_dir&gt;</code> varies by platform and defaults to:</p>
+<div class="table-wrapper"><table><thead><tr><th>Platform</th><th>Value</th><th>Example</th></tr></thead><tbody>
+<tr><td>Linux</td><td><code>$XDG_CONFIG_HOME</code> or <code>$HOME/.config</code></td><td><code>/home/alice/.config</code></td></tr>
+<tr><td>macOS</td><td><code>$HOME/Library/Application Support</code></td><td><code>/Users/Alice/Library/Application Support</code></td></tr>
+<tr><td>Windows</td><td><code>{FOLDERID_LocalAppData}</code></td><td><code>C:\Users\Alice\AppData\Local</code></td></tr>
+</tbody></table>
+</div>
+<p>Linux users wishing to use the Age integration could for example save a file in <code>$HOME/.config/rops/age_keys</code> containing:</p>
+<pre><code class="language-sh">AGE-SECRET-KEY-1VR0S4...KD8D
+AGE-SECRET-KEY-1GQ6XJ...DZ5W
+</code></pre>
+<p>(As opposed to setting <code>ROPS_AGE=AGE-SECRET-KEY-1VR0S4...KD8D,AGE-SECRET-KEY-1GQ6XJ...DZ5W</code>.)</p>
+<p>The <code>rops</code> key file location can be overridden by setting a <code>ROPS_&lt;INTEGRATION&gt;_KEY_FILE=&lt;path&gt;</code> environment variable. <code>ROPS_AGE_KEY_FILE=/tmp/temp_age_keys</code> for instance.</p>
+<h5 id="to-supply-private-keys-using-integration-key-files-future"><a class="header" href="#to-supply-private-keys-using-integration-key-files-future">To supply private keys using integration key files (Future)</a></h5>
+<p>Many integrations already store their keys in a dedicated location but in wildly different structures. <code>rops</code> does currently not parse these files, but it aims to so in the future:</p>
+<div class="table-wrapper"><table><thead><tr><th>Integration</th><th>Windows</th><th>MacOS</th><th>Linux</th><th>Fallback</th><th>Format</th></tr></thead><tbody>
+<tr><td>age</td><td>N/A</td><td>N/A</td><td>N/A</td><td>N/A</td><td>N/A</td></tr>
+<tr><td>aws_kms</td><td><code>%UserProfile%\.aws\credentials</code></td><td><code>$HOME/.aws/credentials</code></td><td><code>$HOME/.aws/credentials</code></td><td><code>AWS_SHARED_CREDENTIALS_FILE</code></td><td><a href="https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-files.html#cli-configure-files-format-profile">Reference</a></td></tr>
+</tbody></table>
+</div>
+<h4 id="private-key-rotation"><a class="header" href="#private-key-rotation">Private key rotation</a></h4>
+<p>Compromised private keys can always be removed from a <code>rops</code> file. Such removals will automatically create a new data key used to re-encrypt all values. Other integration must be able to encrypt the new data key for storage when this happens. Or in other words; symmetric integration require the presence of their respective private keys during the removal of other private keys.</p>
+<h2 id="partial-encryption"><a class="header" href="#partial-encryption">Partial Encryption</a></h2>
+<p>All keys are encrypted by default, unless one of the <code>encrypted_suffix</code>, <code>encrypted_regex</code>, <code>unencrypted_suffix</code> or <code>unencrypted_regex</code> settings is present in the metadata:</p>
+<div class="table-wrapper"><table><thead><tr><th>Variant</th><th>Encrypt by default</th><th>Matched value</th></tr></thead><tbody>
+<tr><td><code>encrypted_{suffix,regex}</code></td><td>No</td><td>Is encrypted</td></tr>
+<tr><td><code>unncrypted_{suffix,regex}</code></td><td>Yes</td><td>Escapes encryption</td></tr>
+</tbody></table>
+</div>
+<p>Note that any matched key “locks” the triggered encryption config for all descendant key-value pairs.
+If the metadata contains for instance <code>encrypted_suffix: "_encrypted"</code>, then the values for <code>i</code> and <code>ii</code> become encrypted as shown below:</p>
+<pre><code class="language-yaml">foo: bar
+nested_encrypted:
+  a:
+      i: encrypted
+  b:
+      ii: encrypted
+</code></pre>
+<h2 id="compute-mac-for-encrypted-values-only"><a class="header" href="#compute-mac-for-encrypted-values-only">Compute MAC for encrypted values only</a></h2>
+<p>Unauthenticated plaintext value changes in a partially encrypted <code>rops</code> files will still cause subsequent decryption attempts to fail. This is because all values are hashed into a <em>message authentication code</em> (MAC). The calculation happens before any encryption, and values are read in the other they appear. MAC verification at the decryption stage will, as such, deny any unauthenticated addition, removal or reordering of unique values. (Recall how concatenated key paths as additional encryption data prevents the other class of unauthenticated reordering; equal values but with different key names).</p>
+<p>The <code>mac_only_encrypted</code> metadata setting can be enabled to lift this limitation, that is; enable the direct changes to plaintext values without causing MAC mismatch errors when attempting to decrypt the rest.</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="goals.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="installation.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="goals.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="installation.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="elasticlunr.min.js"></script>
+        <script src="mark.min.js"></script>
+        <script src="searcher.js"></script>
+
+        <script src="clipboard.min.js"></script>
+        <script src="highlight.js"></script>
+        <script src="book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+    </div>
+    </body>
+</html>
