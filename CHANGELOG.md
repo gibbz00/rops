@@ -8,6 +8,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - CLI subcommand documentation for `rops keys {add,remove}`.
+- Short description and attribution to SOPS in README.md
+
+### Fixed
+
+- `Cargo.lock` being present in `.gitignore`.
 
 ## [0.1.1] - 2024-02-11
 
