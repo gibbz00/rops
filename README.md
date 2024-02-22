@@ -8,6 +8,6 @@
 
 SOPS: Secrets OPerationS is a secrets manager and editor for encrypted files of various configuration formats with support for AWS KMS, GCP KMS, Azure Key Vault, age, and PGP. It's also a CNCF sandbox project with more information available at [getsops.io](https://github.com/getsops/sops).
 
-`rops` is an attempt at writing the SOPS in Rust, offering both a CLI and library crate. Currently supporting for YAML, JSON, TOML and integrations against Age and AWS KMS.
+`rops` is an attempt at writing the SOPS in Rust, offering both a CLI and library crate. Currently supporting YAML, JSON, TOML with integrations against Age and AWS KMS.
 
 Check out the [`rops` book](https://gibbz00.github.io/rops/) for a demo and further information on how to get started.
