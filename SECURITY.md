@@ -8,4 +8,4 @@
 
 ## Supported Versions
 
-The security policy applies to all versions, but security updates only be added as part of a new release. The same goes for bug fixes of any kind.
+The security policy applies to all versions, but security updates will only be added as parts of a new release. The same goes for bug fixes of any kind.
