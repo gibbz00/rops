@@ -1,4 +1,4 @@
-use std::{convert::AsRef, future::Future, ops::Deref};
+use std::{future::Future, ops::Deref};
 
 use anyhow::anyhow;
 use aws_sdk_kms::{config::Credentials, primitives::Blob, Client, Config};

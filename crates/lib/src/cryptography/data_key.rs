@@ -25,6 +25,7 @@ impl DataKey {
         DataKeySize::USIZE
     }
 
+    #[allow(clippy::new_without_default)]
     pub fn new() -> Self {
         DataKey(RngKey::new())
     }
