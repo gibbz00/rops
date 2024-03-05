@@ -229,7 +229,7 @@ Version 2.0</a>. The code can be found on <a href="https://github.com/gibbz00/ro
 </li>
 <li>
 <p>Partial modification:
-Use <code>rops edit</code> or <code>rops decrypt FILE | jq map | rops encrypt --format FORMAT</code> instead? This will unfortunately skip initialization vector reuse for unchanged value.</p>
+Use <code>rops edit</code> or <code>rops decrypt FILE | jq map | rops encrypt --format FORMAT</code> instead? This will unfortunately skip initialization vector reuse of unchanged values.</p>
 </li>
 <li>
 <p>The <code>--ignore-mac</code> flag: Deemed too insecure. <code>rops</code> files are instead encouraged to be placed under and then recovered with version control systems such as git.</p>
@@ -358,7 +358,7 @@ Commands:
   encrypt  Encrypt plaintext maps [aliases: e]
   decrypt  Decrypt rops files [aliases: d]
   edit     Edit an encrypted rops file using $EDITOR. (Fallbacks to vim then nano and lastly vi.) Outputs to stdout if input is piped
-  keys     Manage encrypt rops file keys [aliases: k]
+  keys     Manage encrypted rops file keys [aliases: k]
   refresh  Make a config the single source of configuration truth for an encrypted rops file
   help     Print this message or the help of the given subcommand(s)
 
@@ -414,13 +414,13 @@ Options:
   -h, --help             Print help
 </code></pre>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="keys-subcommand"><a class="header" href="#keys-subcommand">Keys subcommand</a></h1>
-<pre><code class="language-text">Manage encrypt rops file keys
+<pre><code class="language-text">Manage encrypted rops file keys
 
 Usage: rops keys &lt;COMMAND&gt;
 
 Commands:
-  add     
-  remove  
+  add     Add integration key IDs to an encrypted rops file
+  remove  Remove intregration key IDs of an encrypted rops file and rotate the data key
   help    Print this message or the help of the given subcommand(s)
 
 Options:

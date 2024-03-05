@@ -223,7 +223,7 @@
 </li>
 <li>
 <p>Partial modification:
-Use <code>rops edit</code> or <code>rops decrypt FILE | jq map | rops encrypt --format FORMAT</code> instead? This will unfortunately skip initialization vector reuse for unchanged value.</p>
+Use <code>rops edit</code> or <code>rops decrypt FILE | jq map | rops encrypt --format FORMAT</code> instead? This will unfortunately skip initialization vector reuse of unchanged values.</p>
 </li>
 <li>
 <p>The <code>--ignore-mac</code> flag: Deemed too insecure. <code>rops</code> files are instead encouraged to be placed under and then recovered with version control systems such as git.</p>
