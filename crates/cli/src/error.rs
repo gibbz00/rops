@@ -2,6 +2,8 @@ use std::path::PathBuf;
 
 use thiserror::Error;
 
+// TEMP: Test misspeling to fail CI.
+
 #[derive(Debug, PartialEq, Error)]
 pub enum RopsCliError {
     #[error("multiple inputs; received content from stdin when a file path was provided")]

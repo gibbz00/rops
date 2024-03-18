@@ -79,6 +79,14 @@ jobs:
           RUSTDOCFLAGS: "-D warnings"
         # Because CLI binary is also called `rops`:
         run: cargo doc --no-deps --all-features --workspace --exclude rops-cli
+  spelling:
+    name: Spell checking
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout sources
+      uses: actions/checkout@v4
+    - name: typos
+      uses: crate-ci/typos@master
   audit:
     name: Audit
     runs-on: ubuntu-latest
