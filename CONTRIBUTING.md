@@ -33,6 +33,8 @@ RUSTDOCFLAGS="-D warnings" cargo doc --no-deps --all-features --workspace --excl
 # Some may also want to uncomment:
 # cargo test --all-features
 # mdbook test
+# # https://github.com/crate-ci/typos
+# typos
 ```
 
 ### Running tests
