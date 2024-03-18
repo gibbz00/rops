@@ -63,7 +63,7 @@ impl<H: Hasher> Mac<H> {
                 for (key, tree) in map.iter() {
                     let mut mac_only_encrypted_config = mac_only_encrypted_config;
 
-                    if let ResolvedPartialEncrpytion::No(partial_encryption_config) = mac_only_encrypted_config.resolved_partial_encryption
+                    if let ResolvedPartialEncryption::No(partial_encryption_config) = mac_only_encrypted_config.resolved_partial_encryption
                     {
                         mac_only_encrypted_config.resolved_partial_encryption = partial_encryption_config.resolve(key);
                     }

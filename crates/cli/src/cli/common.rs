@@ -48,7 +48,7 @@ impl Cli {
                     .and_then(|file_extension| {
                         <Format as ValueEnum>::from_str(file_extension.to_str().expect("invalid unicode"), true).ok()
                     })
-                    .ok_or_else(|| UndeterminedFormatError::NoFileExtention(file_path.to_path_buf()).into()),
+                    .ok_or_else(|| UndeterminedFormatError::NoFileExtension(file_path.to_path_buf()).into()),
                 None => Err(UndeterminedFormatError::FoundNeither.into()),
             },
         }
@@ -74,12 +74,12 @@ mod tests {
     use super::*;
 
     #[test]
-    fn infers_format_by_extesion() {
+    fn infers_format_by_extension() {
         assert_eq!(Format::Yaml, Cli::get_format(Some(Path::new("test.yaml")), None).unwrap())
     }
 
     #[test]
-    fn infers_format_by_extesion_alias() {
+    fn infers_format_by_extension_alias() {
         assert_eq!(Format::Yaml, Cli::get_format(Some(Path::new("test.yml")), None).unwrap())
     }
 
@@ -95,7 +95,7 @@ mod tests {
     fn errors_on_missing_file_extension() {
         assert!(matches!(
             Cli::get_format(Some(Path::new("test")), None).unwrap_err(),
-            RopsCliError::UndeterminedFormat(UndeterminedFormatError::NoFileExtention(_))
+            RopsCliError::UndeterminedFormat(UndeterminedFormatError::NoFileExtension(_))
         ))
     }
 }

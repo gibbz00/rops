@@ -37,7 +37,7 @@ impl RopsMap<DecryptedMap> {
         fn encrypt_map_recursive<Ci: Cipher>(
             decrypted_map: RopsMap<DecryptedMap>,
             data_key: &DataKey,
-            resolved_partial_encryption: ResolvedPartialEncrpytion,
+            resolved_partial_encryption: ResolvedPartialEncryption,
             key_path: &KeyPath,
             optional_saved_nonces: &Option<&SavedRopsMapNonces<Ci>>,
         ) -> Result<RopsMap<EncryptedMap<Ci>>, Ci::Error> {
@@ -46,7 +46,7 @@ impl RopsMap<DecryptedMap> {
                 let key_path = key_path.join(&key);
                 let mut resolved_partial_encryption = resolved_partial_encryption;
 
-                if let ResolvedPartialEncrpytion::No(partial_encryption_config) = resolved_partial_encryption {
+                if let ResolvedPartialEncryption::No(partial_encryption_config) = resolved_partial_encryption {
                     resolved_partial_encryption = partial_encryption_config.resolve(key_path.last())
                 }
 
@@ -68,7 +68,7 @@ impl RopsMap<DecryptedMap> {
         fn encrypt_tree_recursive<Ci: Cipher>(
             decrypted_tree: RopsTree<DecryptedMap>,
             data_key: &DataKey,
-            resolved_partial_encryption: ResolvedPartialEncrpytion,
+            resolved_partial_encryption: ResolvedPartialEncryption,
             key_path: &KeyPath,
             optional_saved_nonces: &Option<&SavedRopsMapNonces<Ci>>,
         ) -> Result<RopsTree<EncryptedMap<Ci>>, Ci::Error> {

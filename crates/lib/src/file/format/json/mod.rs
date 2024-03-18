@@ -68,7 +68,7 @@ impl FileFormatValueAdapter for JsonValue {
 
     fn encrypted_to_internal<C: Cipher>(
         self,
-        resolved_partial_encryption: ResolvedPartialEncrpytion,
+        resolved_partial_encryption: ResolvedPartialEncryption,
     ) -> Result<RopsTree<EncryptedMap<C>>, FormatToInternalMapError> {
         Ok(match self {
             JsonValue::Object(map) => RopsTree::Map(map.encrypted_to_internal(resolved_partial_encryption, Self::encrypted_to_internal)?),

@@ -17,7 +17,7 @@ pub enum PartialEncryptionConfig {
 pub struct EscapeEncryption(pub bool);
 
 impl PartialEncryptionConfig {
-    pub fn resolve(&self, key_str: &str) -> ResolvedPartialEncrpytion {
+    pub fn resolve(&self, key_str: &str) -> ResolvedPartialEncryption {
         let maybe_escape_encryption: Option<EscapeEncryption> = match self {
             PartialEncryptionConfig::EncryptedSuffix(suffix) => key_str.ends_with(suffix).then_some(EscapeEncryption(false)),
             PartialEncryptionConfig::EncryptedRegex(regex) => regex.is_match(key_str).then_some(EscapeEncryption(false)),
@@ -26,23 +26,23 @@ impl PartialEncryptionConfig {
         };
 
         match maybe_escape_encryption {
-            Some(escape_encryption) => ResolvedPartialEncrpytion::Yes(escape_encryption),
-            None => ResolvedPartialEncrpytion::No(self),
+            Some(escape_encryption) => ResolvedPartialEncryption::Yes(escape_encryption),
+            None => ResolvedPartialEncryption::No(self),
         }
     }
 }
 
 #[derive(Clone, Copy)]
-pub enum ResolvedPartialEncrpytion<'a> {
+pub enum ResolvedPartialEncryption<'a> {
     Yes(EscapeEncryption),
     No(&'a PartialEncryptionConfig),
 }
 
-impl ResolvedPartialEncrpytion<'_> {
+impl ResolvedPartialEncryption<'_> {
     pub fn escape_encryption(&self) -> bool {
         match self {
-            ResolvedPartialEncrpytion::Yes(escape_encryption) => escape_encryption.0,
-            ResolvedPartialEncrpytion::No(partial_encryption_config) => match partial_encryption_config {
+            ResolvedPartialEncryption::Yes(escape_encryption) => escape_encryption.0,
+            ResolvedPartialEncryption::No(partial_encryption_config) => match partial_encryption_config {
                 PartialEncryptionConfig::EncryptedSuffix(_) | PartialEncryptionConfig::EncryptedRegex(_) => true,
                 PartialEncryptionConfig::UnencryptedSuffix(_) | PartialEncryptionConfig::UnencryptedRegex(_) => false,
             },
@@ -50,11 +50,11 @@ impl ResolvedPartialEncrpytion<'_> {
     }
 }
 
-impl<'a> From<Option<&'a PartialEncryptionConfig>> for ResolvedPartialEncrpytion<'a> {
+impl<'a> From<Option<&'a PartialEncryptionConfig>> for ResolvedPartialEncryption<'a> {
     fn from(optional_partial_encryption_config: Option<&'a PartialEncryptionConfig>) -> Self {
         match optional_partial_encryption_config {
-            Some(partial_encryption_config) => ResolvedPartialEncrpytion::No(partial_encryption_config),
-            None => ResolvedPartialEncrpytion::Yes(EscapeEncryption(false)),
+            Some(partial_encryption_config) => ResolvedPartialEncryption::No(partial_encryption_config),
+            None => ResolvedPartialEncryption::Yes(EscapeEncryption(false)),
         }
     }
 }
@@ -97,7 +97,7 @@ mod mock {
 
     static LAZY_PARTIAL_ENCRYPTION_CONFIG: Lazy<PartialEncryptionConfig> = Lazy::new(PartialEncryptionConfig::mock);
 
-    impl MockTestUtil for ResolvedPartialEncrpytion<'_> {
+    impl MockTestUtil for ResolvedPartialEncryption<'_> {
         fn mock() -> Self {
             Self::No(&LAZY_PARTIAL_ENCRYPTION_CONFIG)
         }

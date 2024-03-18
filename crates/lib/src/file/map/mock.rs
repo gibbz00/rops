@@ -119,7 +119,7 @@ mod aes_gcm {
         }
     }
 
-    fn encrypted_leaf(encrpyted_value_str: &str) -> RopsTree<EncryptedMap<AES256GCM>> {
-        RopsTree::Leaf(RopsMapEncryptedLeaf::Encrypted(encrpyted_value_str.parse().unwrap()))
+    fn encrypted_leaf(encrypted_value_str: &str) -> RopsTree<EncryptedMap<AES256GCM>> {
+        RopsTree::Leaf(RopsMapEncryptedLeaf::Encrypted(encrypted_value_str.parse().unwrap()))
     }
 }

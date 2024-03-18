@@ -39,11 +39,11 @@ impl Integration for AgeIntegration {
             let encryptor =
                 age::Encryptor::with_recipients(vec![Box::new(key_id.clone())]).expect("provided recipients should be non-empty");
 
-            let mut unarmored_encypted_buffer = Vec::with_capacity(DataKey::byte_size());
-            let mut encryption_writer = encryptor.wrap_output(&mut unarmored_encypted_buffer)?;
+            let mut unarmored_encrypted_buffer = Vec::with_capacity(DataKey::byte_size());
+            let mut encryption_writer = encryptor.wrap_output(&mut unarmored_encrypted_buffer)?;
             encryption_writer.write_all(data_key.as_ref())?;
             encryption_writer.finish()?;
-            unarmored_encypted_buffer
+            unarmored_encrypted_buffer
         };
 
         let mut armored_buffer = Vec::with_capacity(Self::APPROX_MAX_ARMORED_DATA_KEY_LENGTH);

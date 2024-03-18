@@ -29,7 +29,7 @@ pub trait FileFormatValueAdapter {
 
     fn encrypted_to_internal<C: Cipher>(
         self,
-        resolved_partial_encryption: ResolvedPartialEncrpytion,
+        resolved_partial_encryption: ResolvedPartialEncryption,
     ) -> Result<RopsTree<EncryptedMap<C>>, FormatToInternalMapError>;
 
     fn encrypted_from_internal<C: Cipher>(internal_tree: RopsTree<EncryptedMap<C>>) -> Self;
@@ -69,11 +69,11 @@ where
 
     fn encrypted_to_internal<F, C: Cipher>(
         self,
-        resolved_partial_encryption: ResolvedPartialEncrpytion,
+        resolved_partial_encryption: ResolvedPartialEncryption,
         recursive_value_fn: F,
     ) -> Result<RopsMap<EncryptedMap<C>>, FormatToInternalMapError>
     where
-        F: Fn(Self::Value, ResolvedPartialEncrpytion) -> Result<RopsTree<EncryptedMap<C>>, FormatToInternalMapError>,
+        F: Fn(Self::Value, ResolvedPartialEncryption) -> Result<RopsTree<EncryptedMap<C>>, FormatToInternalMapError>,
     {
         let mut tree_map = IndexMap::default();
 
@@ -81,7 +81,7 @@ where
             let key_string = format_key.validate()?;
             let mut resolved_partial_encryption = resolved_partial_encryption;
 
-            if let ResolvedPartialEncrpytion::No(partial_encryption_config) = resolved_partial_encryption {
+            if let ResolvedPartialEncryption::No(partial_encryption_config) = resolved_partial_encryption {
                 resolved_partial_encryption = partial_encryption_config.resolve(&key_string);
             }
 

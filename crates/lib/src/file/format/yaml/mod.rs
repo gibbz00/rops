@@ -60,7 +60,7 @@ impl FileFormatValueAdapter for YamlValue {
         Ok(match self {
             // SOPS simply throws away tags, so do we for now.
             // It can, however, deserialize manually added tags to encrypted documents,
-            // so we could in theory keep the tags somewhere without breaking SOPS compatability.
+            // so we could in theory keep the tags somewhere without breaking SOPS compatibility.
             YamlValue::Tagged(tagged) => tagged.value.decrypted_to_internal()?,
             YamlValue::Mapping(map) => RopsTree::Map(YamlMap::decrypted_to_internal(map)?),
             YamlValue::Bool(boolean) => RopsTree::Leaf(RopsValue::Boolean(boolean)),
@@ -87,7 +87,7 @@ impl FileFormatValueAdapter for YamlValue {
 
     fn encrypted_to_internal<C: Cipher>(
         self,
-        resolved_partial_encryption: ResolvedPartialEncrpytion,
+        resolved_partial_encryption: ResolvedPartialEncryption,
     ) -> Result<RopsTree<EncryptedMap<C>>, FormatToInternalMapError> {
         Ok(match self {
             YamlValue::Tagged(tagged) => tagged.value.encrypted_to_internal(resolved_partial_encryption)?,

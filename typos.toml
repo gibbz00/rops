@@ -1,0 +1,8 @@
+[default]
+extend-ignore-identifiers-re = [
+  # Long hex encoded strings
+  "\\b[0-9A-Za-z+/]{60}(=|==)?",
+]
+
+[type.rust]
+extend-ignore-identifiers-re = ["Fo"]

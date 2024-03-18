@@ -17,7 +17,7 @@ Structure requirements on commit messages, issues and pull requests are other th
 set -e
 
 # Make sure the toolchain is up to date and includes the
-# neccessary components specified in rust-toolchain.toml:
+# necessary components specified in rust-toolchain.toml:
 rustup update "$(rustup toolchain list | rg override | cut -d ' ' -f1)"
 
 # Make sure things are properly formatted
@@ -27,7 +27,7 @@ taplo fmt --check --diff
 # Make sure things follow common linting recommendations
 cargo clippy --all-features --tests -- -D warnings
 
-# Check documention
+# Check documentation
 RUSTDOCFLAGS="-D warnings" cargo doc --no-deps --all-features --workspace --exclude rops-cli
 
 # Some may also want to uncomment:

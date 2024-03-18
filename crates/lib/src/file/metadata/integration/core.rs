@@ -23,8 +23,8 @@ impl IntegrationMetadata {
             .into_iter()
             .map(|key_id| I::Config::new(key_id))
             .map(|integration_config| IntegrationMetadataUnit::<I>::new(integration_config, data_key))
-            .try_for_each(|integation_metada_unit_result| {
-                I::select_metadata_units(self).insert(integation_metada_unit_result?);
+            .try_for_each(|integration_metadata_unit_result| {
+                I::select_metadata_units(self).insert(integration_metadata_unit_result?);
                 Ok(())
             })
     }
@@ -75,13 +75,13 @@ mod tests {
 
     #[test]
     fn adds_keys() {
-        let mut integation_metadata = IntegrationMetadata::default();
-        assert!(integation_metadata.age.is_empty());
+        let mut integration_metadata = IntegrationMetadata::default();
+        assert!(integration_metadata.age.is_empty());
 
-        integation_metadata
+        integration_metadata
             .add_keys::<AgeIntegration>(Some(<AgeIntegration as Integration>::KeyId::mock()), &DataKey::mock())
             .unwrap();
 
-        assert!(!integation_metadata.age.is_empty())
+        assert!(!integration_metadata.age.is_empty())
     }
 }

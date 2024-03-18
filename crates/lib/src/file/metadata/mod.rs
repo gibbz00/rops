@@ -16,4 +16,4 @@ pub(crate) use mac::*;
 
 mod partial_encryption;
 pub use partial_encryption::PartialEncryptionConfig;
-pub(crate) use partial_encryption::ResolvedPartialEncrpytion;
+pub(crate) use partial_encryption::ResolvedPartialEncryption;

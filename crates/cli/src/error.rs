@@ -4,7 +4,7 @@ use thiserror::Error;
 
 #[derive(Debug, PartialEq, Error)]
 pub enum RopsCliError {
-    #[error("multiple inputs; recieved content from stdin when a file path was provided")]
+    #[error("multiple inputs; received content from stdin when a file path was provided")]
     MultipleInputs,
     #[error("missing input; neither a file path nor stdin were provided")]
     MissingInput,
@@ -17,7 +17,7 @@ pub enum UndeterminedFormatError {
     #[error("found neither format nor file arguments")]
     FoundNeither,
     #[error("unable to determine file extension for {0} when no format argument was found")]
-    NoFileExtention(PathBuf),
+    NoFileExtension(PathBuf),
 }
 
 pub const IN_PLACE_PANIC: &str = "inplace argument not declared with a #[requires = \"file\"] field attribute.";

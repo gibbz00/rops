@@ -7,7 +7,7 @@ pub type DefaulConfigFileFormat = TomlFileFormat;
 const ROPS_CONFIG_ENV_VAR_NAME: &str = "ROPS_CONFIG";
 const ROPS_CONFIG_DEFAULT_FILE_NAME: &str = ".rops.toml";
 
-// seperated with generic parameter to simplify unit testing of strategy
+// separated with generic parameter to simplify unit testing of strategy
 pub(super) fn retrieve_impl<T: DeserializeOwned + Default>(optional_config_path: Option<&Path>) -> anyhow::Result<T> {
     if let Some(arg_path) = optional_config_path {
         return read_fs_path_and_deserialize::<T>(arg_path);

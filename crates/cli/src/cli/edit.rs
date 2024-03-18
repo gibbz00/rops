@@ -20,10 +20,10 @@ impl Cli {
         #[rustfmt::skip]
         mod temp_file_format {
             use super::*;
-            pub trait TempFileFormat: FileFormat { const TEMP_EXTENTION: &'static str; }
-            impl TempFileFormat for YamlFileFormat { const TEMP_EXTENTION: &'static str = "yaml"; }
-            impl TempFileFormat for JsonFileFormat { const TEMP_EXTENTION: &'static str = "json"; }
-            impl TempFileFormat for TomlFileFormat { const TEMP_EXTENTION: &'static str = "toml"; }
+            pub trait TempFileFormat: FileFormat { const TEMP_EXTENSION: &'static str; }
+            impl TempFileFormat for YamlFileFormat { const TEMP_EXTENSION: &'static str = "yaml"; }
+            impl TempFileFormat for JsonFileFormat { const TEMP_EXTENSION: &'static str = "json"; }
+            impl TempFileFormat for TomlFileFormat { const TEMP_EXTENSION: &'static str = "toml"; }
         }
 
         fn edit_encrypted_file<F: temp_file_format::TempFileFormat>(explicit_file_path: Option<&Path>) -> anyhow::Result<()> {
@@ -32,7 +32,7 @@ impl Cli {
                 .decrypt_and_save_parameters::<F>()?;
 
             let temp_file = tempfile::Builder::new()
-                .suffix(&format!(".{}", F::TEMP_EXTENTION))
+                .suffix(&format!(".{}", F::TEMP_EXTENSION))
                 // Create locally to avoid file being picked up by temporary resource cleaners.
                 .tempfile_in("./")?;
 

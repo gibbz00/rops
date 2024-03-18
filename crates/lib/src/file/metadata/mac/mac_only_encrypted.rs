@@ -3,7 +3,7 @@ use crate::*;
 #[derive(Clone, Copy)]
 pub struct MacOnlyEncryptedConfig<'a> {
     pub mac_only_encrypted: bool,
-    pub resolved_partial_encryption: ResolvedPartialEncrpytion<'a>,
+    pub resolved_partial_encryption: ResolvedPartialEncryption<'a>,
 }
 
 impl MacOnlyEncryptedConfig<'_> {
@@ -26,7 +26,7 @@ mod mock {
         fn mock() -> Self {
             Self {
                 mac_only_encrypted: false,
-                resolved_partial_encryption: ResolvedPartialEncrpytion::mock(),
+                resolved_partial_encryption: ResolvedPartialEncryption::mock(),
             }
         }
     }

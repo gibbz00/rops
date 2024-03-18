@@ -143,9 +143,9 @@ mod metadata {
                     IntegrationMetadataUnit<I>: MockFileFormatUtil<YamlFileFormat>,
                 {
                     let integration_metadata = IntegrationMetadataUnit::<I>::mock_format_display();
-                    let (first_metadata_line, remaning_metata_lines) = integration_metadata
+                    let (first_metadata_line, remaining_metata_lines) = integration_metadata
                         .split_once('\n')
-                        .expect("no newline delimeter in integration metadata");
+                        .expect("no newline delimiter in integration metadata");
 
                     indoc::formatdoc! {"
                         {}:
@@ -153,7 +153,7 @@ mod metadata {
                         {}",
                         metadata_field_name,
                         first_metadata_line,
-                        textwrap::indent(remaning_metata_lines, "  ")
+                        textwrap::indent(remaining_metata_lines, "  ")
                     }
                 }
             }
