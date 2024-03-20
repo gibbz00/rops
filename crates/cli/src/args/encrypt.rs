@@ -28,23 +28,24 @@ impl ConfigArg for EncryptArgs {
 
 impl MergeConfig for EncryptArgs {
     fn merge_config(&mut self, config: Config) {
+        // stdin regarded as empty path
+        let file_path = self.input_args.file.as_deref().unwrap_or(Path::new(""));
+        let file_path = file_path.to_string_lossy();
         for creation_rule in config.creation_rules {
-            if let Some(file_path) = &self.input_args.file {
-                if creation_rule.path_regex.is_match(&file_path.to_string_lossy()) {
-                    self.integration_keys.merge(creation_rule.integration_keys);
+            if creation_rule.path_regex.is_match(&file_path) {
+                self.integration_keys.merge(creation_rule.integration_keys);
 
-                    if self.mac_only_encrypted.is_none() {
-                        self.mac_only_encrypted = creation_rule.mac_only_encrypted;
-                    }
-
-                    if self.partial_encryption_args.is_none() {
-                        if let Some(partial_encryption_config) = creation_rule.partial_encryption {
-                            self.partial_encryption_args = Some(partial_encryption_config.into());
-                        }
-                    }
-
-                    break;
+                if self.mac_only_encrypted.is_none() {
+                    self.mac_only_encrypted = creation_rule.mac_only_encrypted;
                 }
+
+                if self.partial_encryption_args.is_none() {
+                    if let Some(partial_encryption_config) = creation_rule.partial_encryption {
+                        self.partial_encryption_args = Some(partial_encryption_config.into());
+                    }
+                }
+
+                break;
             }
         }
     }
@@ -71,9 +72,21 @@ mod mock {
 
 #[cfg(test)]
 mod test {
+    use regex::Regex;
     use rops::{file::metadata::PartialEncryptionConfig, test_utils::*};
 
     use super::*;
+
+    #[test]
+    fn merges_configuration_for_stdin_with_fallback_regex() {
+        let mut encrypted_args = EncryptArgs::mock();
+        encrypted_args.input_args.file = None;
+        assert_eq!(1, encrypted_args.integration_keys.age.len());
+        let mut config = Config::mock_other();
+        config.creation_rules[0].path_regex = Regex::new("").unwrap();
+        encrypted_args.merge_config(config);
+        assert_eq!(2, encrypted_args.integration_keys.age.len());
+    }
 
     #[test]
     fn merges_integration_keys_from_config() {
