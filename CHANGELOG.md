@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Spelling with the use of `typos`.
+- Apply creation rules with fallback regex for encrypt subcommand when stdin is used. [#39](https://github.com/gibbz00/rops/pull/39)
 
 ## [0.1.2] - 2024-03-05
 
