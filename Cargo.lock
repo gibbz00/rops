@@ -1045,7 +1045,7 @@ dependencies = [
  "futures-sink",
  "futures-util",
  "http 0.2.12",
- "indexmap 2.2.5",
+ "indexmap 2.2.6",
  "slab",
  "tokio",
  "tokio-util",
@@ -1335,9 +1335,9 @@ dependencies = [
 
 [[package]]
 name = "indexmap"
-version = "2.2.5"
+version = "2.2.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7b0b929d511467233429c45a44ac1dcaa21ba0f5ba11e4879e6ed28ddb4f9df4"
+checksum = "168fb715dda47215e360912c096649d23d58bf392ac62f73919e831745e40f26"
 dependencies = [
  "equivalent",
  "hashbrown 0.14.3",
@@ -1857,7 +1857,7 @@ dependencies = [
  "generic-array",
  "hex",
  "impl-tools",
- "indexmap 2.2.5",
+ "indexmap 2.2.6",
  "indoc",
  "once_cell",
  "pretty_assertions",
@@ -1888,7 +1888,7 @@ dependencies = [
  "clap",
  "console",
  "ctrlc",
- "indexmap 2.2.5",
+ "indexmap 2.2.6",
  "pretty_assertions",
  "regex",
  "rops",
@@ -2162,7 +2162,7 @@ version = "1.0.114"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c5f09b1bd632ef549eaa9f60a1f8de742bdbc698e6cee2095fc84dde5f549ae0"
 dependencies = [
- "indexmap 2.2.5",
+ "indexmap 2.2.6",
  "itoa",
  "ryu",
  "serde",
@@ -2197,7 +2197,7 @@ dependencies = [
  "chrono",
  "hex",
  "indexmap 1.9.3",
- "indexmap 2.2.5",
+ "indexmap 2.2.6",
  "serde",
  "serde_derive",
  "serde_json",
@@ -2223,7 +2223,7 @@ version = "0.9.33"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a0623d197252096520c6f2a5e1171ee436e5af99a5d7caa2891e55e61950e6d9"
 dependencies = [
- "indexmap 2.2.5",
+ "indexmap 2.2.6",
  "itoa",
  "ryu",
  "serde",
@@ -2543,7 +2543,7 @@ version = "0.8.12"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e9dd1545e8208b4a5af1aa9bbd0b4cf7e9ea08fabc5d0a5c67fcaafa17433aa3"
 dependencies = [
- "indexmap 2.2.5",
+ "indexmap 2.2.6",
  "serde",
  "serde_spanned",
  "toml_datetime",
@@ -2565,7 +2565,7 @@ version = "0.22.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8e40bb779c5187258fd7aad0eb68cb8706a0a81fa712fbea808ab43c4b8374c4"
 dependencies = [
- "indexmap 2.2.5",
+ "indexmap 2.2.6",
  "serde",
  "serde_spanned",
  "toml_datetime",
