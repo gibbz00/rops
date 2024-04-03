@@ -2,6 +2,7 @@
 extend-ignore-identifiers-re = [
   # Long hex encoded strings
   "\\b[0-9A-Za-z+/]{60}(=|==)?",
+  "(KMS|kms|Kms)",
 ]
 
 [type.rust]
