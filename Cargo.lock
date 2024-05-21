@@ -1942,7 +1942,7 @@ dependencies = [
  "anyhow",
  "aws-arn",
  "aws-sdk-kms",
- "base64 0.21.7",
+ "base64 0.22.1",
  "chrono",
  "derive_more",
  "directories",

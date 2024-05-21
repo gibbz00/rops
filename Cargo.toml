@@ -18,7 +18,7 @@ age = "0.10"
 anyhow = "1"
 aws-arn = "0.3"
 aws-sdk-kms = { version = "1.26", features = ["behavior-version-latest"] }
-base64 = "0.21"
+base64 = "0.22"
 chrono = { version = "0.4", features = ["serde"] }
 clap = { version = "4", features = ["derive"] }
 console = "0.15"
