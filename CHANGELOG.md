@@ -5,6 +5,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.4] - 2024-09-27
+
+### Fixed
+
+- Suppress `RUSTSEC-2024-0370` `proc-macro-error` unmaintaned library advisory.
+
+### Changed
+
+- Update upstream dependencies.
+
 ## [0.1.3] - 2024-06-20
 
 ### Fixed
