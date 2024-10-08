@@ -131,7 +131,7 @@ mod tests {
     #[cfg(unix)]
     mod unix_perissions {
         #[test]
-        fn temp_file_has_600_permessions() {
+        fn temp_file_has_600_permissions() {
             use std::os::unix::fs::PermissionsExt;
             let tempfile = tempfile::tempfile().unwrap();
             let mode = tempfile.metadata().unwrap().permissions().mode();
