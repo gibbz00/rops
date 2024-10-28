@@ -17,7 +17,7 @@ aes-gcm = { version = "0.10", features = ["std"] }
 age = "0.10"
 anyhow = "1"
 aws-arn = "0.3"
-aws-sdk-kms = { version = "1.46", features = ["behavior-version-latest"] }
+aws-sdk-kms = { version = "1.48", features = ["behavior-version-latest"] }
 base64 = "0.22"
 chrono = { version = "0.4", features = ["serde"] }
 clap = { version = "4", features = ["derive"] }
