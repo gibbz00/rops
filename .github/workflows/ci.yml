@@ -114,7 +114,7 @@ jobs:
       - name: Checkout sources
         uses: actions/checkout@v4
       - name: Run lychee
-        uses: lycheeverse/lychee-action@v1.9.3
+        uses: lycheeverse/lychee-action@v2.1.0
         with:
           fail: true
   coverage:
