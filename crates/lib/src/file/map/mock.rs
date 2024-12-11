@@ -44,7 +44,7 @@ where
 {
     fn mock() -> Self {
         let mut saved_nonces = SavedRopsMapNonces::default();
-        recurive_build(
+        recursive_build(
             RopsTree::Map(RopsMap::mock()),
             &mut saved_nonces,
             &DataKey::mock(),
@@ -52,7 +52,7 @@ where
         );
         return saved_nonces;
 
-        fn recurive_build<Ci: Cipher>(
+        fn recursive_build<Ci: Cipher>(
             tree: RopsTree<EncryptedMap<Ci>>,
             saved_nonces: &mut SavedRopsMapNonces<Ci>,
             data_key: &DataKey,
@@ -61,11 +61,11 @@ where
             match tree {
                 RopsTree::Sequence(sequence) => sequence
                     .into_iter()
-                    .for_each(|sub_tree| recurive_build(sub_tree, saved_nonces, data_key, key_path)),
+                    .for_each(|sub_tree| recursive_build(sub_tree, saved_nonces, data_key, key_path)),
                 RopsTree::Map(map) => map
                     .0
                     .into_iter()
-                    .for_each(|(key, sub_tree)| recurive_build(sub_tree, saved_nonces, data_key, &key_path.join(&key))),
+                    .for_each(|(key, sub_tree)| recursive_build(sub_tree, saved_nonces, data_key, &key_path.join(&key))),
                 RopsTree::Null => (),
                 RopsTree::Leaf(encrypted_map_leaf) => {
                     if let RopsMapEncryptedLeaf::Encrypted(encrypted_value) = encrypted_map_leaf {
