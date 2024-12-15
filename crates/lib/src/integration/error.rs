@@ -13,7 +13,7 @@ pub enum IntegrationError {
     Decryption(anyhow::Error),
     #[error("unable to parse key id string: {0}")]
     KeyIdParsing(anyhow::Error),
-    #[error("unnable to parse private key string: {0}")]
+    #[error("unable to parse private key string: {0}")]
     PrivateKeyParsing(anyhow::Error),
     #[error("io error during encryption/decryption: {0}")]
     Io(#[from] std::io::Error),
