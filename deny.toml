@@ -1,4 +1,4 @@
 [advisories]
 ignore = [
-  { id = "RUSTSEC-2024-0370", reason = "Upstream issue in `age`, https://github.com/str4d/rage/issues/528" },
+  { id = "RUSTSEC-2024-0436", reason = "Upstream issue in `age`, https://github.com/str4d/rage/issues/528" },
 ]
