@@ -5,7 +5,7 @@ use derive_more::Display;
 use crate::*;
 
 #[derive(Display)]
-#[display(fmt = "{}", "self.0")]
+#[display("{}", self.0)]
 #[impl_tools::autoimpl(Debug, PartialEq)]
 pub struct EncryptedMac<C: Cipher, H: Hasher>(pub(crate) EncryptedRopsValue<C>, pub(crate) PhantomData<H>);
 

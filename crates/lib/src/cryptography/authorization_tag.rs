@@ -1,13 +1,14 @@
 use std::str::FromStr;
 
+use aes_gcm::Tag;
 use derive_more::{AsMut, AsRef, From};
 use generic_array::GenericArray;
 
 use crate::*;
 
 #[derive(AsRef, AsMut, From)]
-#[as_mut]
-#[as_ref]
+#[as_mut([u8])]
+#[as_ref[Tag<C::AuthorizationTagSize>]]
 #[impl_tools::autoimpl(Debug, PartialEq)]
 pub struct AuthorizationTag<C: Cipher>(GenericArray<u8, C::AuthorizationTagSize>);
 

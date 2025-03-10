@@ -2,7 +2,7 @@ use std::io::{Read, Write};
 
 use age::{
     armor::{ArmoredReader, ArmoredWriter, Format},
-    Decryptor,
+    Decryptor, Recipient,
 };
 
 use crate::*;
@@ -37,7 +37,7 @@ impl Integration for AgeIntegration {
         let unarmored_buffer = {
             // IMPROVEMENT: avoid vec box allocation
             let encryptor =
-                age::Encryptor::with_recipients(vec![Box::new(key_id.clone())]).expect("provided recipients should be non-empty");
+                age::Encryptor::with_recipients([key_id as &dyn Recipient].into_iter()).expect("provided recipients should be non-empty");
 
             let mut unarmored_encrypted_buffer = Vec::with_capacity(DataKey::byte_size());
             let mut encryption_writer = encryptor.wrap_output(&mut unarmored_encrypted_buffer)?;
@@ -65,10 +65,7 @@ impl Integration for AgeIntegration {
 
         ArmoredReader::new(encrypted_data_key.as_bytes()).read_to_end(&mut unarmored_encrypted_buffer)?;
 
-        let decryptor = match Decryptor::new(unarmored_encrypted_buffer.as_slice())? {
-            Decryptor::Recipients(decryptor) => decryptor,
-            Decryptor::Passphrase(_) => panic!("encryption should have used recipients, not passphrases"),
-        };
+        let decryptor = Decryptor::new(unarmored_encrypted_buffer.as_slice())?;
 
         let mut decrypted_data_key_buffer = DataKey::empty();
         let mut reader = decryptor.decrypt(std::iter::once(&matched_private_key as &dyn age::Identity))?;

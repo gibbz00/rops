@@ -15,7 +15,7 @@ impl<T: ArrayLength<u8>> RngKey<T> {
         // initial seed.
         //
         // https://docs.rs/rand/latest/rand/rngs/struct.ThreadRng.html
-        let mut rand = rand::thread_rng();
+        let mut rand = rand::rng();
 
         let mut inner = GenericArray::default();
         rand.fill_bytes(&mut inner);

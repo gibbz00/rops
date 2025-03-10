@@ -5,7 +5,7 @@ use derive_more::Display;
 use crate::*;
 
 #[derive(Debug, PartialEq, Display)]
-#[display(fmt = "{}.{}.{}", profile, id, secret)]
+#[display("{}.{}.{}", profile, id, secret)]
 pub struct AwsPrivateKey {
     pub(super) profile: String,
     pub(super) id: String,

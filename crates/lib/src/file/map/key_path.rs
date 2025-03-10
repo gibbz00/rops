@@ -8,7 +8,7 @@ impl KeyPath {
     }
 
     pub fn last(&self) -> &str {
-        self.0.strip_suffix(':').and_then(|str| str.split(':').last()).unwrap_or("")
+        self.0.strip_suffix(':').and_then(|str| str.split(':').next_back()).unwrap_or("")
     }
 }
 
