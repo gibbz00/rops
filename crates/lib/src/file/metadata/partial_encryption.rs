@@ -79,7 +79,7 @@ mod regex {
 
 #[cfg(feature = "test-utils")]
 mod mock {
-    use once_cell::sync::Lazy;
+    use std::sync::LazyLock;
 
     use crate::*;
 
@@ -95,7 +95,7 @@ mod mock {
         }
     }
 
-    static LAZY_PARTIAL_ENCRYPTION_CONFIG: Lazy<PartialEncryptionConfig> = Lazy::new(PartialEncryptionConfig::mock);
+    static LAZY_PARTIAL_ENCRYPTION_CONFIG: LazyLock<PartialEncryptionConfig> = LazyLock::new(PartialEncryptionConfig::mock);
 
     impl MockTestUtil for ResolvedPartialEncryption<'_> {
         fn mock() -> Self {
