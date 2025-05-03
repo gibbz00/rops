@@ -12,7 +12,7 @@ struct Cache {
 }
 
 fn main() -> anyhow::Result<()> {
-    println!("cargo:rerun-if-changed={}", CACHE_PATH);
+    println!("cargo:rerun-if-changed={CACHE_PATH}");
     normalize_sops_references()
 }
 

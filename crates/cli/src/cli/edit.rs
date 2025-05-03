@@ -57,7 +57,7 @@ impl Cli {
                     ),
                     encrypted_rops_file_string,
                 )?,
-                false => println!("{}", encrypted_rops_file_string),
+                false => println!("{encrypted_rops_file_string}"),
             }
 
             return Ok(());
@@ -68,7 +68,7 @@ impl Cli {
                     Some(editor_env) => {
                         let editor_value = editor_env.to_str().context("$EDITOR value is invalid UTF-8")?;
                         let mut parts_iter = shlex::split(editor_value)
-                            .context(format!("unable to parse $EDITOR value {}", editor_value))?
+                            .context(format!("unable to parse $EDITOR value {editor_value}"))?
                             .into_iter();
                         let command = parts_iter.next().expect("$EDTIOR value should not have been empty");
                         Ok((command, parts_iter.collect()))
@@ -106,7 +106,7 @@ impl Cli {
                     match temp_file_string.parse() {
                         Ok(decrypted_map) => break Ok(Some(decrypted_map)),
                         Err(err) => {
-                            eprintln!("Unable to parse map: {}", err);
+                            eprintln!("Unable to parse map: {err}");
                             eprintln!("Send SIGINT (usually Ctrl+C) to quit or any key to retry.");
 
                             if let Err(error) = console::Term::stdout().read_key() {

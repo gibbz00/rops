@@ -79,7 +79,7 @@ impl Display for AwsKeyResourceName {
 
         display_string.push_str(key_id);
 
-        return write!(f, "{}", display_string);
+        return write!(f, "{display_string}");
 
         fn push_identifier(display_string: &mut String, identifier: &str) {
             display_string.push_str(identifier);

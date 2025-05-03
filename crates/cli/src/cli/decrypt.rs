@@ -15,7 +15,7 @@ impl Cli {
                 std::fs::write(explicit_file_path.expect(IN_PLACE_PANIC), decrypted_rops_file_string)?;
             }
             false => {
-                println!("{}", decrypted_rops_file_string);
+                println!("{decrypted_rops_file_string}");
             }
         }
 

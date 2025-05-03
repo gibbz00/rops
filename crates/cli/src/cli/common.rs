@@ -61,7 +61,7 @@ impl Cli {
                 std::fs::write(explicit_file_path.expect(IN_PLACE_PANIC), output_str)?;
             }
             false => {
-                println!("{}", output_str);
+                println!("{output_str}");
             }
         }
 

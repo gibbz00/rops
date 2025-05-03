@@ -69,7 +69,7 @@ impl RunCommand for Command {
         let mut child = self.spawn().unwrap();
 
         let mut stdin = child.stdin.take().unwrap();
-        writeln!(&mut stdin, "{}", stdin_str).unwrap();
+        writeln!(&mut stdin, "{stdin_str}").unwrap();
         drop(stdin);
 
         child.wait_with_output().unwrap()

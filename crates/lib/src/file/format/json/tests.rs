@@ -4,7 +4,7 @@ use crate::*;
 
 impl FileFormatTestSuiteUtils for JsonFileFormat {
     fn simple_map(key: impl Display, value: impl Display) -> String {
-        format!("{{\"{}\":{}}}", key, value)
+        format!("{{\"{key}\":{value}}}")
     }
 }
 
