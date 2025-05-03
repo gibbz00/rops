@@ -10,7 +10,7 @@ license = "MPL-2.0"
 exclude = ["/.github"]
 edition = "2021"
 readme = "README.md"
-version = "0.1.4"
+version = "0.1.5"
 
 [workspace.dependencies]
 aes-gcm = { version = "0.10", features = ["std"] }
