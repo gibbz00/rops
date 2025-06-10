@@ -17,7 +17,7 @@ pub enum PartialEncryptionConfig {
 pub struct EscapeEncryption(pub bool);
 
 impl PartialEncryptionConfig {
-    pub fn resolve(&self, key_str: &str) -> ResolvedPartialEncryption {
+    pub fn resolve(&self, key_str: &str) -> ResolvedPartialEncryption<'_> {
         let maybe_escape_encryption: Option<EscapeEncryption> = match self {
             PartialEncryptionConfig::EncryptedSuffix(suffix) => key_str.ends_with(suffix).then_some(EscapeEncryption(false)),
             PartialEncryptionConfig::EncryptedRegex(regex) => regex.is_match(key_str).then_some(EscapeEncryption(false)),
