@@ -2,6 +2,7 @@ use generic_array::typenum::U32;
 
 use crate::*;
 
+#[allow(dead_code, reason = "marker used in tests")]
 #[derive(Debug, PartialEq)]
 pub struct StubCipher;
 
