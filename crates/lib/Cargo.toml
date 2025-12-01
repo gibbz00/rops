@@ -74,6 +74,11 @@ pretty_assertions = { workspace = true, optional = true }
 textwrap = { workspace = true, optional = true }
 indoc = { workspace = true, optional = true }
 
+# To allow WASM builds to work
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+getrandom = { version = "0.2", default-features = false, features = ["js"] }
+
+
 [dev-dependencies]
 serial_test.workspace = true
 tempfile.workspace = true
