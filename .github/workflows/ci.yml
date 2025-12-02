@@ -143,6 +143,8 @@ jobs:
     env:
       RUSTFLAGS: '--cfg getrandom_backend="wasm_js" -D warnings'
     steps:
+    - name: Checkout sources
+      uses: actions/checkout@v5
     - name: Cache Rust toolchain
       uses: Swatinem/rust-cache@v2
       with:
