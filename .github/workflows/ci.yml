@@ -143,10 +143,12 @@ jobs:
     env:
       RUSTFLAGS: '--cfg getrandom_backend="wasm_js" -D warnings'
     steps:
-    - uses: Swatinem/rust-cache@v2
+    - name: Cache Rust toolchain
+      uses: Swatinem/rust-cache@v2
       with:
         key: wasm32-unknown-unknown
-    - uses: dtolnay/rust-toolchain@stable
+    - name: Install Rust toolchain
+      uses: dtolnay/rust-toolchain@stable
       with:
         targets: wasm32-unknown-unknown
         toolchain: nightly
