@@ -23,7 +23,7 @@ chrono = { version = "0.4", features = ["serde"] }
 clap = { version = "4", features = ["derive"] }
 console = "0.15"
 ctrlc = "3"
-derive_more = { version = "2.0", features = ["display", "from", "deref", "deref_mut", "into", "as_ref"] }
+derive_more = { version = "2.1", features = ["display", "from", "deref", "deref_mut", "into", "as_ref"] }
 directories = "6"
 generic-array = "0.14"
 hex = "0.4"
