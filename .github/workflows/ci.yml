@@ -137,3 +137,21 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: lcov.info
           fail_ci_if_error: true
+  wasm_build:
+    name: WASM build
+    runs-on: ubuntu-latest
+    env:
+      RUSTFLAGS: '--cfg getrandom_backend="wasm_js" -D warnings'
+    steps:
+    - name: Checkout sources
+      uses: actions/checkout@v5
+    - name: Cache Rust toolchain
+      uses: Swatinem/rust-cache@v2
+      with:
+        key: wasm32-unknown-unknown
+    - name: Install Rust toolchain
+      uses: dtolnay/rust-toolchain@stable
+      with:
+        targets: wasm32-unknown-unknown
+        toolchain: nightly
+    - run: cargo check -p rops --features wasm --no-default-features --target wasm32-unknown-unknown
