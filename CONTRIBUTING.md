@@ -18,7 +18,7 @@ set -e
 
 # Make sure the toolchain is up to date and includes the
 # necessary components specified in rust-toolchain.toml:
-rustup update "$(rustup toolchain list | rg override | cut -d ' ' -f1)"
+rustup update "$(rustup toolchain list | rg active | cut -d ' ' -f1)"
 
 # Make sure things are properly formatted
 cargo fmt -- --check
