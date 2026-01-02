@@ -24,7 +24,7 @@ impl Cli {
             let mut rops_file =
                 Cli::get_input_string(Some(&key_args.file), None)?.parse::<RopsFile<EncryptedFile<DefaultCipher, DefaultHasher>, F>>()?;
 
-            let keys = key_args.intregration_keys;
+            let keys = key_args.integration_keys;
             rops_file.add_keys::<AgeIntegration>(keys.age)?;
             rops_file.add_keys::<AwsKmsIntegration>(keys.aws_kms)?;
 
@@ -46,7 +46,7 @@ impl Cli {
                 .parse::<RopsFile<EncryptedFile<DefaultCipher, DefaultHasher>, F>>()?
                 .decrypt::<F>()?;
 
-            let keys = key_args.intregration_keys;
+            let keys = key_args.integration_keys;
 
             // IMPROVEMENT: return error if any key not found?
             for age_key in keys.age {

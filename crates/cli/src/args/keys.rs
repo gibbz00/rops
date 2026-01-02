@@ -8,14 +8,14 @@ use crate::*;
 pub enum KeysSubcommand {
     /// Add integration key IDs to an encrypted rops file
     Add(KeyInputArgs),
-    /// Remove intregration key IDs of an encrypted rops file and rotate the data key.
+    /// Remove integration key IDs of an encrypted rops file and rotate the data key.
     Remove(KeyInputArgs),
 }
 
 #[derive(Args)]
 pub struct KeyInputArgs {
     #[command(flatten)]
-    pub intregration_keys: IntegrationKeys,
+    pub integration_keys: IntegrationKeys,
     /// Required unless it can be inferred from the file argument.
     #[arg(long, short)]
     pub format: Option<Format>,

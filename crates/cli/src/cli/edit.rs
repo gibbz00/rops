@@ -70,7 +70,7 @@ impl Cli {
                         let mut parts_iter = shlex::split(editor_value)
                             .context(format!("unable to parse $EDITOR value {editor_value}"))?
                             .into_iter();
-                        let command = parts_iter.next().expect("$EDTIOR value should not have been empty");
+                        let command = parts_iter.next().expect("$EDITOR value should not have been empty");
                         Ok((command, parts_iter.collect()))
                     }
                     None => match which("vim").ok().or_else(|| which("nano").ok()).or_else(|| which("vi").ok()) {
