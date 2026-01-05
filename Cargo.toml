@@ -21,7 +21,7 @@ aws-sdk-kms = { version = "1.94", features = ["behavior-version-latest"] }
 base64 = "0.22"
 chrono = { version = "0.4", features = ["serde"] }
 clap = { version = "4", features = ["derive"] }
-console = "0.15"
+console = "0.16"
 ctrlc = "3"
 derive_more = { version = "2.1", features = ["display", "from", "deref", "deref_mut", "into", "as_ref"] }
 directories = "6"
