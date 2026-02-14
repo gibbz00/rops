@@ -70,6 +70,8 @@ jobs:
           tool: mdbook-cmdrun
       - name: Run mdbook test
         run: mdbook test
+      - name: Run mdbook build
+        run: mdbook build
   docs_validation:
     name: Docs validation
     runs-on: ubuntu-latest
