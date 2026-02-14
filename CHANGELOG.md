@@ -5,6 +5,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.7] - 2026-02-14
+
+### Fixed
+
+- docs.rs build failure caused by the deprecation of `doc_auto_cfg`
+- Update dependencies which in turn patch RUSTSEC-2026-0007 and RUSTSEC-2026-0009.
+- Deprecation of `output.html.curly-quotes` in mdBook 0.5 config.
+
+## [0.1.6] - 2026-01-02
+
+### Fixed
+
+- Update dependencies which in turn patch RUSTSEC-2025-0134.
+- Deprecation of `book.multilingual` in mdBook 0.5 config.
+
 ## [0.1.5] - 2025-05-03
 
 ### Fixed
