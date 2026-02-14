@@ -64,6 +64,10 @@ jobs:
         uses: peaceiris/actions-mdbook@v2
         with:
           mdbook-version: 'latest'
+      - name: Install `mdbook-cmdrun`
+        uses: taiki-e/cache-cargo-install-action@v3
+        with:
+          tool: mdbook-cmdrun
       - name: Run mdbook test
         run: mdbook test
   docs_validation:

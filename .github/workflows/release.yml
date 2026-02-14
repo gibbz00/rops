@@ -21,7 +21,9 @@ jobs:
           with:
             mdbook-version: 'latest'
         - name: Install `mdbook-cmdrun`
-          run: cargo install mdbook-cmdrun
+          uses: taiki-e/cache-cargo-install-action@v3
+          with:
+            tool: mdbook-cmdrun
         - name: Build book
           run: mdbook build
         - name: Deploy to GitHub pages
