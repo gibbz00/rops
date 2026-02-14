@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - docs.rs build failure caused by the deprecation of `doc_auto_cfg`
 - Update dependencies which in turn patch RUSTSEC-2026-0007 and RUSTSEC-2026-0009.
 - Deprecation of `output.html.curly-quotes` in mdBook 0.5 config.
+- `mdbook-cmdrun` incompatibility with mdBook 0.5.
 
 ## [0.1.6] - 2026-01-02
 
