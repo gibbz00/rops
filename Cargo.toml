@@ -49,5 +49,5 @@ thiserror = "2"
 tokio = "1"
 toml = "1.1"
 walkdir = "2"
-which = "7"
+which = "8"
 zeroize = { version = "1.8" }
