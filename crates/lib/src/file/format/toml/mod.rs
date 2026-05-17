@@ -89,7 +89,7 @@ impl FileFormatValueAdapter for TomlValue {
             ),
             // TEMP:
             TomlValue::String(string) if &string == "null" => RopsTree::Null,
-            TomlValue::String(string) => match resolved_partial_encryption.escape_encryption() {
+            TomlValue::String(string) => match resolved_partial_encryption.escape_encryption() || string.is_empty() {
                 true => RopsTree::Leaf(RopsMapEncryptedLeaf::Escaped(RopsValue::String(string))),
                 false => RopsTree::Leaf(RopsMapEncryptedLeaf::Encrypted(string.parse()?)),
             },

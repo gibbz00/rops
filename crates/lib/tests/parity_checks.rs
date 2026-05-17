@@ -3,6 +3,7 @@ mod age_yaml_aes_gcm_sha2 {
     use crate::*;
 
     age_parity_check!(example);
+    age_parity_check!(empty_value);
     age_parity_check!(encrypted_suffix);
     age_parity_check!(encrypted_regex);
     age_parity_check!(unencrypted_suffix);

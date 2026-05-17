@@ -72,7 +72,7 @@ impl FileFormatValueAdapter for JsonValue {
     ) -> Result<RopsTree<EncryptedMap<C>>, FormatToInternalMapError> {
         Ok(match self {
             JsonValue::Object(map) => RopsTree::Map(map.encrypted_to_internal(resolved_partial_encryption, Self::encrypted_to_internal)?),
-            JsonValue::String(string) => match resolved_partial_encryption.escape_encryption() {
+            JsonValue::String(string) => match resolved_partial_encryption.escape_encryption() || string.is_empty() {
                 true => RopsTree::Leaf(RopsMapEncryptedLeaf::Escaped(RopsValue::String(string))),
                 false => RopsTree::Leaf(RopsMapEncryptedLeaf::Encrypted(string.parse()?)),
             },
