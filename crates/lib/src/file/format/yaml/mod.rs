@@ -92,7 +92,7 @@ impl FileFormatValueAdapter for YamlValue {
         Ok(match self {
             YamlValue::Tagged(tagged) => tagged.value.encrypted_to_internal(resolved_partial_encryption)?,
             YamlValue::Mapping(map) => RopsTree::Map(map.encrypted_to_internal(resolved_partial_encryption, Self::encrypted_to_internal)?),
-            YamlValue::String(string) => match resolved_partial_encryption.escape_encryption() {
+            YamlValue::String(string) => match resolved_partial_encryption.escape_encryption() || string.is_empty() {
                 true => RopsTree::Leaf(RopsMapEncryptedLeaf::Escaped(RopsValue::String(string))),
                 false => RopsTree::Leaf(RopsMapEncryptedLeaf::Encrypted(string.parse()?)),
             },

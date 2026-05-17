@@ -89,15 +89,20 @@ impl RopsMap<DecryptedMap> {
                     optional_saved_nonces,
                 )?),
                 RopsTree::Null => RopsTree::Null,
-                RopsTree::Leaf(value) => match resolved_partial_encryption.escape_encryption() {
-                    true => RopsTree::Leaf(RopsMapEncryptedLeaf::Escaped(value)),
-                    false => {
-                        let nonce = optional_saved_nonces
-                            .and_then(|saved_nonces| saved_nonces.get((key_path, &value)).cloned())
-                            .unwrap_or_else(Nonce::new);
-                        RopsTree::Leaf(RopsMapEncryptedLeaf::Encrypted(value.encrypt(nonce, data_key, key_path)?))
+                RopsTree::Leaf(value) => {
+                    let empty_string = matches!(&value, RopsValue::String(str) if str.is_empty());
+
+                    match resolved_partial_encryption.escape_encryption() || empty_string {
+                        true => RopsTree::Leaf(RopsMapEncryptedLeaf::Escaped(value)),
+                        false => {
+                            let nonce = optional_saved_nonces
+                                .and_then(|saved_nonces| saved_nonces.get((key_path, &value)).cloned())
+                                .unwrap_or_else(Nonce::new);
+
+                            RopsTree::Leaf(RopsMapEncryptedLeaf::Encrypted(value.encrypt(nonce, data_key, key_path)?))
+                        }
                     }
-                },
+                }
             })
         }
     }
