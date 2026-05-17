@@ -31,7 +31,7 @@ impl-tools = "0.11"
 indexmap = "2"
 indoc = "2"
 pretty_assertions = "1"
-rand = "0.9"
+rand = "0.10"
 regex = "1"
 serde = { version = "1", features = ["derive"] }
 serde_regex = "1"
