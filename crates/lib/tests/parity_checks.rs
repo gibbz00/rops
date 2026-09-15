@@ -18,6 +18,22 @@ mod age_yaml_aes_gcm_sha2 {
     }
 }
 
+/// `sops` stores SSH recipients in the same `age` metadata field as native age
+/// recipients, so these check the very same integration.
+#[cfg(all(feature = "ssh", feature = "yaml", feature = "aes-gcm", feature = "sha2"))]
+mod age_ssh_yaml_aes_gcm_sha2 {
+    use crate::*;
+
+    age_ssh_parity_check!(example);
+
+    #[macro_export]
+    macro_rules! age_ssh_parity_check {
+        ($name:tt) => {
+            parity_check!("age_ssh", AgeIntegration, $name);
+        };
+    }
+}
+
 #[cfg(all(feature = "aws-kms", feature = "yaml", feature = "aes-gcm", feature = "sha2"))]
 mod aws_kms_yaml_aes_gcm_sha2 {
     use crate::*;

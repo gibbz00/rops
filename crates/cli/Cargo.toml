@@ -16,6 +16,7 @@ name = "rops"
 path = "src/main.rs"
 
 [features]
+ssh = ["rops/ssh"]
 test-utils = ["rops/test-utils"]
 
 [dependencies]

@@ -16,6 +16,8 @@ default = ["age", "aws-kms", "yaml", "json", "toml", "aes-gcm", "sha2"]
 # Integrations:
 age = ["dep:age"]
 aws-kms = ["dep:aws-arn", "dep:aws-sdk-kms", "dep:tokio"]
+# SSH keys are age recipients, `sops` stores them in the `age` metadata field.
+ssh = ["age", "age/ssh"]
 # File formats:
 yaml = ["dep:serde_yaml"]
 json = ["dep:serde_json"]

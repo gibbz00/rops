@@ -21,6 +21,8 @@ The key IDs conform to an integration specific syntax/format, and should not be 
 | age          | <age_recipient>           | `age1se5ghfycr4n8kcwc3qwf234ymvmr2lex2a99wh8gpfx97glwt9hqch4569`                       |
 | aws_kms      | `<profile>.<aws_key_arn>` | `default.arn:aws:kms:eu-north-1:822284028627:key/029dba6d-60de-4364-ac5c-cbdd284acd0a` |
 
+The age integration also accepts SSH public keys as key IDs when the `ssh` feature is enabled, `ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKpc...` for instance. SSH recipients are, just as in `sops`, stored in the `age` metadata field and told apart from native age recipients by their prefix.
+
 ### Private Integration Key:
 
 Only one private integration key that can decrypt data key needs to be found for the data key to then decrypt the entire `rops` file map. [^1] Private keys are not stored in the metadata section, but instead retrieved by iterating over the stored integration key IDs. The strategy for where to look for a private key goes as follows:
@@ -36,6 +38,8 @@ Private integration keys follow---just like the respective key IDs---a syntax/fo
 | ---          | ---                                                     | ---                                                                         |
 | age          | <age_secret_key>                                        | `AGE-SECRET-KEY-1CZG0RPQJNDZWZMRMJLNYSF6H00WK0ECYAVE83ALFC2KE53WJ2FRSNZ8GC` |
 | aws_kms      | `<profile>.<aws_access_key_id>.<aws_secret_access_key>` | `default.AKIAXXXXXXXXXXXXXXL2.BRZXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXigu`     |
+
+The private key of an SSH recipient is the unencrypted OpenSSH private key itself, PEM boundaries included. Only `ssh-ed25519` and `ssh-rsa` keys are supported, mirroring both `sops` and `age`.
 
 [^1]: Unless the unimplemented key group future is.
 
@@ -67,6 +71,12 @@ AGE-SECRET-KEY-1GQ6XJ...DZ5W
 (As opposed to setting `ROPS_AGE=AGE-SECRET-KEY-1VR0S4...KD8D,AGE-SECRET-KEY-1GQ6XJ...DZ5W`.)
 
 The `rops` key file location can be overridden by setting a `ROPS_<INTEGRATION>_KEY_FILE=<path>` environment variable. `ROPS_AGE_KEY_FILE=/tmp/temp_age_keys` for instance.
+
+Keys spanning multiple lines are gathered by their PEM boundaries instead, which is what makes it possible to point the age integration at an SSH private key as is:
+
+```sh
+export ROPS_AGE_KEY_FILE="$HOME/.ssh/id_ed25519"
+```
 
 ##### To supply private keys using integration key files (Future)
 

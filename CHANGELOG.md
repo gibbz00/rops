@@ -5,6 +5,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- SSH keys as age recipients behind a non-default `ssh` feature. `sops`
+  compatible in that SSH recipients are stored in the `age` metadata field.
+- `Integration::parse_private_keys` for integrations accepting private keys
+  which span multiple lines, such as PEM encoded SSH private keys.
+
 ## [0.1.7] - 2026-02-14
 
 ### Fixed

@@ -10,7 +10,7 @@ mod age;
 #[cfg(all(feature = "test-utils", feature = "age"))]
 pub(crate) use age::AgeConfig;
 #[cfg(feature = "age")]
-pub use age::AgeIntegration;
+pub use age::{AgeIntegration, AgeKeyId, AgePrivateKey};
 
 #[cfg(feature = "aws-kms")]
 mod aws_kms;

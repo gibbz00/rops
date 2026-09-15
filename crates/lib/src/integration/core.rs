@@ -39,12 +39,7 @@ pub trait Integration: Sized {
         };
 
         match integration_key_file.exists() {
-            true => std::fs::read_to_string(integration_key_file)?
-                .lines()
-                .map(|line| line.trim())
-                .filter(|line| !line.is_empty())
-                .map(Self::parse_private_key)
-                .collect(),
+            true => Self::parse_private_keys(&std::fs::read_to_string(integration_key_file)?),
             false => Ok(Vec::new()),
         }
     }
@@ -61,6 +56,18 @@ pub trait Integration: Sized {
     fn parse_key_id(key_id_str: &str) -> IntegrationResult<Self::KeyId>;
 
     fn parse_private_key(private_key_str: impl AsRef<str>) -> IntegrationResult<Self::PrivateKey>;
+
+    /// Parses the contents of a private key file, one key per line.
+    ///
+    /// Overridden by integrations accepting keys which span multiple lines.
+    fn parse_private_keys(private_keys_str: &str) -> IntegrationResult<Vec<Self::PrivateKey>> {
+        private_keys_str
+            .lines()
+            .map(|line| line.trim())
+            .filter(|line| !line.is_empty())
+            .map(Self::parse_private_key)
+            .collect()
+    }
 
     fn encrypt_data_key(key_id: &Self::KeyId, data_key: &DataKey) -> IntegrationResult<String>;
 
