@@ -40,6 +40,33 @@ macro_rules! generate_integration_test_suite {
         }
 
         #[test]
+        fn decrypts_data_key_with_private_keys() {
+            assert_eq!(
+                DataKey::mock(),
+                $integration::decrypt_data_key_with_private_keys(
+                    &<$integration as Integration>::KeyId::mock(),
+                    $integration::mock_encrypted_data_key_str(),
+                    &[$integration::mock_private_key()]
+                )
+                .unwrap()
+                .unwrap()
+            );
+        }
+
+        #[test]
+        fn decrypting_data_key_with_private_keys_ignores_env() {
+            $integration::set_mock_private_key_env_var();
+
+            assert!($integration::decrypt_data_key_with_private_keys(
+                &<$integration as Integration>::KeyId::mock(),
+                $integration::mock_encrypted_data_key_str(),
+                &[]
+            )
+            .unwrap()
+            .is_none());
+        }
+
+        #[test]
         fn retrieves_private_key_from_env() {
             $integration::set_mock_private_key_env_var();
 

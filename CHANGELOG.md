@@ -5,6 +5,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- `ExplicitPrivateKeys` and `*_with_private_keys` variants of `RopsFile::decrypt`, `RopsFile::decrypt_and_save_parameters`, `RopsFile::encrypt`, `RopsFile::add_keys`, `IntegrationMetadata::decrypt_data_key` and `Integration::decrypt_data_key`, allowing embedders to supply private keys directly instead of through environment variables or key files.
+
 ## [0.1.7] - 2026-02-14
 
 ### Fixed

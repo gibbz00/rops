@@ -49,6 +49,18 @@ where
         let data_key = self.metadata.retrieve_data_key()?;
         self.metadata.intregation.add_keys::<I>(key_ids, &data_key).map_err(Into::into)
     }
+
+    pub fn add_keys_with_private_keys<I: Integration>(
+        &mut self,
+        key_ids: impl IntoIterator<Item = I::KeyId>,
+        private_keys: &ExplicitPrivateKeys,
+    ) -> Result<(), RopsFileAddKeyError>
+    where
+        I::KeyId: Clone,
+    {
+        let data_key = self.metadata.retrieve_data_key_with_private_keys(private_keys)?;
+        self.metadata.intregation.add_keys::<I>(key_ids, &data_key).map_err(Into::into)
+    }
 }
 
 impl<S: RopsFileState, F: FileFormat> Display for RopsFile<S, F>
@@ -102,11 +114,26 @@ impl<H: Hasher, F: FileFormat> RopsFile<DecryptedFile<H>, F> {
 
     pub fn encrypt<C: Cipher, Fo: FileFormat>(self) -> Result<RopsFile<EncryptedFile<C, H>, Fo>, RopsFileEncryptError> {
         let data_key = self.metadata.retrieve_data_key()?;
+        self.encrypt_with_data_key(&data_key)
+    }
+
+    pub fn encrypt_with_private_keys<C: Cipher, Fo: FileFormat>(
+        self,
+        private_keys: &ExplicitPrivateKeys,
+    ) -> Result<RopsFile<EncryptedFile<C, H>, Fo>, RopsFileEncryptError> {
+        let data_key = self.metadata.retrieve_data_key_with_private_keys(private_keys)?;
+        self.encrypt_with_data_key(&data_key)
+    }
+
+    fn encrypt_with_data_key<C: Cipher, Fo: FileFormat>(
+        self,
+        data_key: &DataKey,
+    ) -> Result<RopsFile<EncryptedFile<C, H>, Fo>, RopsFileEncryptError> {
         let encrypted_map = self
             .map
             .to_internal()?
-            .encrypt::<C>(&data_key, self.metadata.partial_encryption.as_ref());
-        let encrypted_metadata = self.metadata.encrypt::<C>(&data_key);
+            .encrypt::<C>(data_key, self.metadata.partial_encryption.as_ref());
+        let encrypted_metadata = self.metadata.encrypt::<C>(data_key);
         RopsFile::from_parts_results(encrypted_map, encrypted_metadata)
     }
 
@@ -130,8 +157,23 @@ impl<H: Hasher, F: FileFormat> RopsFile<DecryptedFile<H>, F> {
 impl<C: Cipher, F: FileFormat, H: Hasher> RopsFile<EncryptedFile<C, H>, F> {
     pub fn decrypt<Fo: FileFormat>(self) -> Result<RopsFile<DecryptedFile<H>, Fo>, RopsFileDecryptError> {
         let (decrypted_metadata, data_key) = self.metadata.decrypt()?;
-        let decrypted_map = self
-            .map
+        Self::decrypt_map(self.map, decrypted_metadata, data_key)
+    }
+
+    pub fn decrypt_with_private_keys<Fo: FileFormat>(
+        self,
+        private_keys: &ExplicitPrivateKeys,
+    ) -> Result<RopsFile<DecryptedFile<H>, Fo>, RopsFileDecryptError> {
+        let (decrypted_metadata, data_key) = self.metadata.decrypt_with_private_keys(private_keys)?;
+        Self::decrypt_map(self.map, decrypted_metadata, data_key)
+    }
+
+    fn decrypt_map<Fo: FileFormat>(
+        map: RopsFileFormatMap<EncryptedMap<C>, F>,
+        decrypted_metadata: RopsFileMetadata<DecryptedMetadata<H>>,
+        data_key: DataKey,
+    ) -> Result<RopsFile<DecryptedFile<H>, Fo>, RopsFileDecryptError> {
+        let decrypted_map = map
             .to_internal(decrypted_metadata.partial_encryption.as_ref())?
             .decrypt(&data_key)?;
         Self::validate_mac(&decrypted_map, &decrypted_metadata)?;
@@ -143,8 +185,26 @@ impl<C: Cipher, F: FileFormat, H: Hasher> RopsFile<EncryptedFile<C, H>, F> {
         self,
     ) -> Result<(RopsFile<DecryptedFile<H>, Fo>, SavedParameters<C, H>), RopsFileDecryptError> {
         let (decrypted_metadata, data_key, saved_mac_nonce) = self.metadata.decrypt_and_save_mac_nonce()?;
-        let (decrypted_map, saved_map_nonces) = self
-            .map
+        Self::decrypt_map_and_save_parameters(self.map, decrypted_metadata, data_key, saved_mac_nonce)
+    }
+
+    #[allow(clippy::type_complexity)]
+    pub fn decrypt_and_save_parameters_with_private_keys<Fo: FileFormat>(
+        self,
+        private_keys: &ExplicitPrivateKeys,
+    ) -> Result<(RopsFile<DecryptedFile<H>, Fo>, SavedParameters<C, H>), RopsFileDecryptError> {
+        let (decrypted_metadata, data_key, saved_mac_nonce) = self.metadata.decrypt_and_save_mac_nonce_with_private_keys(private_keys)?;
+        Self::decrypt_map_and_save_parameters(self.map, decrypted_metadata, data_key, saved_mac_nonce)
+    }
+
+    #[allow(clippy::type_complexity)]
+    fn decrypt_map_and_save_parameters<Fo: FileFormat>(
+        map: RopsFileFormatMap<EncryptedMap<C>, F>,
+        decrypted_metadata: RopsFileMetadata<DecryptedMetadata<H>>,
+        data_key: DataKey,
+        saved_mac_nonce: SavedMacNonce<C, H>,
+    ) -> Result<(RopsFile<DecryptedFile<H>, Fo>, SavedParameters<C, H>), RopsFileDecryptError> {
+        let (decrypted_map, saved_map_nonces) = map
             .to_internal(decrypted_metadata.partial_encryption.as_ref())?
             .decrypt_and_save_nonces(&data_key)?;
 
@@ -258,6 +318,105 @@ mod tests {
             (DecryptedRopsFile::mock(), SavedParameters::mock()),
             EncryptedRopsFile::mock().decrypt_and_save_parameters().unwrap()
         )
+    }
+
+    fn explicit_age_private_keys(private_key: &age::x25519::Identity) -> ExplicitPrivateKeys {
+        ExplicitPrivateKeys {
+            age: vec![private_key.clone()],
+            ..Default::default()
+        }
+    }
+
+    #[test]
+    fn decrypts_rops_file_with_private_keys() {
+        pretty_assertions::assert_eq!(
+            DecryptedRopsFile::mock(),
+            EncryptedRopsFile::mock()
+                .decrypt_with_private_keys(&explicit_age_private_keys(&AgeIntegration::mock_private_key()))
+                .unwrap()
+        )
+    }
+
+    #[test]
+    fn decrypts_rops_file_and_saves_parameters_with_private_keys() {
+        pretty_assertions::assert_eq!(
+            (DecryptedRopsFile::mock(), SavedParameters::mock()),
+            EncryptedRopsFile::mock()
+                .decrypt_and_save_parameters_with_private_keys(&explicit_age_private_keys(&AgeIntegration::mock_private_key()))
+                .unwrap()
+        )
+    }
+
+    #[test]
+    fn decryption_with_private_keys_ignores_env() {
+        AgeIntegration::set_mock_private_key_env_var();
+
+        let age_env_vars = || {
+            [
+                AgeIntegration::private_key_env_var_name(),
+                AgeIntegration::private_key_file_path_override_env_var_name(),
+            ]
+            .map(std::env::var_os)
+        };
+        let age_env_vars_before = age_env_vars();
+
+        assert!(matches!(
+            EncryptedRopsFile::mock()
+                .decrypt_with_private_keys::<YamlFileFormat>(&ExplicitPrivateKeys::default())
+                .unwrap_err(),
+            RopsFileDecryptError::Metadata(RopsFileMetadataDecryptError::DataKeyRetrieval(
+                RopsFileMetadataDataKeyRetrievalError::MissingDataKey
+            ))
+        ));
+        assert_eq!(age_env_vars_before, age_env_vars());
+    }
+
+    #[test]
+    fn updates_recipients_with_private_keys() {
+        let original_private_key = age::x25519::Identity::generate();
+        let added_private_key = age::x25519::Identity::generate();
+
+        let mut encrypted_rops_file =
+            RopsFileBuilder::<YamlFileFormat>::new(&RopsFileFormatMap::<DecryptedMap, YamlFileFormat>::mock_format_display())
+                .unwrap()
+                .add_integration_key::<AgeIntegration>(original_private_key.to_public())
+                .encrypt::<AES256GCM, SHA512>()
+                .unwrap();
+
+        encrypted_rops_file
+            .add_keys_with_private_keys::<AgeIntegration>(
+                Some(added_private_key.to_public()),
+                &explicit_age_private_keys(&original_private_key),
+            )
+            .unwrap();
+
+        let mut decrypted_rops_file = encrypted_rops_file
+            .decrypt_with_private_keys::<YamlFileFormat>(&explicit_age_private_keys(&added_private_key))
+            .unwrap();
+
+        decrypted_rops_file
+            .remove_integration_key::<AgeIntegration>(&original_private_key.to_public())
+            .unwrap()
+            .unwrap();
+
+        let encrypted_rops_file = decrypted_rops_file
+            .encrypt_with_private_keys::<AES256GCM, YamlFileFormat>(&explicit_age_private_keys(&added_private_key))
+            .unwrap();
+
+        assert!(encrypted_rops_file
+            .metadata()
+            .intregation
+            .decrypt_data_key_with_private_keys(&explicit_age_private_keys(&original_private_key))
+            .unwrap()
+            .is_none());
+
+        assert_eq!(
+            &RopsFileFormatMap::mock(),
+            encrypted_rops_file
+                .decrypt_with_private_keys::<YamlFileFormat>(&explicit_age_private_keys(&added_private_key))
+                .unwrap()
+                .map()
+        );
     }
 
     #[test]

@@ -49,6 +49,34 @@ impl IntegrationMetadata {
 
         Ok(None)
     }
+
+    pub fn decrypt_data_key_with_private_keys(&self, private_keys: &ExplicitPrivateKeys) -> IntegrationResult<Option<DataKey>> {
+        #[cfg(feature = "age")]
+        if let Some(decrypt_result) = self.age.values().find_map(|age_metadata| {
+            AgeIntegration::decrypt_data_key_with_private_keys(
+                &age_metadata.config.key_id,
+                &age_metadata.encrypted_data_key,
+                &private_keys.age,
+            )
+            .transpose()
+        }) {
+            return decrypt_result.map(Some);
+        }
+
+        #[cfg(feature = "aws-kms")]
+        if let Some(decrypt_result) = self.kms.values().find_map(|aws_kms_metadata| {
+            AwsKmsIntegration::decrypt_data_key_with_private_keys(
+                &aws_kms_metadata.config.key_id,
+                &aws_kms_metadata.encrypted_data_key,
+                &private_keys.aws_kms,
+            )
+            .transpose()
+        }) {
+            return decrypt_result.map(Some);
+        }
+
+        Ok(None)
+    }
 }
 
 #[cfg(feature = "test-utils")]
@@ -83,5 +111,36 @@ mod tests {
             .unwrap();
 
         assert!(!integration_metadata.age.is_empty())
+    }
+
+    #[test]
+    fn decrypts_data_key_with_private_keys() {
+        let private_keys = ExplicitPrivateKeys {
+            age: vec![AgeIntegration::mock_private_key()],
+            ..Default::default()
+        };
+
+        assert_eq!(
+            DataKey::mock(),
+            IntegrationMetadata::mock()
+                .decrypt_data_key_with_private_keys(&private_keys)
+                .unwrap()
+                .unwrap()
+        );
+    }
+
+    #[test]
+    fn decrypting_data_key_with_private_keys_ignores_env() {
+        AgeIntegration::set_mock_private_key_env_var();
+
+        let private_keys = ExplicitPrivateKeys {
+            age: vec![age::x25519::Identity::generate()],
+            ..Default::default()
+        };
+
+        assert!(IntegrationMetadata::mock()
+            .decrypt_data_key_with_private_keys(&private_keys)
+            .unwrap()
+            .is_none());
     }
 }

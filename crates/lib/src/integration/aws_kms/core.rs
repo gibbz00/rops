@@ -28,7 +28,7 @@ impl Integration for AwsKmsIntegration {
     // to call multiple integrations methods in parallel, rather than blocking the thread.
 
     fn encrypt_data_key(key_id: &Self::KeyId, data_key: &DataKey) -> IntegrationResult<String> {
-        let encrypt_job = find_client(key_id)?
+        let encrypt_job = find_client(key_id, &Self::retrieve_private_keys()?)?
             .ok_or(IntegrationError::Encryption(anyhow!(
                 "unable to find private keys for profile: {}",
                 key_id.profile
@@ -46,13 +46,17 @@ impl Integration for AwsKmsIntegration {
         Ok(encrypted_data_key_string)
     }
 
-    fn decrypt_data_key(key_id: &Self::KeyId, encrypted_data_key: &str) -> IntegrationResult<Option<DataKey>> {
+    fn decrypt_data_key_with_private_keys(
+        key_id: &Self::KeyId,
+        encrypted_data_key: &str,
+        private_keys: &[Self::PrivateKey],
+    ) -> IntegrationResult<Option<DataKey>> {
         let mut decoded_bytes = Vec::with_capacity(DataKey::byte_size());
         decoded_bytes
             .decode_base64(encrypted_data_key)
             .map_err(|error| IntegrationError::Decryption(error.into()))?;
 
-        let Some(decypt_client) = find_client(key_id)? else {
+        let Some(decypt_client) = find_client(key_id, private_keys)? else {
             return Ok(None);
         };
 
@@ -81,20 +85,18 @@ fn tokio_blocking<O>(future: impl Future<Output = O>) -> O {
     tokio::runtime::Runtime::new().unwrap().block_on(future)
 }
 
-fn find_client(key_id: &AwsKeyId) -> IntegrationResult<Option<Client>> {
+fn find_client(key_id: &AwsKeyId, private_keys: &[AwsPrivateKey]) -> IntegrationResult<Option<Client>> {
     let AwsKeyId { profile, key_arn } = key_id;
 
-    let private_keys = AwsKmsIntegration::retrieve_private_keys()?;
-
-    let Some(matching_private_key) = private_keys.into_iter().find(|key| &key.profile == profile) else {
+    let Some(matching_private_key) = private_keys.iter().find(|key| &key.profile == profile) else {
         return Ok(None);
     };
 
     let config = Config::builder()
         .region(Some(key_arn.region.clone()))
         .credentials_provider(Credentials::new(
-            matching_private_key.id,
-            matching_private_key.secret,
+            matching_private_key.id.clone(),
+            matching_private_key.secret.clone(),
             None,
             None,
             "rops",

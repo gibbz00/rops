@@ -5,6 +5,9 @@ pub(crate) use core::IntegrationConfig;
 mod error;
 pub(crate) use error::{IntegrationError, IntegrationResult};
 
+mod keys;
+pub use keys::ExplicitPrivateKeys;
+
 #[cfg(feature = "age")]
 mod age;
 #[cfg(all(feature = "test-utils", feature = "age"))]

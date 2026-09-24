@@ -54,10 +54,12 @@ impl Integration for AgeIntegration {
         Ok(String::from_utf8(armored_buffer)?)
     }
 
-    fn decrypt_data_key(key_id: &Self::KeyId, encrypted_data_key: &str) -> IntegrationResult<Option<DataKey>> {
-        let private_keys = Self::retrieve_private_keys()?;
-
-        let Some(matched_private_key) = private_keys.into_iter().find(|private_key| &private_key.to_public() == key_id) else {
+    fn decrypt_data_key_with_private_keys(
+        key_id: &Self::KeyId,
+        encrypted_data_key: &str,
+        private_keys: &[Self::PrivateKey],
+    ) -> IntegrationResult<Option<DataKey>> {
+        let Some(matched_private_key) = private_keys.iter().find(|private_key| &private_key.to_public() == key_id) else {
             return Ok(None);
         };
 
@@ -68,7 +70,7 @@ impl Integration for AgeIntegration {
         let decryptor = Decryptor::new(unarmored_encrypted_buffer.as_slice())?;
 
         let mut decrypted_data_key_buffer = DataKey::empty();
-        let mut reader = decryptor.decrypt(std::iter::once(&matched_private_key as &dyn age::Identity))?;
+        let mut reader = decryptor.decrypt(std::iter::once(matched_private_key as &dyn age::Identity))?;
         reader.read_exact(decrypted_data_key_buffer.as_mut())?;
 
         Ok(Some(decrypted_data_key_buffer))
@@ -197,4 +199,29 @@ mod tests {
     use super::*;
 
     generate_integration_test_suite!(AgeIntegration);
+
+    #[test]
+    fn decrypts_data_key_with_generated_private_key() {
+        let private_key = age::x25519::Identity::generate();
+        let key_id = private_key.to_public();
+        let encrypted_data_key = AgeIntegration::encrypt_data_key(&key_id, &DataKey::mock()).unwrap();
+
+        assert_eq!(
+            DataKey::mock(),
+            AgeIntegration::decrypt_data_key_with_private_keys(&key_id, &encrypted_data_key, &[private_key])
+                .unwrap()
+                .unwrap()
+        );
+    }
+
+    #[test]
+    fn skips_decrypting_data_key_with_foreign_private_key() {
+        assert!(AgeIntegration::decrypt_data_key_with_private_keys(
+            &<AgeIntegration as Integration>::KeyId::mock(),
+            AgeIntegration::mock_encrypted_data_key_str(),
+            &[age::x25519::Identity::generate()]
+        )
+        .unwrap()
+        .is_none());
+    }
 }
