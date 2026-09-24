@@ -50,12 +50,36 @@ where
             None => Err(RopsFileMetadataDataKeyRetrievalError::MissingDataKey),
         }
     }
+
+    pub(crate) fn retrieve_data_key_with_private_keys(
+        &self,
+        private_keys: &ExplicitPrivateKeys,
+    ) -> Result<DataKey, RopsFileMetadataDataKeyRetrievalError> {
+        match self.intregation.decrypt_data_key_with_private_keys(private_keys)? {
+            Some(data_key) => Ok(data_key),
+            None => Err(RopsFileMetadataDataKeyRetrievalError::MissingDataKey),
+        }
+    }
 }
 
 impl<C: Cipher, H: Hasher> RopsFileMetadata<EncryptedMetadata<C, H>> {
     pub fn decrypt(self) -> Result<(RopsFileMetadata<DecryptedMetadata<H>>, DataKey), RopsFileMetadataDecryptError> {
         let data_key = self.retrieve_data_key()?;
+        self.decrypt_with_data_key(data_key)
+    }
 
+    pub(crate) fn decrypt_with_private_keys(
+        self,
+        private_keys: &ExplicitPrivateKeys,
+    ) -> Result<(RopsFileMetadata<DecryptedMetadata<H>>, DataKey), RopsFileMetadataDecryptError> {
+        let data_key = self.retrieve_data_key_with_private_keys(private_keys)?;
+        self.decrypt_with_data_key(data_key)
+    }
+
+    fn decrypt_with_data_key(
+        self,
+        data_key: DataKey,
+    ) -> Result<(RopsFileMetadata<DecryptedMetadata<H>>, DataKey), RopsFileMetadataDecryptError> {
         #[rustfmt::skip]
         let RopsFileMetadata { intregation, last_modified, mac, partial_encryption, mac_only_encrypted } = self;
 
@@ -79,7 +103,23 @@ impl<C: Cipher, H: Hasher> RopsFileMetadata<EncryptedMetadata<C, H>> {
         self,
     ) -> Result<(RopsFileMetadata<DecryptedMetadata<H>>, DataKey, SavedMacNonce<C, H>), RopsFileMetadataDecryptError> {
         let data_key = self.retrieve_data_key()?;
+        self.decrypt_and_save_mac_nonce_with_data_key(data_key)
+    }
 
+    #[allow(clippy::type_complexity)]
+    pub(crate) fn decrypt_and_save_mac_nonce_with_private_keys(
+        self,
+        private_keys: &ExplicitPrivateKeys,
+    ) -> Result<(RopsFileMetadata<DecryptedMetadata<H>>, DataKey, SavedMacNonce<C, H>), RopsFileMetadataDecryptError> {
+        let data_key = self.retrieve_data_key_with_private_keys(private_keys)?;
+        self.decrypt_and_save_mac_nonce_with_data_key(data_key)
+    }
+
+    #[allow(clippy::type_complexity)]
+    fn decrypt_and_save_mac_nonce_with_data_key(
+        self,
+        data_key: DataKey,
+    ) -> Result<(RopsFileMetadata<DecryptedMetadata<H>>, DataKey, SavedMacNonce<C, H>), RopsFileMetadataDecryptError> {
         #[rustfmt::skip]
         let RopsFileMetadata { intregation, last_modified, mac, partial_encryption, mac_only_encrypted } = self;
 

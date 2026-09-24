@@ -64,7 +64,17 @@ pub trait Integration: Sized {
 
     fn encrypt_data_key(key_id: &Self::KeyId, data_key: &DataKey) -> IntegrationResult<String>;
 
-    fn decrypt_data_key(key_id: &Self::KeyId, encrypted_data_key: &str) -> IntegrationResult<Option<DataKey>>;
+    fn decrypt_data_key(key_id: &Self::KeyId, encrypted_data_key: &str) -> IntegrationResult<Option<DataKey>> {
+        Self::decrypt_data_key_with_private_keys(key_id, encrypted_data_key, &Self::retrieve_private_keys()?)
+    }
+
+    /// Must only decrypt with `private_keys`, never with keys from the environment or the default
+    /// key files. Returns `Ok(None)` when none of them belongs to `key_id`, so callers try the next.
+    fn decrypt_data_key_with_private_keys(
+        key_id: &Self::KeyId,
+        encrypted_data_key: &str,
+        private_keys: &[Self::PrivateKey],
+    ) -> IntegrationResult<Option<DataKey>>;
 
     fn select_metadata_units(integration_metadata: &mut IntegrationMetadata) -> &mut IntegrationMetadataUnits<Self>;
 }
@@ -103,7 +113,11 @@ mod stub_integration {
             unimplemented!()
         }
 
-        fn decrypt_data_key(_key_id: &Self::KeyId, _encrypted_data_key: &str) -> IntegrationResult<Option<DataKey>> {
+        fn decrypt_data_key_with_private_keys(
+            _key_id: &Self::KeyId,
+            _encrypted_data_key: &str,
+            _private_keys: &[Self::PrivateKey],
+        ) -> IntegrationResult<Option<DataKey>> {
             unimplemented!()
         }
 
