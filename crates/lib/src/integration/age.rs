@@ -34,24 +34,7 @@ impl Integration for AgeIntegration {
     }
 
     fn encrypt_data_key(key_id: &Self::KeyId, data_key: &DataKey) -> IntegrationResult<String> {
-        let unarmored_buffer = {
-            // IMPROVEMENT: avoid vec box allocation
-            let encryptor =
-                age::Encryptor::with_recipients([key_id as &dyn Recipient].into_iter()).expect("provided recipients should be non-empty");
-
-            let mut unarmored_encrypted_buffer = Vec::with_capacity(DataKey::byte_size());
-            let mut encryption_writer = encryptor.wrap_output(&mut unarmored_encrypted_buffer)?;
-            encryption_writer.write_all(data_key.as_ref())?;
-            encryption_writer.finish()?;
-            unarmored_encrypted_buffer
-        };
-
-        let mut armored_buffer = Vec::with_capacity(Self::APPROX_MAX_ARMORED_DATA_KEY_LENGTH);
-        let mut armored_writer = ArmoredWriter::wrap_output(&mut armored_buffer, Format::AsciiArmor)?;
-        armored_writer.write_all(&unarmored_buffer)?;
-        armored_writer.finish()?;
-
-        Ok(String::from_utf8(armored_buffer)?)
+        encrypt_data_key(key_id, data_key)
     }
 
     fn decrypt_data_key(key_id: &Self::KeyId, encrypted_data_key: &str) -> IntegrationResult<Option<DataKey>> {
@@ -61,22 +44,47 @@ impl Integration for AgeIntegration {
             return Ok(None);
         };
 
-        let mut unarmored_encrypted_buffer = Vec::with_capacity(Self::APPROX_MAX_ARMORED_DATA_KEY_LENGTH);
-
-        ArmoredReader::new(encrypted_data_key.as_bytes()).read_to_end(&mut unarmored_encrypted_buffer)?;
-
-        let decryptor = Decryptor::new(unarmored_encrypted_buffer.as_slice())?;
-
-        let mut decrypted_data_key_buffer = DataKey::empty();
-        let mut reader = decryptor.decrypt(std::iter::once(&matched_private_key as &dyn age::Identity))?;
-        reader.read_exact(decrypted_data_key_buffer.as_mut())?;
-
-        Ok(Some(decrypted_data_key_buffer))
+        decrypt_data_key(&matched_private_key, encrypted_data_key).map(Some)
     }
 
     fn select_metadata_units(integration_metadata: &mut IntegrationMetadata) -> &mut IntegrationMetadataUnits<Self> {
         &mut integration_metadata.age
     }
+}
+
+/// Shared with integrations built on age recipients and identities of other kinds, such as SSH keys.
+pub(super) fn encrypt_data_key(recipient: &dyn Recipient, data_key: &DataKey) -> IntegrationResult<String> {
+    let unarmored_buffer = {
+        // IMPROVEMENT: avoid vec box allocation
+        let encryptor = age::Encryptor::with_recipients([recipient].into_iter()).expect("provided recipients should be non-empty");
+
+        let mut unarmored_encrypted_buffer = Vec::with_capacity(DataKey::byte_size());
+        let mut encryption_writer = encryptor.wrap_output(&mut unarmored_encrypted_buffer)?;
+        encryption_writer.write_all(data_key.as_ref())?;
+        encryption_writer.finish()?;
+        unarmored_encrypted_buffer
+    };
+
+    let mut armored_buffer = Vec::with_capacity(AgeIntegration::APPROX_MAX_ARMORED_DATA_KEY_LENGTH);
+    let mut armored_writer = ArmoredWriter::wrap_output(&mut armored_buffer, Format::AsciiArmor)?;
+    armored_writer.write_all(&unarmored_buffer)?;
+    armored_writer.finish()?;
+
+    Ok(String::from_utf8(armored_buffer)?)
+}
+
+pub(super) fn decrypt_data_key(identity: &dyn age::Identity, encrypted_data_key: &str) -> IntegrationResult<DataKey> {
+    let mut unarmored_encrypted_buffer = Vec::with_capacity(AgeIntegration::APPROX_MAX_ARMORED_DATA_KEY_LENGTH);
+
+    ArmoredReader::new(encrypted_data_key.as_bytes()).read_to_end(&mut unarmored_encrypted_buffer)?;
+
+    let decryptor = Decryptor::new(unarmored_encrypted_buffer.as_slice())?;
+
+    let mut decrypted_data_key_buffer = DataKey::empty();
+    let mut reader = decryptor.decrypt(std::iter::once(identity))?;
+    reader.read_exact(decrypted_data_key_buffer.as_mut())?;
+
+    Ok(decrypted_data_key_buffer)
 }
 
 mod error {

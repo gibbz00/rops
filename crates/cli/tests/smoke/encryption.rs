@@ -7,6 +7,17 @@ fn encrypts_with_age() {
     assert_encrypted::<AgeIntegration>(output, plaintext);
 }
 
+#[cfg(feature = "ssh")]
+#[test]
+fn encrypts_with_ssh() {
+    let plaintext = sops_yaml_str!("age_example_plaintext");
+
+    let mut cmd = Command::package_command();
+    cmd.args(["encrypt", "--ssh", &<SshIntegration as Integration>::KeyId::mock_display()]);
+
+    assert_encrypted::<SshIntegration>(cmd.format_args().run_piped(plaintext), plaintext);
+}
+
 #[test]
 fn encrypts_with_aws_kms() {
     let plaintext = sops_yaml_str!("aws_kms_example_plaintext");

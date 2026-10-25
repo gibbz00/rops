@@ -1,3 +1,5 @@
+#[cfg(feature = "ssh")]
+use rops::integration::SshIntegration;
 use rops::{
     file::{format::*, state::*, RopsFile},
     integration::{AgeIntegration, AwsKmsIntegration},
@@ -26,6 +28,8 @@ impl Cli {
 
             let keys = key_args.integration_keys;
             rops_file.add_keys::<AgeIntegration>(keys.age)?;
+            #[cfg(feature = "ssh")]
+            rops_file.add_keys::<SshIntegration>(keys.ssh)?;
             rops_file.add_keys::<AwsKmsIntegration>(keys.aws_kms)?;
 
             std::fs::write(key_args.file, rops_file.to_string())?;
@@ -51,6 +55,11 @@ impl Cli {
             // IMPROVEMENT: return error if any key not found?
             for age_key in keys.age {
                 decrypted_rops_file.remove_integration_key::<AgeIntegration>(&age_key)?;
+            }
+
+            #[cfg(feature = "ssh")]
+            for ssh_key in keys.ssh {
+                decrypted_rops_file.remove_integration_key::<SshIntegration>(&ssh_key)?;
             }
 
             for aws_key in keys.aws_kms {

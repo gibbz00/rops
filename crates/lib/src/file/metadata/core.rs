@@ -120,6 +120,9 @@ impl<H: Hasher> RopsFileMetadata<DecryptedMetadata<H>> {
         #[cfg(feature = "age")]
         update_data_key::<AgeIntegration>(&mut self.intregation, &new_data_key)?;
 
+        #[cfg(feature = "ssh")]
+        update_data_key::<SshIntegration>(&mut self.intregation, &new_data_key)?;
+
         #[cfg(feature = "aws-kms")]
         update_data_key::<AwsKmsIntegration>(&mut self.intregation, &new_data_key)?;
 

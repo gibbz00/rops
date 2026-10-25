@@ -12,6 +12,11 @@ pub(crate) use age::AgeConfig;
 #[cfg(feature = "age")]
 pub use age::AgeIntegration;
 
+#[cfg(feature = "ssh")]
+mod ssh;
+#[cfg(feature = "ssh")]
+pub use ssh::{SshIntegration, SshKeyId, SshPrivateKey};
+
 #[cfg(feature = "aws-kms")]
 mod aws_kms;
 #[cfg(feature = "aws-kms")]

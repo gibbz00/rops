@@ -1,5 +1,7 @@
 use clap::Args;
 use indexmap::IndexSet;
+#[cfg(feature = "ssh")]
+use rops::integration::SshIntegration;
 use rops::{
     file::{builder::RopsFileBuilder, format::*, metadata::integration::*},
     integration::{AgeIntegration, AwsKmsIntegration, Integration},
@@ -21,6 +23,13 @@ pub struct IntegrationKeys {
     #[serde_as(as = "Vec<DisplayFromStr>")]
     #[cfg_attr(feature = "test-utils", serde(skip_serializing_if = "Vec::is_empty"))]
     pub age: Vec<<AgeIntegration as Integration>::KeyId>,
+    /// Space separated list of public SSH keys, such as the contents of `~/.ssh/id_ed25519.pub`
+    #[cfg(feature = "ssh")]
+    #[arg(long = "ssh", display_order = 5)]
+    #[serde(default)]
+    #[serde_as(as = "Vec<DisplayFromStr>")]
+    #[cfg_attr(feature = "test-utils", serde(skip_serializing_if = "Vec::is_empty"))]
+    pub ssh: Vec<<SshIntegration as Integration>::KeyId>,
     /// Space separated list of AWS KMS rops key id strings
     #[arg(long = "aws-kms", display_order = 5)]
     #[serde(default)]
@@ -32,10 +41,17 @@ pub struct IntegrationKeys {
 impl IntegrationKeys {
     pub fn merge(&mut self, mut other: Self) {
         self.age.append(&mut other.age);
+        #[cfg(feature = "ssh")]
+        self.ssh.append(&mut other.ssh);
         self.aws_kms.append(&mut other.aws_kms);
     }
 
     pub fn implies_integration_metadata(&self, integration_metadata: &IntegrationMetadata) -> bool {
+        #[cfg(feature = "ssh")]
+        if !identical_keys::<SshIntegration>(&self.ssh, &integration_metadata.ssh) {
+            return false;
+        }
+
         return identical_keys::<AgeIntegration>(&self.age, &integration_metadata.age)
             && identical_keys::<AwsKmsIntegration>(&self.aws_kms, &integration_metadata.kms);
 
@@ -47,9 +63,12 @@ impl IntegrationKeys {
     }
 
     pub fn add_to_builder<F: FileFormat>(self, builder: RopsFileBuilder<F>) -> RopsFileBuilder<F> {
-        builder
-            .add_integration_keys::<AgeIntegration>(self.age)
-            .add_integration_keys::<AwsKmsIntegration>(self.aws_kms)
+        let builder = builder.add_integration_keys::<AgeIntegration>(self.age);
+
+        #[cfg(feature = "ssh")]
+        let builder = builder.add_integration_keys::<SshIntegration>(self.ssh);
+
+        builder.add_integration_keys::<AwsKmsIntegration>(self.aws_kms)
     }
 }
 
@@ -63,6 +82,8 @@ mod mock {
         fn mock() -> Self {
             Self {
                 age: vec![<<AgeIntegration as Integration>::KeyId>::mock()],
+                #[cfg(feature = "ssh")]
+                ssh: vec![],
                 aws_kms: vec![<<AwsKmsIntegration as Integration>::KeyId>::mock()],
             }
         }
@@ -72,6 +93,8 @@ mod mock {
         fn mock_other() -> Self {
             Self {
                 age: vec![<<AgeIntegration as Integration>::KeyId>::mock_other()],
+                #[cfg(feature = "ssh")]
+                ssh: vec![],
                 aws_kms: vec![],
             }
         }

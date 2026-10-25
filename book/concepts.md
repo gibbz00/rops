@@ -19,7 +19,10 @@ The key IDs conform to an integration specific syntax/format, and should not be 
 | Integration  | Syntax                    | Example                                                                                |
 | ---          | ---                       | ---                                                                                    |
 | age          | <age_recipient>           | `age1se5ghfycr4n8kcwc3qwf234ymvmr2lex2a99wh8gpfx97glwt9hqch4569`                       |
+| ssh          | <ssh_public_key>          | `ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKpc2HFYyNPJNKDssZ1U6yVU68RKk7EbqtZyc+Y4bM11`    |
 | aws_kms      | `<profile>.<aws_key_arn>` | `default.arn:aws:kms:eu-north-1:822284028627:key/029dba6d-60de-4364-ac5c-cbdd284acd0a` |
+
+The `ssh` integration is behind the non-default `ssh` feature. Just as in `sops`, SSH public keys are age recipients and are stored in the `age` metadata field, where they are told apart from native age recipients by their `ssh-` prefix. Cryptography is left to age, the `ssh` integration only differs in how private keys are found.
 
 ### Private Integration Key:
 
@@ -35,7 +38,10 @@ Private integration keys follow---just like the respective key IDs---a syntax/fo
 | Integration  | Syntax                                                  | Example                                                                     |
 | ---          | ---                                                     | ---                                                                         |
 | age          | <age_secret_key>                                        | `AGE-SECRET-KEY-1CZG0RPQJNDZWZMRMJLNYSF6H00WK0ECYAVE83ALFC2KE53WJ2FRSNZ8GC` |
+| ssh          | <unencrypted_openssh_private_key>                       | `-----BEGIN OPENSSH PRIVATE KEY-----...-----END OPENSSH PRIVATE KEY-----`   |
 | aws_kms      | `<profile>.<aws_access_key_id>.<aws_secret_access_key>` | `default.AKIAXXXXXXXXXXXXXXL2.BRZXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXigu`     |
+
+SSH private keys are the OpenSSH private key as is, PEM boundaries included. Only unencrypted `ssh-ed25519` and `ssh-rsa` keys are supported, mirroring `age`. Private SSH keys are looked up separately from age's: `ROPS_SSH`, `ROPS_SSH_KEY_FILE` and `<local_config_dir>/rops/ssh_keys` as opposed to the `ROPS_AGE*` equivalents, much like how `sops` has `SOPS_AGE_SSH_PRIVATE_KEY_FILE` next to `SOPS_AGE_KEY_FILE`.
 
 [^1]: Unless the unimplemented key group future is.
 
@@ -68,6 +74,12 @@ AGE-SECRET-KEY-1GQ6XJ...DZ5W
 
 The `rops` key file location can be overridden by setting a `ROPS_<INTEGRATION>_KEY_FILE=<path>` environment variable. `ROPS_AGE_KEY_FILE=/tmp/temp_age_keys` for instance.
 
+Keys which span multiple lines, as SSH private keys do, are instead gathered by their PEM boundaries. This makes it possible to point the SSH integration directly at an existing, unencrypted, private key:
+
+```sh
+export ROPS_SSH_KEY_FILE="$HOME/.ssh/id_ed25519"
+```
+
 ##### To supply private keys using integration key files (Future)
 
 Many integrations already store their keys in a dedicated location but in wildly different structures. `rops` does currently not parse these files, but it aims to so in the future:
@@ -75,6 +87,7 @@ Many integrations already store their keys in a dedicated location but in wildly
 | Integration  | Windows                          | MacOS                    | Linux                    | Fallback                      | Format                                                                                                                    |
 | ---          | ---                              | ---                      | ---                      | ---                           | ---                                                                                                                       |
 | age          | N/A                              | N/A                      | N/A                      | N/A                           | N/A
+| ssh          | N/A                              | N/A                      | N/A                      | N/A                           | N/A
 | aws_kms      | `%UserProfile%\.aws\credentials` | `$HOME/.aws/credentials` | `$HOME/.aws/credentials` | `AWS_SHARED_CREDENTIALS_FILE` | [Reference](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-files.html#cli-configure-files-format-profile) |
 
 
