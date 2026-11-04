@@ -11,6 +11,9 @@ pub(crate) use integration::*;
 mod last_modified;
 pub(crate) use last_modified::LastModifiedDateTime;
 
+mod version;
+pub use version::MetadataVersion;
+
 mod mac;
 pub(crate) use mac::*;
 
