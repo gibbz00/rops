@@ -5,6 +5,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Write `version` metadata entry for newly encrypted files as done in SOPS, set to the rops version.
+
 ## [0.1.7] - 2026-02-14
 
 ### Fixed

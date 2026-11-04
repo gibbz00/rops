@@ -90,11 +90,13 @@ mod metadata {
                     lastmodified = \"{}\"
                     mac = \"{}\"
                     unencrypted_suffix = \"{}\"
+                    version = \"{}\"
 
                     ",
                     LastModifiedDateTime::mock_display(),
                     S::Mac::mock_display(),
-                    PartialEncryptionConfig::mock_display()
+                    PartialEncryptionConfig::mock_display(),
+                    MetadataVersion::mock_display()
                 });
 
                 #[cfg(feature = "aws-kms")]

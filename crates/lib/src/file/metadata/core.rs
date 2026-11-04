@@ -22,6 +22,7 @@ where
     #[serde(flatten)]
     pub partial_encryption: Option<PartialEncryptionConfig>,
     pub mac_only_encrypted: Option<bool>,
+    pub version: Option<MetadataVersion>,
 }
 
 #[derive(Debug, thiserror::Error)]
@@ -57,7 +58,7 @@ impl<C: Cipher, H: Hasher> RopsFileMetadata<EncryptedMetadata<C, H>> {
         let data_key = self.retrieve_data_key()?;
 
         #[rustfmt::skip]
-        let RopsFileMetadata { intregation, last_modified, mac, partial_encryption, mac_only_encrypted } = self;
+        let RopsFileMetadata { intregation, last_modified, mac, partial_encryption, mac_only_encrypted, version } = self;
 
         let decrypted_map = mac
             .decrypt(&data_key, &last_modified)
@@ -69,6 +70,7 @@ impl<C: Cipher, H: Hasher> RopsFileMetadata<EncryptedMetadata<C, H>> {
             mac: decrypted_map,
             partial_encryption,
             mac_only_encrypted,
+            version,
         };
 
         Ok((decrypted_metadata, data_key))
@@ -81,7 +83,7 @@ impl<C: Cipher, H: Hasher> RopsFileMetadata<EncryptedMetadata<C, H>> {
         let data_key = self.retrieve_data_key()?;
 
         #[rustfmt::skip]
-        let RopsFileMetadata { intregation, last_modified, mac, partial_encryption, mac_only_encrypted } = self;
+        let RopsFileMetadata { intregation, last_modified, mac, partial_encryption, mac_only_encrypted, version } = self;
 
         let (decrypted_map, saved_mac_nonce) = mac
             .decrypt_and_save_nonce(&data_key, &last_modified)
@@ -93,6 +95,7 @@ impl<C: Cipher, H: Hasher> RopsFileMetadata<EncryptedMetadata<C, H>> {
             mac: decrypted_map,
             partial_encryption,
             mac_only_encrypted,
+            version,
         };
 
         Ok((decrypted_metadata, data_key, saved_mac_nonce))
@@ -138,7 +141,7 @@ impl<H: Hasher> RopsFileMetadata<DecryptedMetadata<H>> {
 
     pub fn encrypt<C: Cipher>(self, data_key: &DataKey) -> Result<RopsFileMetadata<EncryptedMetadata<C, H>>, C::Error> {
         #[rustfmt::skip]
-        let RopsFileMetadata { intregation, last_modified, mac, partial_encryption, mac_only_encrypted } = self;
+        let RopsFileMetadata { intregation, last_modified, mac, partial_encryption, mac_only_encrypted, version } = self;
 
         Ok(RopsFileMetadata {
             intregation,
@@ -146,6 +149,7 @@ impl<H: Hasher> RopsFileMetadata<DecryptedMetadata<H>> {
             last_modified,
             partial_encryption,
             mac_only_encrypted,
+            version,
         })
     }
 
@@ -155,7 +159,7 @@ impl<H: Hasher> RopsFileMetadata<DecryptedMetadata<H>> {
         saved_mac_nonce: SavedMacNonce<C, H>,
     ) -> Result<RopsFileMetadata<EncryptedMetadata<C, H>>, C::Error> {
         #[rustfmt::skip]
-        let RopsFileMetadata { intregation, last_modified, mac, partial_encryption, mac_only_encrypted } = self;
+        let RopsFileMetadata { intregation, last_modified, mac, partial_encryption, mac_only_encrypted, version } = self;
 
         Ok(RopsFileMetadata {
             intregation,
@@ -163,6 +167,7 @@ impl<H: Hasher> RopsFileMetadata<DecryptedMetadata<H>> {
             last_modified,
             partial_encryption,
             mac_only_encrypted,
+            version,
         })
     }
 }
@@ -183,6 +188,7 @@ mod mock {
                 mac: MockTestUtil::mock(),
                 partial_encryption: Some(MockTestUtil::mock()),
                 mac_only_encrypted: None,
+                version: Some(MockTestUtil::mock()),
             }
         }
     }
