@@ -17,7 +17,7 @@ sops:
       UE1nSm01Q2lObzlwMDBmazJtWG9qSVEKdHkhmvoMB4JfSztonfNqUGM4PuQs+T16
       9+A3/jb3bGQIbGcZfC8p7662USXWdAYDagLGYZVSf02xaEsjhlP5TQ==
       -----END AGE ENCRYPTED FILE-----
-  lastmodified: 2023-12-27T11:13:48Z
+  lastmodified: "2023-12-27T11:13:48Z"
   mac: ENC[AES256_GCM,data:N/tCLvJawgY4qYPtu2D541yl8+YMRtrTETqAvkQih4EkR2N3YZB0D6XfcFxOHei6kDKEXc4HNPN5vwbaq8U5DeOGfSH00ZLdh85I1Ldh8Jbxnrtd+Kkti8chD2dZrD66c++oZb70z/jaM7+U37tOXM2Zy4SrRbIsUWjJ6LTY5Cs=,iv:NkvFXhw7M0DpksLeRgWdpPAxw1cx64rU+kbayQDMO3A=,tag:7uI8YXb3NPBuWtXIJWv86g==,type:str]
   unencrypted_suffix: _unencrypted
   mac_only_encrypted: true

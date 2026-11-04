@@ -25,6 +25,98 @@ impl FileFormat for YamlFileFormat {
     fn deserialize_from_str<T: DeserializeOwned>(str: &str) -> Result<T, Self::DeserializeError> {
         serde_yaml::from_str(str)
     }
+
+    fn finalize_rops_file_string(serialized: String) -> String {
+        quote_last_modified(serialized)
+    }
+}
+
+/// `serde_yaml` does not quote strings that look like timestamps, which yields
+/// `lastmodified: 2023-12-26T17:50:08Z`. SOPS writes the value quoted, so the
+/// metadata timestamp is wrapped in double quotes to match its output.
+///
+/// Only the `lastmodified` entry directly inside the top-level `sops:` block is
+/// touched; user data is left as is.
+fn quote_last_modified(yaml: String) -> String {
+    const METADATA_KEY: &str = "sops:";
+    const KEY: &str = "lastmodified: ";
+
+    let mut output = String::with_capacity(yaml.len() + 2);
+    let mut in_metadata = false;
+    let mut metadata_indent: Option<usize> = None;
+
+    for line in yaml.split_inclusive('\n') {
+        let content = line.trim_end_matches(['\n', '\r']);
+        let line_ending = &line[content.len()..];
+        let trimmed = content.trim_start();
+        let indent_len = content.len() - trimmed.len();
+
+        if indent_len == 0 && !trimmed.is_empty() {
+            in_metadata = trimmed == METADATA_KEY;
+            metadata_indent = None;
+            output.push_str(line);
+            continue;
+        }
+
+        if in_metadata && !trimmed.is_empty() {
+            let direct_child_indent = *metadata_indent.get_or_insert(indent_len);
+
+            let quoted = (indent_len == direct_child_indent)
+                .then(|| trimmed.strip_prefix(KEY))
+                .flatten()
+                .filter(|value| chrono::DateTime::parse_from_rfc3339(value).is_ok())
+                .map(|value| format!("{}{KEY}\"{value}\"{line_ending}", &content[..indent_len]));
+
+            if let Some(quoted) = quoted {
+                output.push_str(&quoted);
+                continue;
+            }
+        }
+
+        output.push_str(line);
+    }
+
+    output
+}
+
+#[cfg(test)]
+mod quote_last_modified_tests {
+    use super::quote_last_modified;
+
+    #[test]
+    fn quotes_metadata_last_modified_only() {
+        let input = indoc::indoc! {"
+            lastmodified: 2020-01-01T00:00:00Z
+            nested:
+              lastmodified: 2020-01-01T00:00:00Z
+            sops:
+              age:
+              - recipient: age1abc
+                lastmodified: 2020-01-01T00:00:00Z
+              lastmodified: 2023-12-26T17:50:08Z
+              mac: ENC[...]
+        "};
+
+        let expected = indoc::indoc! {"
+            lastmodified: 2020-01-01T00:00:00Z
+            nested:
+              lastmodified: 2020-01-01T00:00:00Z
+            sops:
+              age:
+              - recipient: age1abc
+                lastmodified: 2020-01-01T00:00:00Z
+              lastmodified: \"2023-12-26T17:50:08Z\"
+              mac: ENC[...]
+        "};
+
+        assert_eq!(expected, quote_last_modified(input.to_string()));
+    }
+
+    #[test]
+    fn leaves_already_quoted_value_untouched() {
+        let input = "sops:\n  lastmodified: \"2023-12-26T17:50:08Z\"\n";
+        assert_eq!(input, quote_last_modified(input.to_string()));
+    }
 }
 
 impl FileFormatMapAdapter for YamlMap {

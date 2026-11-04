@@ -11,4 +11,10 @@ pub trait FileFormat: Sized {
     fn serialize_to_string<T: Serialize>(t: &T) -> Result<String, Self::SerializeError>;
 
     fn deserialize_from_str<T: DeserializeOwned>(str: &str) -> Result<T, Self::DeserializeError>;
+
+    /// Hook applied to a fully serialized rops file (map + metadata), allowing
+    /// formats to adjust the output so that it matches the one produced by SOPS.
+    fn finalize_rops_file_string(serialized: String) -> String {
+        serialized
+    }
 }

@@ -5,6 +5,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Quote YAML `lastmodified` metadata value as done in SOPS.
+
 ## [0.1.7] - 2026-02-14
 
 ### Fixed
