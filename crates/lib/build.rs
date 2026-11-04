@@ -28,7 +28,7 @@ fn normalize_sops_references() -> anyhow::Result<()> {
         }) {
             let content = std::fs::read_to_string(&file_path)?;
             let normalized_content = match file_path.extension().unwrap().to_str().unwrap() {
-                "yaml" => serde_yaml::to_string(&serde_yaml::from_str::<serde_yaml::Value>(&content)?)?,
+                "yaml" => quote_sops_last_modified(serde_yaml::to_string(&serde_yaml::from_str::<serde_yaml::Value>(&content)?)?),
                 "json" => serde_json::to_string(&serde_json::from_str::<serde_json::Value>(&content)?)?,
                 _ => unimplemented!(),
             };
@@ -43,4 +43,25 @@ fn normalize_sops_references() -> anyhow::Result<()> {
     }
 
     Ok(())
+}
+
+/// `serde_yaml` strips the quotes SOPS puts around the `sops.lastmodified`
+/// value, put them back so that references keep matching SOPS (and rops) output.
+fn quote_sops_last_modified(yaml: String) -> String {
+    const KEY: &str = "  lastmodified: ";
+
+    let mut in_metadata = false;
+
+    yaml.split_inclusive('\n')
+        .map(|line| {
+            if !line.starts_with(' ') && !line.trim().is_empty() {
+                in_metadata = line.trim_end() == "sops:";
+            }
+
+            match line.strip_prefix(KEY).map(str::trim_end) {
+                Some(value) if in_metadata && !value.starts_with('"') => format!("{KEY}\"{value}\"\n"),
+                _ => line.to_string(),
+            }
+        })
+        .collect()
 }

@@ -13,5 +13,5 @@ sops:
     arn: arn:aws:kms:eu-north-1:822284028627:key/a219f9b1-f371-466a-9143-7adff993aa05
     created_at: 2023-12-30T16:38:10Z
     enc: AQICAHiB4ozqhuEpHKVV+bXVXqxUTHq97nhkmOnQqSGLV5d0fAFTT3o6k2c5G7ql7ndemOX9AAAAfjB8BgkqhkiG9w0BBwagbzBtAgEAMGgGCSqGSIb3DQEHATAeBglghkgBZQMEAS4wEQQMDbPuGe0vVm8z9wrPAgEQgDutmA7ybg/L6gL3mqP8HooB41haPgWIeB/EtUDzDKVywjiC9gQVCafHv8mmCAFHf7LPrIg6sa/08OU+0Q==
-  lastmodified: 2023-12-30T16:38:37Z
+  lastmodified: "2023-12-30T16:38:37Z"
   mac: ENC[AES256_GCM,data:SUHtctyuACPqfwYtpw1p51nSLFHShOwpN9Crzt6JuVe7tiWooaX9Vj08gj6I0Z6lIcRboZaVrNicdLVuxuxxUrEW8PTtLiAdsNcnD6O7olqclPnzadUmX60ttiex/1fgR2lwbnyqAGl9x6y2kd7MQ3lfezi2Ilcx8e4HjYaziW4=,iv:cBwIav8EyfsDjk/Sbe0e8s5KY+c8MqAEnqHEPziwj3s=,tag:qh+nhgv54cf014NNOcIZ+w==,type:str]

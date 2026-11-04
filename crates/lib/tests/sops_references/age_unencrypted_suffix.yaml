@@ -18,6 +18,6 @@ sops:
       M0k2WGZ4QXcvdERNczlzWTgrbEZoeE0K4lB0JlB7GSeG6MKjPEmn0abuMWH2m2ck
       aLJqc9i2pXVqvMh3yHMehpumyrtwwNtWpFC6qzKTUejGA9ZOH26csQ==
       -----END AGE ENCRYPTED FILE-----
-  lastmodified: 2023-12-26T17:57:37Z
+  lastmodified: "2023-12-26T17:57:37Z"
   mac: ENC[AES256_GCM,data:lMKBbtVlzwBziw+4hHH6OvxFDrAXfKKhk1n7egJe79JghYCnNjuPt7y3RT7NUGUcI72f6hnZJ7zjOBsNh3y3Uz0zrVH0NeHhCZ/RA4rAf3ohI7IZmZAY7BL2HSXaFlvYu3XmI5q3GUtqCW1gSUB2GmiFRAexSzWUMp8sjidicVU=,iv:6vUN0afSE9HjVQTpVIU7ciMcYFY6ylApcidym3rRKik=,tag:80x4wKw9b0cXv24PAUnakw==,type:str]
   unencrypted_suffix: unencrypted

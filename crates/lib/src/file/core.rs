@@ -56,7 +56,8 @@ where
     <<S::MetadataState as RopsMetadataState>::Mac as FromStr>::Err: Display,
 {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", F::serialize_to_string(self).expect("failed to serialize rops map"))
+        let serialized = F::serialize_to_string(self).expect("failed to serialize rops map");
+        write!(f, "{}", F::finalize_rops_file_string(serialized))
     }
 }
 
