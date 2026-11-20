@@ -12,13 +12,23 @@ exclude.workspace = true
 edition.workspace = true
 
 [features]
-default = ["age", "aws-kms", "yaml", "json", "toml", "aes-gcm", "sha2"]
+default = [
+  "age",
+  "aws-kms",
+  "yaml",
+  "json",
+  "toml",
+  "dotenv",
+  "aes-gcm",
+  "sha2",
+]
 # Integrations:
 age = ["dep:age"]
 aws-kms = ["dep:aws-arn", "dep:aws-sdk-kms", "dep:tokio"]
 # File formats:
 yaml = ["dep:serde_yaml"]
 json = ["dep:serde_json"]
+dotenv = ["json"]
 toml = ["dep:toml"]
 # Ciphers
 aes-gcm = ["dep:aes-gcm"]

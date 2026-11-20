@@ -18,6 +18,7 @@ impl Cli {
             Format::Yaml => add_key_impl::<YamlFileFormat>(key_args),
             Format::Json => add_key_impl::<JsonFileFormat>(key_args),
             Format::Toml => add_key_impl::<TomlFileFormat>(key_args),
+            Format::Dotenv => add_key_impl::<DotenvFileFormat>(key_args),
         };
 
         fn add_key_impl<F: FileFormat>(key_args: KeyInputArgs) -> anyhow::Result<()> {
@@ -39,6 +40,7 @@ impl Cli {
             Format::Yaml => remove_key_impl::<YamlFileFormat>(key_args),
             Format::Json => remove_key_impl::<JsonFileFormat>(key_args),
             Format::Toml => remove_key_impl::<TomlFileFormat>(key_args),
+            Format::Dotenv => remove_key_impl::<DotenvFileFormat>(key_args),
         };
 
         fn remove_key_impl<F: FileFormat>(key_args: KeyInputArgs) -> anyhow::Result<()> {

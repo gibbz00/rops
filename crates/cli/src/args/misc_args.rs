@@ -56,4 +56,6 @@ pub enum Format {
     Yaml,
     Json,
     Toml,
+    #[value(alias = "env")]
+    Dotenv,
 }

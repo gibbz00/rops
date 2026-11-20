@@ -11,6 +11,11 @@ mod json;
 #[cfg(feature = "json")]
 pub use json::JsonFileFormat;
 
+#[cfg(feature = "dotenv")]
+mod dotenv;
+#[cfg(feature = "dotenv")]
+pub use dotenv::DotenvFileFormat;
+
 #[cfg(feature = "toml")]
 mod toml;
 #[cfg(feature = "toml")]
