@@ -30,6 +30,8 @@ fn normalize_sops_references() -> anyhow::Result<()> {
             let normalized_content = match file_path.extension().unwrap().to_str().unwrap() {
                 "yaml" => serde_yaml::to_string(&serde_yaml::from_str::<serde_yaml::Value>(&content)?)?,
                 "json" => serde_json::to_string(&serde_json::from_str::<serde_json::Value>(&content)?)?,
+                // Dotenv has no structure for serde to normalize; keep the file as written.
+                "env" => content,
                 _ => unimplemented!(),
             };
             std::fs::write(file_path, normalized_content)?;

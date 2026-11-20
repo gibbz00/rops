@@ -18,6 +18,7 @@ impl Cli {
                 Format::Yaml => encrypt_rops_file_impl::<YamlFileFormat>(plaintext_string, encrypt_args),
                 Format::Json => encrypt_rops_file_impl::<JsonFileFormat>(plaintext_string, encrypt_args),
                 Format::Toml => encrypt_rops_file_impl::<TomlFileFormat>(plaintext_string, encrypt_args),
+                Format::Dotenv => encrypt_rops_file_impl::<DotenvFileFormat>(plaintext_string, encrypt_args),
             };
 
             fn encrypt_rops_file_impl<F: FileFormat>(plaintext_str: &str, encrypt_args: EncryptArgs) -> anyhow::Result<String> {

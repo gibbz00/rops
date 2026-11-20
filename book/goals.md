@@ -14,8 +14,8 @@
 | ✅ YAML      | ✅ `age` - Asymmetric         |
 | ✅ JSON      | ✅ `aws_kms` - Symmetric [^1] |
 | ✅ TOML [^2] | ❎`pgp` [^3]                  |
-| ❎ INI       | ❎`gcp_kms`                   |
-| ❎ ENV       | ❎`azure_kv`                  |
+| ✅ ENV [^4]  | ❎`gcp_kms`                   |
+| ❎ INI       | ❎`azure_kv`                  |
 | ❎ BINARY    | ❎`hashicorp_kv`              |
 
 The difference between asymmetric and symmetric integrations is later explained in the [concepts chapter](concepts.md#integration-key-id).
@@ -25,6 +25,8 @@ The difference between asymmetric and symmetric integrations is later explained 
 [^2]: [Currently](https://github.com/getsops/sops/pull/812) exclusive to `rops`.
 
 [^3]: Awaiting status update for: [OpenPGP Crypto Refresh](https://datatracker.ietf.org/doc/draft-ietf-openpgp-crypto-refresh/).
+
+[^4]: Unlike `sops`, refuses null values and values with `\n`, which break encrypt-decrypt under `sops`. 
 
 
 ### Non-Goals

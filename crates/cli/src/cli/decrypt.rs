@@ -26,6 +26,7 @@ impl Cli {
                 Format::Yaml => decrypt_rops_file_impl::<YamlFileFormat>(encrypted_rops_file_str),
                 Format::Json => decrypt_rops_file_impl::<JsonFileFormat>(encrypted_rops_file_str),
                 Format::Toml => decrypt_rops_file_impl::<TomlFileFormat>(encrypted_rops_file_str),
+                Format::Dotenv => decrypt_rops_file_impl::<DotenvFileFormat>(encrypted_rops_file_str),
             };
 
             fn decrypt_rops_file_impl<F: FileFormat>(encrypted_rops_file_str: &str) -> anyhow::Result<String> {

@@ -13,6 +13,7 @@ impl Cli {
             Format::Yaml => edit_encrypted_file::<YamlFileFormat>(explicit_file_path),
             Format::Json => edit_encrypted_file::<JsonFileFormat>(explicit_file_path),
             Format::Toml => edit_encrypted_file::<TomlFileFormat>(explicit_file_path),
+            Format::Dotenv => edit_encrypted_file::<DotenvFileFormat>(explicit_file_path),
         };
 
         // Nested to avoid it being misused for regular files which might use aliases.
@@ -24,6 +25,7 @@ impl Cli {
             impl TempFileFormat for YamlFileFormat { const TEMP_EXTENSION: &'static str = "yaml"; }
             impl TempFileFormat for JsonFileFormat { const TEMP_EXTENSION: &'static str = "json"; }
             impl TempFileFormat for TomlFileFormat { const TEMP_EXTENSION: &'static str = "toml"; }
+            impl TempFileFormat for DotenvFileFormat { const TEMP_EXTENSION: &'static str = "env"; }
         }
 
         fn edit_encrypted_file<F: temp_file_format::TempFileFormat>(explicit_file_path: Option<&Path>) -> anyhow::Result<()> {

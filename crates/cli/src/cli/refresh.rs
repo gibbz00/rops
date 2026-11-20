@@ -18,6 +18,7 @@ impl Cli {
                 Format::Yaml => refresh_rops_file_impl::<YamlFileFormat>(encrypted_rops_file_string, refresh_args),
                 Format::Json => refresh_rops_file_impl::<JsonFileFormat>(encrypted_rops_file_string, refresh_args),
                 Format::Toml => refresh_rops_file_impl::<TomlFileFormat>(encrypted_rops_file_string, refresh_args),
+                Format::Dotenv => refresh_rops_file_impl::<DotenvFileFormat>(encrypted_rops_file_string, refresh_args),
             };
 
             fn refresh_rops_file_impl<F: FileFormat>(
